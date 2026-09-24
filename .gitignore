@@ -1,3 +1,4 @@
 *.json
 !manifest.webmanifest
+!code.json
 *.py

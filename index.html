@@ -936,6 +936,13 @@ async function openBlob(key){
   return new Response(new Blob([pt]).stream().pipeThrough(new DecompressionStream("gzip"))).json();
 }
 async function adminRaw(id,pw){const k=await pbk(id+"\n"+pw,new Uint8Array(BLOB).slice(0,16),["decrypt"]);await openBlob(k);return new Uint8Array(await crypto.subtle.exportKey("raw",k));}
+let CODESLOT=null;
+async function codeRaw(code){
+  if(!CODESLOT){const r=await fetch("code.json",{cache:"no-cache"});if(!r.ok)throw 0;CODESLOT=await r.json();}
+  const w=await pbk("code\n"+code,b64d(CODESLOT.salt),["decrypt"]);
+  const raw=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(CODESLOT.iv)},w,b64d(CODESLOT.ct)));
+  await openBlob(await keyFromRaw(raw));return raw;
+}
 async function unwrapKey(acc,id,pw){const w=await pbk(id+"\n"+pw,b64d(acc.auth.salt),["decrypt"]);return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(acc.auth.iv)},w,b64d(acc.auth.ct)));}
 async function wrapKey(raw,id,pw){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const w=await pbk(id+"\n"+pw,salt,["encrypt"]);const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},w,raw);return{salt:b64e(salt),iv:b64e(iv),ct:b64e(ct)};}
 function persist(pid,keep){try{localStorage.setItem(BASE+":key",b64e(RAWKEY));if(keep)localStorage.setItem(BASE+":auto",pid);else localStorage.removeItem(BASE+":auto");}catch(e){}}
@@ -977,9 +984,8 @@ function showLock(mode){
       <label for="npw" class="small">새 비밀번호 (6자 이상)</label><input type="password" id="npw" ${inputCss} autocomplete="new-password" minlength="6" required>
       <label for="npw2" class="small">새 비밀번호 확인</label><input type="password" id="npw2" ${inputCss} autocomplete="new-password" minlength="6" required>
       <span class="row" style="gap:6px;justify-content:center">${PCOLORS.map((c,i)=>`<label style="cursor:pointer" aria-label="${c}"><input type="radio" name="pcol" value="${c}" ${i===PROFILES.length%PCOLORS.length?"checked":""} style="position:absolute;opacity:0"><span class="pcolor" style="display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--${c})"></span></label>`).join("")}</span>
-      ${needAdmin?`<div class="adm"><b class="fun">관리자 확인</b><span class="small">이 기기(브라우저)에서 처음 한 번만 필요해요. 그다음부터는 이 기기에서 확인 없이 바로 가입돼요.</span>
-        <label for="aid" class="small">관리자 아이디</label><input type="text" id="aid" ${inputCss} autocomplete="off" required>
-        <label for="apw" class="small">관리자 비밀번호</label><input type="password" id="apw" ${inputCss} autocomplete="off" required></div>`:`<p class="small" style="margin:0">인증된 기기라 바로 가입할 수 있어요.</p>`}`}
+      ${needAdmin?`<div class="adm"><b class="fun">확인 코드</b><span class="small">이 기기(브라우저)에서 처음 가입할 때만 필요해요. 그다음부터는 이 기기에서 코드 없이 바로 가입돼요.</span>
+        <label for="vcode" class="small">확인 코드</label><input type="password" id="vcode" ${inputCss} inputmode="numeric" autocomplete="off" required></div>`:`<p class="small" style="margin:0">인증된 기기라 바로 가입할 수 있어요.</p>`}`}
     <label class="check" style="justify-content:center"><input type="checkbox" id="remember" checked> 이 기기에서 자동 로그인</label>
     <p class="err" id="err"></p>
     <button class="btn sun" id="go-btn" type="submit">${mode==="login"?"로그인":"가입하고 시작하기"}</button>
@@ -1006,7 +1012,7 @@ function showLock(mode){
       if(pw.length<6)return fail("비밀번호는 6자 이상으로 정해 주세요.");
       if(pw!==pw2)return fail("두 비밀번호가 달라요.");
       let raw=RAWKEY;
-      if(!raw){try{raw=await adminRaw(norm(m.querySelector("#aid").value),m.querySelector("#apw").value);}catch(x){return fail("관리자 아이디 또는 비밀번호가 맞지 않아요.");}}
+      if(!raw){try{raw=await codeRaw(norm(m.querySelector("#vcode").value));}catch(x){return fail("확인 코드가 맞지 않아요.");}}
       const c=(m.querySelector("input[name=pcol]:checked")||{}).value||"sky";
       const pid="u"+Date.now().toString(36);
       PROFILES.push({id:pid,name:id,login:id,c,t:Date.now(),auth:await wrapKey(raw,id,pw)});saveProfiles();
