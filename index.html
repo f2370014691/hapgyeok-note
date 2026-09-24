@@ -364,6 +364,22 @@ table.study td .ans{display:block;font-size:13px;color:var(--grass-d);margin-top
 .course.six{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:980px){.cgrid{grid-template-columns:minmax(0,1fr)}.clist{position:static;max-height:220px}.course.six{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:520px){.course.six{grid-template-columns:minmax(0,1fr)}.ntext{font-size:18px}}
+
+/* 받아쓰기 트레이너 */
+.tt-target{font-size:22px;line-height:2.1;letter-spacing:.02em;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:12px 16px;min-height:3.2em;white-space:pre-wrap;overflow-wrap:anywhere}
+.tt-target .tsp{display:inline-block;min-width:.5em;text-align:center}
+.tt-target span{border-radius:4px;padding:0 1px}
+.tt-target .ok{color:var(--grass-d)}
+.tt-target .bad{color:#fff;background:var(--berry)}
+.tt-target .cmp{background:var(--sun-s);border-bottom:3px solid var(--tang)}
+.tt-target .cur{background:var(--sun);animation:blink 1s step-end infinite}
+.tt-target .tsp.bad{background:var(--berry);color:#fff}
+.tt-target .tsp.cur{background:var(--sun)}
+@keyframes blink{50%{background:transparent}}
+.tt-in{font-size:20px;line-height:1.7;min-height:60px}
+/* 서답형 앞 내용 */
+.prev{background:var(--ground);border:2px dashed var(--line-2);border-radius:16px;padding:10px 14px}
+.prev.folded{padding:8px 14px}
 </style>
 </head>
 <body>
@@ -827,8 +843,8 @@ function tbGrade(g){
 }
 KEYS.tables=e=>{if(tbMode!=="type"||tbChecked)gradeKeys(e,tbGrade);};
 
-/* ================= 고시문 암기 (3단계) ================= */
-let ntLevel=1,ntPart="",ntQueue=null,ntWeak=false,ntChecked=null,ntOpen=new Set(),ntDone=0;
+/* ================= 고시문 암기 (빈칸 보기 → 빈칸 쓰기 → 받아쓰기 트레이너) ================= */
+let ntLevel=1,ntPart="",ntQueue=null,ntWeak=false,ntChecked=null,ntOpen=new Set(),ntDone=0,ntHide=false,ntRun=0;
 const ntParts=()=>[...new Set(D.notice.map(n=>n.part))];
 function buildNt(){
   const f=n=>(!ntPart||n.part===ntPart)&&(!S.scope.s||S.scope.s==="nuri"||n.s===S.scope.s||n.s==="nuri");
@@ -836,24 +852,43 @@ function buildNt(){
   ntChecked=null;ntOpen=new Set();
 }
 function ntSplit(text){const out=[];text.replace(/\[\[(.+?)\]\]|([^\[]+|\[)/g,(m,k,t)=>{out.push(k?{k}:{t:t});});return out;}
-function charDiff(input,target){
-  // 목표 문장의 글자 중 빠진 부분 표시 (공백 무시, LCS)
-  const a=[...input.replace(/\s/g,"")],b=[...target];const bn=b.filter(ch=>!/\s/.test(ch));
-  const m=a.length,n=bn.length,dp=Array.from({length:m+1},()=>new Uint16Array(n+1));
-  for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)dp[i][j]=a[i]===bn[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
-  const keep=new Set();let i=0,j=0;while(i<m&&j<n){if(a[i]===bn[j]){keep.add(j);i++;j++;}else if(dp[i+1][j]>=dp[i][j+1])i++;else j++;}
-  let k=0,html="";for(const ch of b){if(/\s/.test(ch)){html+=" ";continue;}html+=keep.has(k)?`<span class="o">${esc(ch)}</span>`:`<span class="m">${esc(ch)}</span>`;k++;}
-  return {html,ratio:n?keep.size/n:1};
+const ntPlain=x=>x.text.replace(/\[\[|\]\]/g,"");
+
+/* --- 받아쓰기 트레이너: 글자마다 실시간 채점 --- */
+const TT={typed:"",composing:false,flag:null,err:0,t0:0,done:false};
+function ttReset(){Object.assign(TT,{typed:"",composing:false,flag:[],err:0,t0:0,done:false});}
+function ttRender(target){
+  const el=document.getElementById("tt-target");if(!el)return;
+  const typed=TT.typed,n=typed.length,chars=[...target];
+  let html="";
+  chars.forEach((ch,i)=>{
+    let cls="",show=ch;
+    if(i<n){
+      const ok=typed[i]===ch;
+      if(!ok&&TT.composing&&i===n-1)cls="cmp";else cls=ok?"ok":"bad";
+      if(cls==="bad"&&ntHide)show=typed[i];
+    }else{cls=i===n?"cur":"";if(ntHide&&ch!==" ")show="_";}
+    html+=ch===" "?`<span class="tsp ${cls}">${cls==="bad"?esc(typed[i]):" "}</span>`:`<span class="${cls}">${esc(show)}</span>`;
+  });
+  el.innerHTML=html;
+  // 오타 세기: 조합이 끝난 글자만
+  if(!TT.composing){chars.forEach((ch,i)=>{if(i<n&&typed[i]!==ch&&!TT.flag[i]){TT.flag[i]=true;TT.err++;}});}
+  const stat=document.getElementById("tt-stat");
+  const acc=Math.max(0,1-TT.err/chars.length),sec=TT.t0?Math.round((Date.now()-TT.t0)/1000):0;
+  if(!TT.done&&typed===target){TT.done=true;ntChecked={ratio:acc,sec};render();return;}
+  if(stat)stat.innerHTML=`${n} / ${chars.length}자 · 오타 ${TT.err} · ${sec}초`;
 }
 VIEWFN.notice=function(m){
   if(!ntQueue)buildNt();
   const x=ntQueue[0],parts=ntParts();
-  const top=head("외우기 · 누리과정 고시문","sun","고시문 암기","1단계 빈칸 확인 → 2단계 빈칸 타이핑 → 3단계 전체 받아쓰기. 단계를 올려 가며 문장을 통째로 외워요.",
+  const top=head("외우기 · 누리과정 고시문","sun","고시문 암기","1단계 빈칸 보기 → 2단계 빈칸 쓰기 → 3단계 받아쓰기. 3단계는 글자를 칠 때마다 바로 초록·분홍으로 표시돼요.",
     modeChips(String(ntLevel),[["1","1단계 빈칸 보기"],["2","2단계 빈칸 쓰기"],["3","3단계 받아쓰기"]],"data-lv"))+
-    `<div class="scope"><span class="l">부분</span><span class="part-chips"><button class="chip" data-part="" aria-pressed="${!ntPart}" style="font-size:13px;padding:2px 10px">전체</button>${parts.map(p=>`<button class="chip" data-part="${esc(p)}" aria-pressed="${ntPart===p}" style="font-size:13px;padding:2px 10px">${esc(p)}</button>`).join("")}</span><span class="small" style="margin-left:auto">${ntWeak?"헷갈린 문장만 · ":""}남은 ${ntQueue.length}문장</span></div>`;
+    `<div class="scope"><span class="l">부분</span><span class="part-chips"><button class="chip" data-part="" aria-pressed="${!ntPart}" style="font-size:13px;padding:2px 10px">전체</button>${parts.map(p=>`<button class="chip" data-part="${esc(p)}" aria-pressed="${ntPart===p}" style="font-size:13px;padding:2px 10px">${esc(p)}</button>`).join("")}</span>
+    ${ntLevel===3?`<label class="check"><input type="checkbox" id="nt-hide" ${ntHide?"checked":""}> 문장 가리고 치기</label>`:""}
+    <span class="small" style="margin-left:auto">${ntWeak?"헷갈린 문장만 · ":""}남은 ${ntQueue.length}문장</span></div>`;
   if(!x){m.innerHTML=top+empty(ntDone?"잘했어요!":"다 봤어요","이 부분의 문장을 모두 봤어요. 다음 단계로 올려서 다시 해 보세요.",`<button class="btn sun" id="nt-up">${ntLevel<3?(ntLevel+1)+"단계로 올리기":"처음부터 다시"}</button>`);
     bindNt(m);const up=m.querySelector("#nt-up");if(up)up.onclick=()=>{ntLevel=ntLevel<3?ntLevel+1:1;ntQueue=null;render();};return;}
-  const seg=ntSplit(x.text),plain=x.text.replace(/\[\[|\]\]/g,""),keys=seg.filter(s=>s.k).map(s=>s.k);
+  const seg=ntSplit(x.text),plain=ntPlain(x),keys=seg.filter(s=>s.k).map(s=>s.k);
   let body="",res=ntChecked,sug=null;
   if(ntLevel===1){
     body=`<div class="ntext">${seg.map((s,i)=>s.k?`<span class="bk ${ntOpen.has(i)?"shown":""}" data-bk="${i}">${esc(s.k)}</span>`:esc(s.t)).join("")}</div>
@@ -866,30 +901,41 @@ VIEWFN.notice=function(m){
       ${res?"":`<div class="row"><button class="btn sun" data-check>채점하기 <kbd>Ctrl+Enter</kbd></button><span class="small">칸 안의 글자는 첫 글자 힌트예요</span></div>`}`;
     if(res){const r=res.filter(v=>v>=0.75).length/Math.max(1,res.length);sug=gradeFrom(r);body+=`<div class="score ${scoreCls(r)}">${res.filter(v=>v>=0.75).length} / ${res.length}칸 맞힘</div>`;}
   }else{
-    body=`<div class="small">${esc(x.part)}${x.no?" "+esc(x.no):""} — 문장을 통째로 써 보세요. 첫 글자: <b class="fun">${esc(plain.slice(0,2))}…</b></div>
-      <textarea class="typebox" id="nt-in" ${res?"disabled":""} placeholder="고시문 문장을 그대로 써 보세요">${esc(GO.ntText||"")}</textarea>
-      ${res?`<div class="score ${scoreCls(res.ratio)}">${Math.round(res.ratio*100)}% 일치</div><div class="ntext diff" style="font-size:18px">${res.html}</div><div class="small">밑줄 친 분홍 글자가 빠졌거나 틀린 부분이에요.</div>`
-        :`<div class="row"><button class="btn sun" data-check>채점하기 <kbd>Ctrl+Enter</kbd></button></div>`}`;
-    if(res)sug=gradeFrom(res.ratio>=0.95?1:res.ratio>=0.75?0.6:0);
+    body=`<div class="small">${esc(x.part)}${x.no?" "+esc(x.no):""} · ${ntHide?"문장을 떠올리며 그대로 쳐 보세요. 첫 글자: <b class='fun'>"+esc(plain.slice(0,2))+"…</b>":"위 문장을 보고 그대로 따라 쳐 보세요. 맞으면 초록, 틀리면 분홍으로 바로 표시돼요."}</div>
+      <div class="tt-target ntext" id="tt-target" aria-live="off"></div>
+      ${res?`<div class="row" style="justify-content:space-between"><span class="score ${scoreCls(res.ratio)}">정확도 ${Math.round(res.ratio*100)}% · ${res.sec}초</span><span class="small">아래에서 평가하면 다음 문장으로 넘어가요 <kbd>Enter</kbd> = 알아요</span></div>`
+        :`<textarea class="typebox tt-in" id="tt-in" rows="2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기에 치세요 (띄어쓰기까지 똑같이)"></textarea>
+         <div class="row" style="justify-content:space-between"><span class="small" id="tt-stat">0 / ${[...plain].length}자</span><button class="btn sm soft" id="tt-skip">이 문장 건너뛰기</button></div>`}`;
+    if(res)sug=res.ratio>=0.95?2:res.ratio>=0.8?1:0;
   }
   m.innerHTML=top+`<div class="stage"><div class="kwcard" style="${cvars("sun")}">
     <div class="row" style="justify-content:space-between"><div class="crumb"><span>2019 개정 누리과정</span><span>${esc(x.part)}</span>${x.no?`<span>${esc(x.no)}</span>`:""}</div>${boxes("n:"+x.id)}</div>
     ${body}</div>${ntLevel===1||res?gradeRow("data-ng",sug):""}</div>`;
   bindNt(m);
+  const hide=m.querySelector("#nt-hide");if(hide)hide.onchange=()=>{ntHide=hide.checked;ttReset();render();};
   const tx=m.querySelector(".ntext");if(tx&&ntLevel===1)tx.onclick=e=>{const b=e.target.closest("[data-bk]");if(b){ntOpen.add(+b.dataset.bk);b.classList.add("shown");}};
   const all=m.querySelector("#nt-all");if(all)all.onclick=()=>{seg.forEach((s,i)=>s.k&&ntOpen.add(i));render();};
   m.querySelectorAll("[data-bi]").forEach(inp=>inp.oninput=()=>{GO["nt_"+inp.dataset.bi]=inp.value;});
-  const ta=m.querySelector("#nt-in");if(ta){ta.oninput=()=>{GO.ntText=ta.value;};if(!res)ta.focus();}
   const fi=m.querySelector("[data-bi]");if(fi&&!res)fi.focus();
-  const ck=m.querySelector("[data-check]");if(ck)ck.onclick=()=>{
-    ntChecked=ntLevel===2?keys.map((k,i)=>cellScore(GO["nt_"+i]||"",k)):charDiff(GO.ntText||"",plain);render();};
+  const ck=m.querySelector("[data-check]");if(ck)ck.onclick=()=>{ntChecked=keys.map((k,i)=>cellScore(GO["nt_"+i]||"",k));render();};
+  const ta=m.querySelector("#tt-in");
+  if(ta){
+    if(!TT.flag||TT.done)ttReset();
+    ta.value=TT.typed;
+    ta.addEventListener("compositionstart",()=>{TT.composing=true;});
+    ta.addEventListener("compositionend",()=>{TT.composing=false;TT.typed=ta.value.replace(/\n/g,"");ttRender(plain);});
+    ta.addEventListener("input",()=>{if(!TT.t0)TT.t0=Date.now();TT.typed=ta.value.replace(/\n/g,"");ttRender(plain);});
+    ta.addEventListener("keydown",e=>{if(e.key==="Enter")e.preventDefault();});
+    ttRender(plain);ta.focus();
+    const sk=m.querySelector("#tt-skip");if(sk)sk.onclick=()=>{ntQueue.shift();ttReset();render();};
+  }
   m.querySelectorAll("[data-ng]").forEach(b=>b.onclick=()=>ntGrade(+b.dataset.ng));
 };
 function bindNt(m){
   m.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>{ntLevel=+b.dataset.lv;ntChecked=null;clearNt();render();});
   m.querySelectorAll("[data-part]").forEach(b=>b.onclick=()=>{ntPart=b.dataset.part;ntQueue=null;clearNt();render();});
 }
-function clearNt(){Object.keys(GO).filter(k=>k.startsWith("nt_")).forEach(k=>delete GO[k]);GO.ntText="";ntOpen=new Set();}
+function clearNt(){Object.keys(GO).filter(k=>k.startsWith("nt_")).forEach(k=>delete GO[k]);ntOpen=new Set();ttReset();}
 function ntGrade(g){
   const x=ntQueue[0];if(!x)return;srsGrade("n:"+x.id,g);ntQueue.shift();if(g===0)ntQueue.splice(Math.min(3,ntQueue.length),0,x);
   ntChecked=null;clearNt();ntDone++;save("notice");render();
@@ -897,13 +943,15 @@ function ntGrade(g){
 KEYS.notice=e=>{
   if(!ntQueue||!ntQueue[0])return;
   if(ntLevel===1&&e.key===" "){e.preventDefault();ntSplit(ntQueue[0].text).forEach((s,i)=>s.k&&ntOpen.add(i));render();return;}
+  if(ntLevel===3&&ntChecked&&e.key==="Enter"){e.preventDefault();ntGrade(2);return;}
   if(ntLevel===1||ntChecked)gradeKeys(e,ntGrade);
 };
 
 /* ================= 암기 카드 ================= */
-let cardQueue=null,flipped=false,cardHint=false,cardMode="study",cardTyping=false,cardChecked=null,cardDone=0;
+let cardQueue=null,flipped=false,cardHint=false,cardMode="study",cardTyping=false,cardChecked=null,cardDone=0,cardType="";
+const cardTypeOk=x=>!cardType||(x.t||"원본")===cardType;
 function buildCards(){
-  const f=x=>inS(x);
+  const f=x=>inS(x)&&cardTypeOk(x);
   if(cardMode==="browse")cardQueue=D.cards.filter(f);
   else if(cardMode==="weak")cardQueue=shuffle(D.cards.filter(c=>f(c)&&st("c:"+c.id)&&(st("c:"+c.id).l>=1||st("c:"+c.id).b===1)));
   else cardQueue=queueOf(D.cards,"c:",f);
@@ -912,16 +960,17 @@ function buildCards(){
 VIEWFN.cards=function(m){
   if(!cardQueue)buildCards();
   const c=cardQueue[0];
-  const top=head("외우기 · 간격 반복","sky","암기 카드","떠올리고 확인하기. 타이핑을 켜면 답을 쓰고 자동으로 채점해요. 알면 1·3·7·14·30일 뒤에 다시 나와요.",
+  const top=head("외우기 · 간격 반복 · 제한 없음","sky","암기 카드",`원본 카드에 개념·목록·표·고시문에서 만든 카드를 더해 ${D.cards.length.toLocaleString()}장이에요. 하루 한도 없이 계속할 수 있어요.`,
     `<div class="row">${modeChips(cardMode,[["study","오늘 학습"],["weak","헷갈리는 카드"],["browse","순서대로"]])}<label class="check"><input type="checkbox" id="c-type" ${cardTyping?"checked":""}> 타이핑</label></div>`)+
-    scopeBar(`복습 ${D.cards.filter(x=>inS(x)&&isDue("c:"+x.id)).length} · 안 본 카드 ${D.cards.filter(x=>inS(x)&&isNew("c:"+x.id)).length}`);
+    scopeBar(`복습 ${D.cards.filter(x=>inS(x)&&cardTypeOk(x)&&isDue("c:"+x.id)).length} · 안 본 카드 ${D.cards.filter(x=>inS(x)&&cardTypeOk(x)&&isNew("c:"+x.id)).length}`,
+      `<span class="row" style="gap:6px">${[["","전체"],["원본","원본"],["개념","개념"],["목록","목록"],["표","표"],["고시문","고시문"]].map(([k,l])=>`<button class="chip" data-ct="${k}" aria-pressed="${cardType===k}" style="font-size:13px;padding:2px 10px">${l}</button>`).join("")}</span>`);
   if(!c){m.innerHTML=top+empty(cardDone?"잘했어요!":"다 봤어요","이 범위의 카드를 모두 봤어요.",`<button class="btn sun" data-go="quiz">다음: 퀴즈</button>`);bindCards(m);return;}
   const lines=c.b.split("\n").filter(l=>l.trim()),hintTxt=lines.map(l=>hints([l])[0]+"…").join("  ");
   const res=cardChecked,ratio=res?res.filter(Boolean).length/res.length:0;
   const showBack=flipped||res;
   m.innerHTML=top+`<div class="stage">
     <div class="flash" id="flash" style="${scol(c.s)}" role="button" tabindex="0" aria-label="카드">
-      <div class="meta"><span>${esc(subjName(c.s))} · ${esc(c.ch)}</span><span class="row" style="gap:8px">${boxes("c:"+c.id)}<span class="num">남은 ${cardQueue.length}</span></span></div>
+      <div class="meta"><span>${esc(subjName(c.s))} · ${esc(c.ch)} · <b>${esc(c.t||"원본")}</b></span><span class="row" style="gap:8px">${boxes("c:"+c.id)}<span class="num">남은 ${cardQueue.length}</span></span></div>
       ${c.g?`<div>${gtag(c.g)}</div>`:""}
       <div class="front">${esc(c.f)}</div>
       ${cardHint&&!showBack?`<div class="hintline">${esc(hintTxt)}</div>`:""}
@@ -943,6 +992,7 @@ VIEWFN.cards=function(m){
 function bindCards(m){
   bindScope(m,()=>{cardQueue=null;render();});
   m.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{cardMode=b.dataset.mode;cardQueue=null;render();});
+  m.querySelectorAll("[data-ct]").forEach(b=>b.onclick=()=>{cardType=b.dataset.ct;cardQueue=null;render();});
   const t=m.querySelector("#c-type");if(t)t.onchange=()=>{cardTyping=t.checked;cardChecked=null;flipped=false;render();};
 }
 function cardGrade(g){
@@ -1082,7 +1132,7 @@ KEYS.quiz=e=>{
 };
 
 /* ================= 기출 서답형 ================= */
-let essayId=null,showModel={};
+let essayId=null,showModel={},essayPrev=true,essayCover=false;
 VIEWFN.essay=function(m){
   const list=D.essays.filter(e=>!S.scope.s||e.s===S.scope.s);
   if(!list.find(e=>e.id===essayId))essayId=list[0]?list[0].id:null;
@@ -1093,6 +1143,8 @@ VIEWFN.essay=function(m){
   (p?`<div class="egrid"><div class="plist">${list.map(x=>`<button class="pick" data-p="${x.id}" aria-pressed="${x.id===essayId}"><span><small>${esc(subjName(x.s))}${x.g?" · "+esc(x.g):""}${S.essays[x.id]?" · 작성함":""}</small>${esc(x.q.length>56?x.q.slice(0,56)+"…":x.q)}</span></button>`).join("")}</div>
     <div class="qbox" style="display:flex;flex-direction:column;gap:14px;${scol(p.s)}">
       <div class="small">${esc(subjName(p.s))} · ${esc(p.ch)} ${gtag(p.g)}</div>
+      ${(p.rel||[]).length?`<div class="prev ${essayPrev?"":"folded"}"><div class="row" style="justify-content:space-between"><b class="fun">이 문제 앞의 전략노트 내용</b><span class="row"><label class="check"><input type="checkbox" id="prev-cover" ${essayCover?"checked":""}> 가리기</label><button class="btn sm soft" id="prev-toggle">${essayPrev?"접기":"펼치기"}</button></span></div>
+        ${essayPrev?`<div class="hideable ${essayCover?"cover":""}" id="prev-body" style="display:flex;flex-direction:column;gap:10px;margin-top:8px">${p.rel.map(id=>BY.concept[id]).filter(Boolean).map(c=>`<div class="concept" style="${scol(c.s)};padding:10px 12px"><div class="cn" style="font-size:17px">${esc(c.name)}${c.who?` <span class="who">${esc(c.who)}</span>`:""}</div>${c.def?`<div class="def hx" style="font-size:15px">${esc(c.def)}</div>`:""}${c.list&&c.list.items.length?`<ul class="lst" style="font-size:15px">${c.list.items.map(i=>`<li><span class="hx">${esc(i)}</span></li>`).join("")}</ul>`:""}${c.kw&&c.kw.length?`<div class="kchips">${c.kw.map(k=>`<span class="kchip hx">${esc(k)}</span>`).join("")}</div>`:""}<button class="btn sm soft" data-oc="${c.id}" style="align-self:flex-start">개념 지도에서 보기</button></div>`).join("")}</div>`:""}</div>`:""}
       <div class="q" style="font-size:19px;white-space:pre-line">${esc(p.q)}</div>
       <textarea id="essay-ta" placeholder="예) ㉠ 근접발달지대, ㉡ 비계설정">${esc(text)}</textarea>
       <div class="row" style="justify-content:space-between"><span class="small num" id="cc">${text.length}자</span><button class="btn grass" id="show-model">${showModel[p.id]?"모범답안 숨기기":"모범답안과 비교"}</button></div>
@@ -1104,6 +1156,9 @@ VIEWFN.essay=function(m){
   const rnd=m.querySelector("#rand");if(rnd)rnd.onclick=()=>{essayId=list[Math.floor(Math.random()*list.length)].id;render();};
   if(!p)return;
   const sel=m.querySelector('.plist [aria-pressed="true"]');if(sel)sel.scrollIntoView({block:"nearest"});
+  const pt=m.querySelector("#prev-toggle");if(pt)pt.onclick=()=>{essayPrev=!essayPrev;render();};
+  const pc=m.querySelector("#prev-cover");if(pc)pc.onchange=()=>{essayCover=pc.checked;render();};
+  const pb=m.querySelector("#prev-body");if(pb)pb.addEventListener("click",e=>{const hx=e.target.closest(".hx");if(hx&&essayCover){hx.classList.toggle("shown");return;}const oc=e.target.closest("[data-oc]");if(oc){const c=BY.concept[oc.dataset.oc];go("concepts",{s:c.s,ch:c.ch,concept:c.id});}});
   m.querySelector("#show-model").onclick=()=>{showModel[p.id]=!showModel[p.id];if(showModel[p.id]&&S.essays[p.id]){save("essay",true);}render();};
   const ta=m.querySelector("#essay-ta");let t;
   ta.addEventListener("input",()=>{
