@@ -340,19 +340,15 @@ let BANK=null,KW=null,MM=null,SUBJ={},QUIZ_BY={},ESSAY_BY={},CARD_BY={},KW_BY={}
 /* ================= 상태 ================= */
 const BASE="yuah-imyong-v1";
 const PCOLORS=["sun","sky","grass","berry","grape","tang"];
-let PROFILES=[];try{PROFILES=JSON.parse(localStorage.getItem(BASE+":profiles"))||[];}catch(e){}
-if(!PROFILES.length)PROFILES=[{id:"main",name:"관리자",c:"sun",t:Date.now()}];
-let PID="main";try{PID=localStorage.getItem(BASE+":pid")||"main";}catch(e){}
-if(!PROFILES.some(p=>p.id===PID))PID=PROFILES[0].id;
-const keyOf=id=>id==="main"?BASE:BASE+"@"+id;
-let KEY=keyOf(PID);
-function saveProfiles(){try{localStorage.setItem(BASE+":profiles",JSON.stringify(PROFILES));localStorage.setItem(BASE+":pid",PID);}catch(e){}}
-const curProfile=()=>PROFILES.find(p=>p.id===PID)||PROFILES[0];
+const FB_CONFIG={"apiKey": "AIzaSyDtFXzKPCHRbJnQdniJN8AtzlP6mYWciSk", "authDomain": "hapgyeok-note-0925k.firebaseapp.com", "projectId": "hapgyeok-note-0925k", "storageBucket": "hapgyeok-note-0925k.firebasestorage.app", "messagingSenderId": "1018750410558", "appId": "1:1018750410558:web:ca8aea98c6531d12b8966f"};
+const FB_VER="12.19.0";
+let LEGACY=[];try{LEGACY=(JSON.parse(localStorage.getItem(BASE+":profiles"))||[]).filter(p=>p.auth&&p.login);}catch(e){}
+let ME=null,KEY=BASE+":guest";
+const curProfile=()=>ME?{id:ME.uid,name:ME.id,c:ME.c,t:ME.t}:{id:"-",name:"손님",c:"sun",t:Date.now()};
 const blank=()=>({v:2,updatedAt:0,exam:"",newPerDay:20,kwPerDay:20,scope:{s:"",ch:"",g:false},mm:{},cards:{},newLog:{},kw:{},kwNewLog:{},quiz:{},wrong:[],nuri:{},essays:{},log:{},day:{},focus:{}});
 let S=blank();
 function adopt(o){S=Object.assign(blank(),o||{});if(S.v!==2){S.cards={};S.quiz={};S.wrong=[];S.essays={};S.v=2;}}
-try{const raw=localStorage.getItem(KEY);if(raw)adopt(JSON.parse(raw));}catch(e){}
-let remote=null,remoteEss=null,writing=false,dirty=false,essDirty=false,saveTimer=null;
+let saveTimer=null,cloudBusy=false,cloudDirty=false,essDirty=false,cloudState="";
 function today(d=new Date()){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function addDays(ds,n){const d=new Date(ds+"T00:00:00");d.setDate(d.getDate()+n);return today(d)}
 function bump(kind){const t=today();S.log[t]=(S.log[t]||0)+1;if(kind){S.day[t]=S.day[t]||{};S.day[t][kind]=(S.day[t][kind]||0)+1;}}
@@ -361,17 +357,25 @@ function save(kind,ess){
   if(kind)bump(kind===true?null:kind);
   S.updatedAt=Date.now();
   try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
-  dirty=true;if(ess)essDirty=true;clearTimeout(saveTimer);saveTimer=setTimeout(flush,1500);
+  cloudDirty=true;if(ess)essDirty=true;setSync("wait");
+  clearTimeout(saveTimer);saveTimer=setTimeout(cloudFlush,1200);
   renderNav();
 }
-async function flush(){
-  if(!remote||writing||!dirty)return;
-  writing=true;dirty=false;const e=essDirty;essDirty=false;
-  try{const body=Object.assign({},S);delete body.essays;await remote.set(JSON.parse(JSON.stringify(body)));if(e)await remoteEss.set({updatedAt:S.updatedAt,essays:S.essays});}
-  catch(err){if(err&&err.code==="invalid_argument"){remote=null;setSync(false);}}
-  writing=false;if(dirty)flush();
+async function cloudFlush(){
+  if(!FB||!ME||cloudBusy||!cloudDirty)return;
+  cloudBusy=true;cloudDirty=false;const e=essDirty;essDirty=false;
+  try{
+    const body=Object.assign({},S);delete body.essays;
+    await FB.setDoc(FB.doc(FB.db,"users",ME.uid,"data","progress"),{json:JSON.stringify(body),updatedAt:S.updatedAt});
+    if(e)await FB.setDoc(FB.doc(FB.db,"users",ME.uid,"data","essays"),{json:JSON.stringify(S.essays||{}),updatedAt:S.updatedAt});
+    setSync(cloudDirty?"wait":"ok");
+  }catch(err){cloudDirty=true;if(e)essDirty=true;setSync("err");setTimeout(cloudFlush,15000);}
+  cloudBusy=false;if(cloudDirty)setTimeout(cloudFlush,300);
 }
-function setSync(on){return;const el=document.getElementById("sync");el.classList.toggle("on",on);el.querySelector("span").textContent=on?"계정에 저장됨 · 다른 기기에서도 이어서":"이 기기에 저장 중";}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")cloudFlush();});
+function setSync(st){cloudState=st;const el=document.getElementById("cloud");if(!el)return;
+  el.textContent=st==="ok"?"서버에 저장됨":st==="err"?"서버 저장 실패 · 인터넷을 확인해 주세요 (다시 시도 중)":"서버에 저장 중…";
+  el.style.color=st==="err"?"var(--berry-d)":st==="ok"?"var(--grass-d)":"var(--ink-3)";}
 let sampleFn=null;
 
 /* ================= 유틸 ================= */
@@ -866,66 +870,64 @@ function renderSearch(m){
 }
 
 /* ================= 계정 ================= */
-const isAdmin=()=>PID==="main";
-function loadState(id){try{const raw=localStorage.getItem(keyOf(id));return raw?Object.assign(blank(),JSON.parse(raw)):blank();}catch(e){return blank();}}
-function setProfile(id){
-  PID=id;KEY=keyOf(id);saveProfiles();
-  S=blank();try{const raw=localStorage.getItem(KEY);if(raw)adopt(JSON.parse(raw));}catch(e){}
-  try{const v=localStorage.getItem(KEY+":tab");view=VIEWS.includes(v)?v:"home";}catch(e){view="home";}
-}
-function switchProfile(id){
-  setProfile(id);S.wrong=S.wrong.filter(x=>QUIZ_BY[x]);
-  cardQueue=null;kwQueue=null;Q=null;essayId=null;sessionDone=0;kwDone=0;
-  view="home";render();renderTimer();renderBackup();window.scrollTo({top:0});
-  toast(`'${curProfile().name}' 계정으로 들어왔어요`);
-}
-function logout(){try{localStorage.removeItem(BASE+":auto");}catch(e){}location.reload();}
-let pDel=null;
-function pStats(p){const st=p.id===PID?S:loadState(p.id),cards=Object.values(st.cards||{}),kws=Object.values(st.kw||{});
-  return {days:Object.keys(st.log||{}).length,seen:cards.length,cm:cards.filter(x=>x.b>=4).length,km:kws.filter(x=>x.b>=4).length};}
+let pDel=false;
+async function logout(){try{if(FB)await FB.signOut(FB.auth);}catch(e){}try{localStorage.removeItem(BASE+":auto");}catch(e){}location.reload();}
 function renderProfile(m){
   const fmt=t=>{const d=new Date(t);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;};
-  const card=(p,mine)=>{const s=pStats(p);return `<div class="pcard ${p.id===PID?"cur":""}" style="${cvars(p.c||"sun")}">
-      <div class="pn"><span class="dot">${esc((p.name||"?")[0])}</span>${esc(p.name)}${p.id==="main"?` <span class="newtag" style="font-size:13px">관리자</span>`:""}</div>
-      <div class="pst">${p.login?`아이디 ${esc(p.login)} · `:""}만든 날 ${fmt(p.t)}<br>공부한 날 ${s.days}일 · 본 카드 ${s.seen} · 외운 카드 ${s.cm} · 외운 키워드 ${s.km}</div>
-      <div class="row">${p.id===PID?`<span class="newtag" style="font-size:14px">지금 사용 중</span>`:(isAdmin()?`<button class="btn sm sun" data-use="${p.id}">이 계정으로 들어가기</button>`:"")}
-        ${p.id!=="main"&&(isAdmin()||mine)?(pDel===p.id?`<button class="btn sm berry" data-del-ok="${p.id}">정말 지울까요?</button><button class="btn sm soft" data-del-no>취소</button>`:`<button class="btn sm soft" data-del="${p.id}">계정 지우기</button>`):""}</div>
-    </div>`;};
-  const others=PROFILES.filter(p=>p.id!==PID);
-  m.innerHTML=`<div class="head"><div><span class="tagline" style="${cvars("tang")}">나 · 내 계정</span><h2>내 계정</h2><p>계정마다 외운 카드·키워드·퀴즈 기록·오답노트·서답형 답안이 따로 저장돼요. 새로 시작하고 싶으면 새 계정을 만드세요.</p></div>
+  const cards=Object.values(S.cards||{}),kws=Object.values(S.kw||{}),p=curProfile();
+  m.innerHTML=`<div class="head"><div><span class="tagline" style="${cvars("tang")}">나 · 내 계정</span><h2>내 계정</h2><p>기록은 Firebase 서버에 계정별로 저장돼요. 어느 기기에서든 같은 아이디로 로그인하면 이어서 공부할 수 있어요.</p></div>
     <div class="row"><button class="btn sun" id="to-signup">새 계정 만들기</button><button class="btn" id="do-logout">로그아웃</button></div></div>
-  <div class="profiles">${card(curProfile(),true)}</div>
-  ${isAdmin()&&others.length?`<h3 style="font-size:20px">이 기기의 다른 계정 <span class="small">관리자는 모든 계정에 들어갈 수 있어요</span></h3><div class="profiles">${others.map(p=>card(p,false)).join("")}</div>`:""}
-  ${!isAdmin()&&others.length?`<p class="small">이 기기에 계정이 ${PROFILES.length}개 있어요. 다른 계정으로 공부하려면 로그아웃한 뒤 그 계정으로 로그인하세요.</p>`:""}
-  <p class="small">계정은 이 기기(브라우저)에 만들어져요. 휴대폰에서도 같은 계정을 쓰려면 휴대폰에서 같은 아이디로 회원가입한 뒤, 왼쪽 메뉴 아래 '내보내기'로 만든 백업 파일을 '불러오기' 하세요.</p>`;
+  <div class="profiles"><div class="pcard cur" style="${cvars(p.c||"sun")}">
+    <div class="pn"><span class="dot">${esc((p.name||"?")[0])}</span>${esc(p.name)}</div>
+    <div class="pst">아이디 ${esc(p.name)} · 만든 날 ${fmt(p.t)}<br>공부한 날 ${Object.keys(S.log||{}).length}일 · 본 카드 ${cards.length} · 외운 카드 ${cards.filter(x=>x.b>=4).length} · 외운 키워드 ${kws.filter(x=>x.b>=4).length}</div>
+    <div class="small" id="cloud-p"></div>
+    <div class="row">${pDel?`<button class="btn sm berry" id="del-ok">정말 지울까요? 기록이 모두 사라져요</button><button class="btn sm soft" id="del-no">취소</button>`:`<button class="btn sm soft" id="del">계정 지우기</button>`}</div>
+  </div></div>
+  <p class="small">새로 처음부터 공부하고 싶으면 '새 계정 만들기'로 다른 아이디를 만드세요. 지금 계정의 기록은 그대로 남아요.</p>`;
+  const cp=m.querySelector("#cloud-p");if(cp){cp.id="cloud";setSync(cloudState||"ok");}
   m.querySelector("#to-signup").onclick=()=>showLock("signup");
   m.querySelector("#do-logout").onclick=logout;
-  m.querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>switchProfile(b.dataset.use));
-  m.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{pDel=b.dataset.del;render();});
-  m.querySelectorAll("[data-del-no]").forEach(b=>b.onclick=()=>{pDel=null;render();});
-  m.querySelectorAll("[data-del-ok]").forEach(b=>b.onclick=()=>{
-    const id=b.dataset.delOk,wasMe=id===PID;PROFILES=PROFILES.filter(p=>p.id!==id);
-    try{localStorage.removeItem(keyOf(id));localStorage.removeItem(keyOf(id)+":tab");}catch(e){}
-    pDel=null;saveProfiles();toast("계정을 지웠어요");
-    if(wasMe)logout();else render();
-  });
+  const d=m.querySelector("#del");if(d)d.onclick=()=>{pDel=true;render();};
+  const dn=m.querySelector("#del-no");if(dn)dn.onclick=()=>{pDel=false;render();};
+  const dk=m.querySelector("#del-ok");if(dk)dk.onclick=async()=>{
+    dk.disabled=true;dk.textContent="지우는 중…";
+    try{
+      const u=FB.auth.currentUser;
+      await Promise.all(["progress","essays"].map(n=>FB.deleteDoc(FB.doc(FB.db,"users",u.uid,"data",n))));
+      await FB.deleteDoc(FB.doc(FB.db,"users",u.uid));
+      await FB.deleteUser(u);
+      try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+":tab");localStorage.removeItem(BASE+":auto");}catch(e){}
+      location.reload();
+    }catch(e){pDel=false;render();toast(e&&e.code==="auth/requires-recent-login"?"보안을 위해 로그아웃 후 다시 로그인한 뒤 지워 주세요":"지우지 못했어요. 잠시 후 다시 해 주세요");}
+  };
 }
 
-/* ================= 기록 백업 ================= */
+/* ================= 기록 저장 상태 · 백업 ================= */
 function renderBackup(){
   const el=document.getElementById("backup");
-  el.innerHTML=`<div class="small lbl fun">학습 기록 옮기기</div><div class="small">지금 계정(${esc(curProfile().name)})의 기록을 백업 파일로 내보내고, 다른 기기에서 불러올 수 있어요.</div>
-    <div class="row"><button class="btn sm" id="bk-out">내보내기</button><label class="btn sm soft" for="bk-in" style="cursor:pointer">불러오기</label><button class="btn sm soft" id="bk-lock">로그아웃</button><input type="file" id="bk-in" accept=".json,application/json" hidden></div>`;
+  el.innerHTML=`<div class="small lbl fun">내 기록</div><div class="small" id="cloud"></div>
+    <div class="small">공부 기록은 서버에 자동 저장돼요. 파일로도 따로 보관할 수 있어요.</div>
+    <div class="row"><button class="btn sm" id="bk-out">내보내기</button><label class="btn sm soft" for="bk-in" style="cursor:pointer">불러오기</label><input type="file" id="bk-in" accept=".json,application/json" hidden><button class="btn sm soft" id="bk-lock">로그아웃</button></div>`;
+  setSync(cloudState||"ok");
   el.querySelector("#bk-lock").onclick=logout;
   el.querySelector("#bk-out").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download=`유아임용_학습기록_${curProfile().name}_${today()}.json`;document.body.appendChild(a);a.click();a.remove();toast("백업 파일을 저장했어요");};
-  el.querySelector("#bk-in").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||typeof o!=="object"||!o.cards)throw 0;adopt(o);S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(err){}cardQueue=null;kwQueue=null;render();renderTimer();toast("기록을 불러왔어요");}catch(err){toast("이 파일은 학습 기록 백업 파일이 아니에요");}};r.readAsText(f);e.target.value="";};
+  el.querySelector("#bk-in").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||typeof o!=="object"||!o.cards)throw 0;adopt(o);save(null,true);cardQueue=null;kwQueue=null;render();renderTimer();toast("기록을 불러왔어요");}catch(err){toast("이 파일은 학습 기록 백업 파일이 아니에요");}};r.readAsText(f);e.target.value="";};
 }
 
-/* ================= 시작: 로그인 · 회원가입 ================= */
+/* ================= 시작: 로그인 · 회원가입 (Firebase) ================= */
 const b64e=u=>{const a=new Uint8Array(u);let s="";for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode(...a.subarray(i,i+8192));return btoa(s);};
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const norm=s=>String(s||"").trim().normalize("NFC");
-let BLOB=null,RAWKEY=null;
+let BLOB=null,RAWKEY=null,FB=null,CODESLOT=null;
+async function loadFB(){
+  if(FB)return FB;
+  const u=n=>`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${n}.js`;
+  const [app,auth,fs]=await Promise.all([import(u("app")),import(u("auth")),import(u("firestore"))]);
+  const a=app.initializeApp(FB_CONFIG);
+  FB=Object.assign({},auth,fs,{auth:auth.getAuth(a),db:fs.getFirestore(a)});
+  return FB;
+}
+async function emailOf(id){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("hapgyeok:"+id)));return "u"+[...h.slice(0,12)].map(b=>b.toString(16).padStart(2,"0")).join("")+"@hapgyeok-note.app";}
 async function pbk(secret,salt,usage){
   const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),"PBKDF2",false,["deriveKey"]);
   return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},true,usage);
@@ -936,16 +938,16 @@ async function openBlob(key){
   return new Response(new Blob([pt]).stream().pipeThrough(new DecompressionStream("gzip"))).json();
 }
 async function adminRaw(id,pw){const k=await pbk(id+"\n"+pw,new Uint8Array(BLOB).slice(0,16),["decrypt"]);await openBlob(k);return new Uint8Array(await crypto.subtle.exportKey("raw",k));}
-let CODESLOT=null;
 async function codeRaw(code){
   if(!CODESLOT){const r=await fetch("code.json",{cache:"no-cache"});if(!r.ok)throw 0;CODESLOT=await r.json();}
   const w=await pbk("code\n"+code,b64d(CODESLOT.salt),["decrypt"]);
   const raw=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(CODESLOT.iv)},w,b64d(CODESLOT.ct)));
   await openBlob(await keyFromRaw(raw));return raw;
 }
-async function unwrapKey(acc,id,pw){const w=await pbk(id+"\n"+pw,b64d(acc.auth.salt),["decrypt"]);return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(acc.auth.iv)},w,b64d(acc.auth.ct)));}
+async function unwrapKey(wrap,id,pw){const w=await pbk(id+"\n"+pw,b64d(wrap.salt),["decrypt"]);return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(wrap.iv)},w,b64d(wrap.ct)));}
 async function wrapKey(raw,id,pw){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const w=await pbk(id+"\n"+pw,salt,["encrypt"]);const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},w,raw);return{salt:b64e(salt),iv:b64e(iv),ct:b64e(ct)};}
-function persist(pid,keep){try{localStorage.setItem(BASE+":key",b64e(RAWKEY));if(keep)localStorage.setItem(BASE+":auto",pid);else localStorage.removeItem(BASE+":auto");}catch(e){}}
+function persistDevice(keep){try{localStorage.setItem(BASE+":key",b64e(RAWKEY));if(keep)localStorage.setItem(BASE+":auto","1");else localStorage.removeItem(BASE+":auto");}catch(e){}}
+const netMsg=e=>{const c=(e&&e.code)||"";return c.includes("network")?"인터넷 연결을 확인해 주세요.":c.includes("too-many-requests")?"잠시 후 다시 시도해 주세요.":"문제가 생겼어요. 잠시 후 다시 해 주세요.";};
 function start(c){
   document.querySelector(".app").classList.remove("locked");
   if(!BANK){
@@ -959,17 +961,60 @@ function start(c){
   cardQueue=null;kwQueue=null;Q=null;essayId=null;
   renderBackup();render();renderTimer();window.scrollTo({top:0});
 }
-async function enter(pid,raw,keep){
-  RAWKEY=raw;const c=BANK?null:await openBlob(await keyFromRaw(raw));
-  setProfile(pid);persist(pid,keep);start(c);
-  toast(`${curProfile().name}님, 반가워요!`);
+/* 로그인된 Firebase 계정으로 들어가기: 서버 기록과 이 기기 기록 중 최신 것을 사용 */
+async function enterFB(uid,info,raw,keep,migrateKey){
+  ME={uid,id:info.id,c:info.c||"sun",t:info.t||Date.now()};KEY=BASE+"@fb:"+uid;RAWKEY=raw;persistDevice(keep);
+  let local=null;try{local=JSON.parse(localStorage.getItem(KEY)||"null");}catch(e){}
+  if(!local&&migrateKey){try{local=JSON.parse(localStorage.getItem(migrateKey)||"null");}catch(e){}}
+  let cloud=null,cess=null;
+  try{const [p,e]=await Promise.all([FB.getDoc(FB.doc(FB.db,"users",uid,"data","progress")),FB.getDoc(FB.doc(FB.db,"users",uid,"data","essays"))]);
+    if(p.exists())cloud=JSON.parse(p.data().json);if(e.exists())cess=JSON.parse(e.data().json);}catch(e){}
+  S=blank();cloudDirty=false;essDirty=false;
+  if(cloud&&(!local||(cloud.updatedAt||0)>=(local.updatedAt||0))){cloud.essays=cess||(local&&local.essays)||{};adopt(cloud);}
+  else if(local){adopt(local);cloudDirty=true;essDirty=true;}
+  try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
+  try{const v=localStorage.getItem(KEY+":tab");view=VIEWS.includes(v)?v:"home";}catch(e){view="home";}
+  const c=BANK?null:await openBlob(await keyFromRaw(raw));
+  start(c);setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
+  toast(`${ME.id}님, 반가워요!`);
+}
+async function doLogin(id,pw,keep){
+  const fb=await loadFB(),email=await emailOf(id);
+  await fb.setPersistence(fb.auth,keep?fb.browserLocalPersistence:fb.browserSessionPersistence);
+  let cred=null;
+  try{cred=await fb.signInWithEmailAndPassword(fb.auth,email,pw);}
+  catch(e){const c=e.code||"";if(!/invalid-credential|user-not-found|wrong-password|invalid-login|invalid-email/.test(c))throw new Error(netMsg(e));}
+  if(cred){
+    const ref=fb.doc(fb.db,"users",cred.user.uid),snap=await fb.getDoc(ref);let info=snap.exists()?snap.data():null,raw;
+    if(info&&info.wrap)raw=await unwrapKey(info.wrap,id,pw);
+    else{raw=await adminRaw(id,pw);info={id,c:"sun",t:Date.now(),wrap:await wrapKey(raw,id,pw)};await fb.setDoc(ref,info);}
+    return enterFB(cred.user.uid,info,raw,keep,null);
+  }
+  /* 서버에 아직 없는 계정: 관리자 첫 로그인이거나, 이 기기에서 예전에 만든 계정 → 서버로 옮기기 */
+  const legacy=LEGACY.find(p=>p.login===id);let raw;
+  try{raw=legacy?await unwrapKey(legacy.auth,id,pw):await adminRaw(id,pw);}catch(e){throw new Error("아이디 또는 비밀번호가 맞지 않아요.");}
+  if(pw.length<6)throw new Error("비밀번호가 너무 짧아 서버 계정을 만들 수 없어요.");
+  try{cred=await fb.createUserWithEmailAndPassword(fb.auth,email,pw);}catch(e){throw new Error(e.code==="auth/email-already-in-use"?"아이디 또는 비밀번호가 맞지 않아요.":netMsg(e));}
+  const info={id,c:legacy?legacy.c:"sun",t:legacy?legacy.t:Date.now(),wrap:await wrapKey(raw,id,pw)};
+  await fb.setDoc(fb.doc(fb.db,"users",cred.user.uid),info);
+  return enterFB(cred.user.uid,info,raw,keep,legacy?BASE+"@"+legacy.id:BASE);
+}
+async function doSignup(id,pw,code,color,keep){
+  const raw=RAWKEY||await codeRaw(code).catch(()=>{throw new Error("확인 코드가 맞지 않아요.");});
+  const fb=await loadFB();
+  await fb.setPersistence(fb.auth,keep?fb.browserLocalPersistence:fb.browserSessionPersistence);
+  let cred;
+  try{cred=await fb.createUserWithEmailAndPassword(fb.auth,await emailOf(id),pw);}
+  catch(e){throw new Error(e.code==="auth/email-already-in-use"?"이미 있는 아이디예요. 다른 아이디를 정해 주세요.":e.code==="auth/weak-password"?"비밀번호를 6자 이상으로 정해 주세요.":netMsg(e));}
+  const info={id,c:color,t:Date.now(),wrap:await wrapKey(raw,id,pw)};
+  await fb.setDoc(fb.doc(fb.db,"users",cred.user.uid),info);
+  return enterFB(cred.user.uid,info,raw,keep,null);
 }
 const inputCss='class="field"';
 function showLock(mode){
   mode=mode||"login";
   document.querySelector(".app").classList.add("locked");
-  const m=document.getElementById("main"),needAdmin=!RAWKEY;
-  const names=PROFILES.filter(p=>p.login).map(p=>p.login);
+  const m=document.getElementById("main"),needCode=!RAWKEY;
   m.innerHTML=`<form class="lock" id="lock" autocomplete="on">
     <svg width="64" height="64" viewBox="0 0 46 46" style="align-self:center" aria-hidden="true"><circle cx="23" cy="23" r="12" fill="#FFD54F" stroke="#E9AE00" stroke-width="2"/><g stroke="#FF9A3C" stroke-width="3" stroke-linecap="round"><path d="M23 3v5M23 38v5M3 23h5M38 23h5M8.9 8.9l3.5 3.5M33.6 33.6l3.5 3.5M8.9 37.1l3.5-3.5M33.6 12.4l3.5-3.5"/></g><circle cx="19" cy="21" r="1.8" fill="#3B3355"/><circle cx="27" cy="21" r="1.8" fill="#3B3355"/><path d="M18.5 26q4.5 4 9 0" stroke="#3B3355" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     <h2>유아임용 합격노트</h2>
@@ -977,19 +1022,19 @@ function showLock(mode){
     ${mode==="login"?`
       <label for="uid" class="small">아이디</label><input type="text" id="uid" ${inputCss} autocomplete="username" required autofocus>
       <label for="pw" class="small">비밀번호</label><input type="password" id="pw" ${inputCss} autocomplete="current-password" required>
-      ${names.length?`<p class="small" style="margin:0">이 기기의 계정: ${names.map(esc).join(", ")}</p>`:""}`
+      <p class="small" style="margin:0">어느 기기에서든 같은 아이디로 로그인하면 기록이 이어져요.</p>`
     :`
       <p class="small" style="margin:0">새 계정은 기록 없이 처음부터 시작해요.</p>
       <label for="nid" class="small">새 아이디</label><input type="text" id="nid" ${inputCss} autocomplete="username" maxlength="20" required autofocus>
       <label for="npw" class="small">새 비밀번호 (6자 이상)</label><input type="password" id="npw" ${inputCss} autocomplete="new-password" minlength="6" required>
       <label for="npw2" class="small">새 비밀번호 확인</label><input type="password" id="npw2" ${inputCss} autocomplete="new-password" minlength="6" required>
-      <span class="row" style="gap:6px;justify-content:center">${PCOLORS.map((c,i)=>`<label style="cursor:pointer" aria-label="${c}"><input type="radio" name="pcol" value="${c}" ${i===PROFILES.length%PCOLORS.length?"checked":""} style="position:absolute;opacity:0"><span class="pcolor" style="display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--${c})"></span></label>`).join("")}</span>
-      ${needAdmin?`<div class="adm"><b class="fun">확인 코드</b><span class="small">이 기기(브라우저)에서 처음 가입할 때만 필요해요. 그다음부터는 이 기기에서 코드 없이 바로 가입돼요.</span>
+      <span class="row" style="gap:6px;justify-content:center">${PCOLORS.map((c,i)=>`<label style="cursor:pointer" aria-label="${c}"><input type="radio" name="pcol" value="${c}" ${i===1?"checked":""} style="position:absolute;opacity:0"><span class="pcolor" style="display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--${c})"></span></label>`).join("")}</span>
+      ${needCode?`<div class="adm"><b class="fun">확인 코드</b><span class="small">이 기기(브라우저)에서 처음 가입할 때만 필요해요. 그다음부터는 이 기기에서 코드 없이 바로 가입돼요.</span>
         <label for="vcode" class="small">확인 코드</label><input type="password" id="vcode" ${inputCss} inputmode="numeric" autocomplete="off" required></div>`:`<p class="small" style="margin:0">인증된 기기라 바로 가입할 수 있어요.</p>`}`}
     <label class="check" style="justify-content:center"><input type="checkbox" id="remember" checked> 이 기기에서 자동 로그인</label>
     <p class="err" id="err"></p>
     <button class="btn sun" id="go-btn" type="submit">${mode==="login"?"로그인":"가입하고 시작하기"}</button>
-    ${BANK?`<button class="btn soft" type="button" id="back">돌아가기</button>`:""}
+    ${BANK&&ME?`<button class="btn soft" type="button" id="back">돌아가기</button>`:""}
   </form>`;
   const paint=()=>m.querySelectorAll(".pcolor").forEach(s=>{s.style.boxShadow=s.previousElementSibling.checked?"0 0 0 2px var(--paper),0 0 0 4px var(--ink)":"none";});
   paint();m.querySelectorAll("input[name=pcol]").forEach(r=>r.onchange=paint);
@@ -1000,24 +1045,19 @@ function showLock(mode){
     const btn=m.querySelector("#go-btn"),err=m.querySelector("#err"),keep=m.querySelector("#remember").checked,label=btn.textContent;
     const fail=msg=>{btn.disabled=false;btn.textContent=label;err.textContent=msg;};
     btn.disabled=true;btn.textContent="잠시만요…";err.textContent="";
-    if(mode==="login"){
-      const id=norm(m.querySelector("#uid").value),pw=m.querySelector("#pw").value;
-      const acc=PROFILES.find(p=>p.auth&&p.login===id);
-      try{const raw=acc?await unwrapKey(acc,id,pw):await adminRaw(id,pw);await enter(acc?acc.id:"main",raw,keep);}
-      catch(x){fail("아이디 또는 비밀번호가 맞지 않아요.");}
-    }else{
-      const id=norm(m.querySelector("#nid").value),pw=m.querySelector("#npw").value,pw2=m.querySelector("#npw2").value;
-      if(!id)return fail("새 아이디를 넣어 주세요.");
-      if(id==="관리자"||PROFILES.some(p=>p.login===id||p.name===id))return fail("이미 있는 아이디예요. 다른 아이디를 정해 주세요.");
-      if(pw.length<6)return fail("비밀번호는 6자 이상으로 정해 주세요.");
-      if(pw!==pw2)return fail("두 비밀번호가 달라요.");
-      let raw=RAWKEY;
-      if(!raw){try{raw=await codeRaw(norm(m.querySelector("#vcode").value));}catch(x){return fail("확인 코드가 맞지 않아요.");}}
-      const c=(m.querySelector("input[name=pcol]:checked")||{}).value||"sky";
-      const pid="u"+Date.now().toString(36);
-      PROFILES.push({id:pid,name:id,login:id,c,t:Date.now(),auth:await wrapKey(raw,id,pw)});saveProfiles();
-      await enter(pid,raw,keep);
-    }
+    try{
+      if(mode==="login"){
+        await doLogin(norm(m.querySelector("#uid").value),m.querySelector("#pw").value,keep);
+      }else{
+        const id=norm(m.querySelector("#nid").value),pw=m.querySelector("#npw").value,pw2=m.querySelector("#npw2").value;
+        if(!id)return fail("새 아이디를 넣어 주세요.");
+        if(id==="관리자")return fail("이 아이디는 쓸 수 없어요. 다른 아이디를 정해 주세요.");
+        if(pw.length<6)return fail("비밀번호는 6자 이상으로 정해 주세요.");
+        if(pw!==pw2)return fail("두 비밀번호가 달라요.");
+        const code=needCode?norm(m.querySelector("#vcode").value):"";
+        await doSignup(id,pw,code,(m.querySelector("input[name=pcol]:checked")||{}).value||"sky",keep);
+      }
+    }catch(x){fail((x&&x.message)||"문제가 생겼어요. 다시 해 주세요.");}
   });
 }
 (async()=>{
@@ -1025,12 +1065,17 @@ function showLock(mode){
   if(!window.crypto||!crypto.subtle||!window.DecompressionStream){document.getElementById("main").innerHTML=`<div class="box empty"><div class="big">브라우저가 오래됐어요</div><p class="muted" style="margin:0">최신 크롬·사파리·엣지에서 열어 주세요.</p></div>`;return;}
   try{const r=await fetch("content.bin",{cache:"no-cache"});if(!r.ok)throw 0;BLOB=await r.arrayBuffer();}
   catch(e){document.getElementById("main").innerHTML=`<div class="box empty"><div class="big">자료를 못 불러왔어요</div><p class="muted" style="margin:0">인터넷 연결을 확인하고 새로 고쳐 주세요.</p></div>`;return;}
-  let saved=null,auto=null;try{saved=localStorage.getItem(BASE+":key");auto=localStorage.getItem(BASE+":auto");if(saved&&auto===null&&!localStorage.getItem(BASE+":v2"))auto="main";localStorage.setItem(BASE+":v2","1");}catch(e){}
+  let saved=null,auto=null;try{saved=localStorage.getItem(BASE+":key");auto=localStorage.getItem(BASE+":auto");}catch(e){}
   if(saved){
-    try{const raw=b64d(saved);const key=await keyFromRaw(raw);
-      if(auto&&PROFILES.some(p=>p.id===auto)){const c=await openBlob(key);RAWKEY=raw;setProfile(auto);start(c);return;}
-      await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(BLOB).slice(16,28)},key,new Uint8Array(BLOB).slice(28));RAWKEY=raw;}
-    catch(e){RAWKEY=null;try{localStorage.removeItem(BASE+":key");}catch(x){}}
+    try{const raw=b64d(saved);await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(BLOB).slice(16,28)},await keyFromRaw(raw),new Uint8Array(BLOB).slice(28));RAWKEY=raw;}
+    catch(e){try{localStorage.removeItem(BASE+":key");}catch(x){}}
+  }
+  if(RAWKEY&&auto){
+    try{
+      const fb=await loadFB();
+      const user=await new Promise(res=>{const off=fb.onAuthStateChanged(fb.auth,u=>{off();res(u);});});
+      if(user){const snap=await fb.getDoc(fb.doc(fb.db,"users",user.uid));if(snap.exists()){await enterFB(user.uid,snap.data(),RAWKEY,true,null);return;}}
+    }catch(e){}
   }
   showLock("login");
 })();
