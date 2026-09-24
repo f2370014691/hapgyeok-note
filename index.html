@@ -45,6 +45,19 @@ h1,h2,h3,h4{font-family:var(--f-fun);font-weight:400;margin:0;line-height:1.3;te
 /* 제목은 강원교육모두 Bold */
 h1,h2,h3,h4,.brand b,.nav,.navgrp,.btn,.chip,.tagline,.step .no,.kwhead,.flash .front,.q,.mmroot,.br>.bt,.kwitem .h,.big,.stat .v,.dday .big,.zone h4{font-family:var(--f-title)}
 
+/* ---------- 학습 계정 ---------- */
+.profiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.pcard{background:var(--paper);border:2px solid var(--c);border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 0 var(--c)}
+.pcard.cur{background:var(--c-s)}
+.pcard .pn{font-family:var(--f-title);font-size:22px;display:flex;align-items:center;gap:10px}
+.pcard .dot{width:34px;height:34px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-size:17px;flex:0 0 auto}
+.pcard .pst{font-size:14px;color:var(--ink-2)}
+.pnew{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pnew input[type=text]{flex:1 1 200px;min-width:0;padding:10px 14px;border:2px solid var(--line-2);border-radius:14px;font-size:17px;background:var(--paper)}
+.who{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2);padding:2px 8px}
+.who b{font-family:var(--f-title);font-weight:400;color:var(--ink)}
+@media (max-width:980px){.profiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.profiles{grid-template-columns:minmax(0,1fr)}}
 /* ---------- 잠금 화면 ---------- */
 .app.locked{grid-template-columns:minmax(0,1fr)}
 .app.locked .side{display:none}
@@ -289,6 +302,7 @@ mark{background:var(--sun);color:var(--ink);border-radius:4px;padding:0 2px}
         <div><b>유아임용 합격노트</b><small>매일 조금씩, 꼭 붙는 공부</small></div>
       </div>
     </div>
+    <div class="who" id="who"></div>
     <nav class="navbox" id="nav" aria-label="학습 메뉴"></nav>
     <div class="timer" id="timer"></div>
     <div class="timer" id="backup"></div>
@@ -321,7 +335,16 @@ const scol=s=>cvars(SCOLOR[s]||"sky");
 let BANK=null,KW=null,MM=null,SUBJ={},QUIZ_BY={},ESSAY_BY={},CARD_BY={},KW_BY={};
 
 /* ================= 상태 ================= */
-const KEY="yuah-imyong-v1";
+const BASE="yuah-imyong-v1";
+const PCOLORS=["sun","sky","grass","berry","grape","tang"];
+let PROFILES=[];try{PROFILES=JSON.parse(localStorage.getItem(BASE+":profiles"))||[];}catch(e){}
+if(!PROFILES.length)PROFILES=[{id:"main",name:"관리자",c:"sun",t:Date.now()}];
+let PID="main";try{PID=localStorage.getItem(BASE+":pid")||"main";}catch(e){}
+if(!PROFILES.some(p=>p.id===PID))PID=PROFILES[0].id;
+const keyOf=id=>id==="main"?BASE:BASE+"@"+id;
+let KEY=keyOf(PID);
+function saveProfiles(){try{localStorage.setItem(BASE+":profiles",JSON.stringify(PROFILES));localStorage.setItem(BASE+":pid",PID);}catch(e){}}
+const curProfile=()=>PROFILES.find(p=>p.id===PID)||PROFILES[0];
 const blank=()=>({v:2,updatedAt:0,exam:"",newPerDay:20,kwPerDay:20,scope:{s:"",ch:"",g:false},mm:{},cards:{},newLog:{},kw:{},kwNewLog:{},quiz:{},wrong:[],nuri:{},essays:{},log:{},day:{},focus:{}});
 let S=blank();
 function adopt(o){S=Object.assign(blank(),o||{});if(S.v!==2){S.cards={};S.quiz={};S.wrong=[];S.essays={};S.v=2;}}
@@ -405,7 +428,7 @@ const MENU=[
   ["오늘",[["home","오늘의 코스","sun","★"]]],
   ["외우기",[["kw","키워드 학습","grape","K"],["cards","암기 카드","sky","A"],["mind","마인드맵","grass","M"],["nuri","누리과정 노트","tang","N"]]],
   ["확인하기",[["quiz","객관식 퀴즈","sky","Q"],["essay","기출 서답형","berry","✎"],["wrong","오답노트","berry","!"]]],
-  ["찾기",[["search","찾아보기","grape","?"]]]
+  ["찾기·나",[["search","찾아보기","grape","?"],["profile","학습 계정","tang","나"]]]
 ];
 const VIEWS=MENU.flatMap(g=>g[1].map(x=>x[0]));
 let view="home";
@@ -413,6 +436,8 @@ try{const h=location.hash.slice(1);if(VIEWS.includes(h))view=h;else{const v=loca
 function go(v){view=v;try{localStorage.setItem(KEY+":tab",v)}catch(e){}render();window.scrollTo({top:0});}
 function renderNav(){
   if(!BANK)return;
+  const cp=curProfile(),w=document.getElementById("who");
+  if(w)w.innerHTML=`지금 계정 <b>${esc(cp.name)}</b> <button class="btn sm soft" data-go="profile">바꾸기</button>`;
   const cardsTodo=dueOf(BANK.cards,"cards",()=>true).length;
   const kwTodo=dueOf(KW,"kw",()=>true).length;
   document.getElementById("nav").innerHTML=MENU.map(([g,items])=>`<div class="navgrp">${g}</div>`+items.map(([id,name,c,ic])=>{
@@ -423,7 +448,7 @@ document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g
 function render(){
   renderNav();
   const m=document.getElementById("main");
-  ({home:renderHome,kw:renderKw,cards:renderCards,mind:renderMind,nuri:renderNuri,quiz:renderQuiz,essay:renderEssay,wrong:renderWrong,search:renderSearch})[view](m);
+  ({home:renderHome,kw:renderKw,cards:renderCards,mind:renderMind,nuri:renderNuri,quiz:renderQuiz,essay:renderEssay,wrong:renderWrong,search:renderSearch,profile:renderProfile})[view](m);
 }
 
 /* ================= 집중 타이머 ================= */
@@ -837,13 +862,62 @@ function renderSearch(m){
   run();inp.focus();
 }
 
+/* ================= 학습 계정 ================= */
+function loadState(id){try{const raw=localStorage.getItem(keyOf(id));return raw?Object.assign(blank(),JSON.parse(raw)):blank();}catch(e){return blank();}}
+function switchProfile(id){
+  PID=id;KEY=keyOf(id);saveProfiles();
+  S=blank();try{const raw=localStorage.getItem(KEY);if(raw)adopt(JSON.parse(raw));}catch(e){}
+  S.wrong=S.wrong.filter(x=>QUIZ_BY[x]);
+  cardQueue=null;kwQueue=null;Q=null;essayId=null;sessionDone=0;kwDone=0;
+  view="home";render();renderTimer();renderBackup();window.scrollTo({top:0});
+  toast(`'${curProfile().name}' 계정으로 공부해요`);
+}
+let pDel=null,pRen=null;
+function renderProfile(m){
+  const fmt=t=>{const d=new Date(t);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;};
+  m.innerHTML=`<div class="head"><div><span class="tagline" style="${cvars("tang")}">나 · 학습 계정 ${PROFILES.length}개</span><h2>학습 계정</h2><p>같은 자료를 계정마다 따로, 처음부터 새로 공부할 수 있어요. 외운 카드·키워드·퀴즈 기록·오답노트·서답형 답안이 계정마다 따로 저장돼요.</p></div></div>
+  <div class="profiles">${PROFILES.map(p=>{
+    const st=p.id===PID?S:loadState(p.id),cards=Object.values(st.cards||{}),kws=Object.values(st.kw||{});
+    const days=Object.keys(st.log||{}).length,cm=cards.filter(x=>x.b>=4).length,km=kws.filter(x=>x.b>=4).length;
+    return `<div class="pcard ${p.id===PID?"cur":""}" style="${cvars(p.c||"sun")}">
+      <div class="pn"><span class="dot">${esc((p.name||"?")[0])}</span>${pRen===p.id?`<input type="text" id="ren-in" value="${esc(p.name)}" maxlength="20" style="flex:1;min-width:0;padding:4px 10px;border:2px solid var(--line-2);border-radius:10px;font-size:17px">`:esc(p.name)}</div>
+      <div class="pst">만든 날 ${fmt(p.t)} · 공부한 날 ${days}일<br>본 카드 ${cards.length} · 외운 카드 ${cm} · 외운 키워드 ${km}</div>
+      <div class="row">${p.id===PID?`<span class="newtag" style="font-size:14px">지금 사용 중</span>`:`<button class="btn sm sun" data-use="${p.id}">이 계정으로 공부</button>`}
+        ${pRen===p.id?`<button class="btn sm" data-ren-ok="${p.id}">저장</button>`:`<button class="btn sm soft" data-ren="${p.id}">이름 바꾸기</button>`}
+        ${PROFILES.length>1?(pDel===p.id?`<button class="btn sm berry" data-del-ok="${p.id}">정말 지울까요?</button><button class="btn sm soft" data-del-no>취소</button>`:`<button class="btn sm soft" data-del="${p.id}">지우기</button>`):""}</div>
+    </div>`;}).join("")}</div>
+  <div class="box" style="display:flex;flex-direction:column;gap:12px"><h3>새 학습 계정 만들기</h3>
+    <p class="small" style="margin:0">예: "2회차", "시험 한 달 전", "각론 집중". 새 계정은 아무 기록 없이 처음부터 시작해요. 지금 계정의 기록은 그대로 남아요.</p>
+    <form class="pnew" id="pnew"><label for="pname" class="small">계정 이름</label><input type="text" id="pname" maxlength="20" placeholder="계정 이름" required>
+      <span class="row" style="gap:6px">${PCOLORS.map((c,i)=>`<label style="cursor:pointer"><input type="radio" name="pcol" value="${c}" ${i===PROFILES.length%PCOLORS.length?"checked":""} style="position:absolute;opacity:0"><span class="pcolor" style="display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--${c});box-shadow:0 0 0 2px var(--paper),0 0 0 4px transparent"></span></label>`).join("")}</span>
+      <button class="btn sun" type="submit">만들고 시작하기</button></form>
+  </div>
+  <p class="small">학습 계정은 이 기기(브라우저)에 저장돼요. 다른 기기로 옮기려면 왼쪽 메뉴 아래 '내보내기'로 계정별 백업 파일을 만들어 그 기기의 같은 이름 계정에서 '불러오기' 하세요.</p>`;
+  const paint=()=>m.querySelectorAll(".pcolor").forEach(s=>{s.style.boxShadow=s.previousElementSibling.checked?"0 0 0 2px var(--paper),0 0 0 4px var(--ink)":"0 0 0 2px var(--paper),0 0 0 4px transparent";});
+  paint();m.querySelectorAll("input[name=pcol]").forEach(r=>r.onchange=paint);
+  m.querySelector("#pnew").addEventListener("submit",e=>{
+    e.preventDefault();const name=m.querySelector("#pname").value.trim();if(!name)return;
+    const c=(m.querySelector("input[name=pcol]:checked")||{}).value||"sky";
+    const id="p"+Date.now().toString(36);PROFILES.push({id,name,c,t:Date.now()});saveProfiles();switchProfile(id);
+  });
+  m.querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>switchProfile(b.dataset.use));
+  m.querySelectorAll("[data-ren]").forEach(b=>b.onclick=()=>{pRen=b.dataset.ren;pDel=null;render();const i=document.getElementById("ren-in");if(i){i.focus();i.select();}});
+  m.querySelectorAll("[data-ren-ok]").forEach(b=>b.onclick=()=>{const v=(document.getElementById("ren-in")||{}).value;const p=PROFILES.find(x=>x.id===b.dataset.renOk);if(p&&v&&v.trim())p.name=v.trim().slice(0,20);pRen=null;saveProfiles();render();});
+  m.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{pDel=b.dataset.del;pRen=null;render();});
+  m.querySelectorAll("[data-del-no]").forEach(b=>b.onclick=()=>{pDel=null;render();});
+  m.querySelectorAll("[data-del-ok]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.delOk;PROFILES=PROFILES.filter(p=>p.id!==id);try{localStorage.removeItem(keyOf(id));localStorage.removeItem(keyOf(id)+":tab");}catch(e){}
+    pDel=null;if(id===PID)switchProfile(PROFILES[0].id);else{saveProfiles();render();}toast("계정을 지웠어요");
+  });
+}
+
 /* ================= 기록 백업 ================= */
 function renderBackup(){
   const el=document.getElementById("backup");
-  el.innerHTML=`<div class="small lbl fun">학습 기록 옮기기</div><div class="small">기록은 이 기기에 저장돼요. 다른 기기로 옮길 땐 백업 파일을 내보내서 그 기기에서 불러오세요.</div>
+  el.innerHTML=`<div class="small lbl fun">학습 기록 옮기기</div><div class="small">지금 계정(${esc(curProfile().name)})의 기록을 백업 파일로 내보내고, 다른 기기에서 불러올 수 있어요.</div>
     <div class="row"><button class="btn sm" id="bk-out">내보내기</button><label class="btn sm soft" for="bk-in" style="cursor:pointer">불러오기</label><button class="btn sm soft" id="bk-lock">잠그기</button><input type="file" id="bk-in" accept=".json,application/json" hidden></div>`;
   el.querySelector("#bk-lock").onclick=lockNow;
-  el.querySelector("#bk-out").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download=`유아임용_학습기록_${today()}.json`;document.body.appendChild(a);a.click();a.remove();toast("백업 파일을 저장했어요");};
+  el.querySelector("#bk-out").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download=`유아임용_학습기록_${curProfile().name}_${today()}.json`;document.body.appendChild(a);a.click();a.remove();toast("백업 파일을 저장했어요");};
   el.querySelector("#bk-in").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||typeof o!=="object"||!o.cards)throw 0;adopt(o);S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(err){}cardQueue=null;kwQueue=null;render();renderTimer();toast("기록을 불러왔어요");}catch(err){toast("이 파일은 학습 기록 백업 파일이 아니에요");}};r.readAsText(f);e.target.value="";};
 }
 
@@ -867,6 +941,7 @@ function start(c){
   d.cards.forEach(x=>CARD_BY[x.id]=x);d.quiz.forEach(q=>QUIZ_BY[q.id]=q);d.essays.forEach(x=>ESSAY_BY[x.id]=x);k.forEach(x=>KW_BY[x.id]=x);
   S.wrong=S.wrong.filter(id=>QUIZ_BY[id]);
   if(S.scope.s&&!SUBJ[S.scope.s])S.scope={s:"",ch:"",g:false};
+  saveProfiles();if(PROFILES.length>1)view="profile";
   renderBackup();render();renderTimer();
 }
 function showLock(msg){
@@ -890,21 +965,21 @@ function showLock(msg){
     try{
       const key=await deriveKey(pw,new Uint8Array(BLOB).slice(0,16),true);
       const c=await openBlob(key);
-      if(remember){try{localStorage.setItem(KEY+":key",b64e(await crypto.subtle.exportKey("raw",key)));}catch(x){}}
+      if(remember){try{localStorage.setItem(BASE+":key",b64e(await crypto.subtle.exportKey("raw",key)));}catch(x){}}
       start(c);
     }catch(x){btn.disabled=false;btn.textContent="열기";err.textContent="아이디 또는 비밀번호가 맞지 않아요. 다시 넣어 주세요.";m.querySelector("#pw").select();}
   });
 }
-function lockNow(){try{localStorage.removeItem(KEY+":key");}catch(e){}location.reload();}
+function lockNow(){try{localStorage.removeItem(BASE+":key");}catch(e){}location.reload();}
 (async()=>{
   renderTimer();
   if(!window.crypto||!crypto.subtle||!window.DecompressionStream){document.getElementById("main").innerHTML=`<div class="box empty"><div class="big">브라우저가 오래됐어요</div><p class="muted" style="margin:0">최신 크롬·사파리·엣지에서 열어 주세요.</p></div>`;return;}
   try{const r=await fetch("content.bin",{cache:"no-cache"});if(!r.ok)throw 0;BLOB=await r.arrayBuffer();}
   catch(e){document.getElementById("main").innerHTML=`<div class="box empty"><div class="big">자료를 못 불러왔어요</div><p class="muted" style="margin:0">인터넷 연결을 확인하고 새로 고쳐 주세요.</p></div>`;return;}
-  let saved=null;try{saved=localStorage.getItem(KEY+":key");}catch(e){}
+  let saved=null;try{saved=localStorage.getItem(BASE+":key");}catch(e){}
   if(saved){
     try{const key=await crypto.subtle.importKey("raw",b64d(saved),"AES-GCM",false,["decrypt"]);return start(await openBlob(key));}
-    catch(e){try{localStorage.removeItem(KEY+":key");}catch(x){}}
+    catch(e){try{localStorage.removeItem(BASE+":key");}catch(x){}}
   }
   showLock();
 })();
