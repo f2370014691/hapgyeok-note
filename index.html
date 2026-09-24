@@ -380,6 +380,13 @@ table.study td .ans{display:block;font-size:13px;color:var(--grass-d);margin-top
 /* 서답형 앞 내용 */
 .prev{background:var(--ground);border:2px dashed var(--line-2);border-radius:16px;padding:10px 14px}
 .prev.folded{padding:8px 14px}
+
+/* 기출 원문 이미지 */
+.qwrap{display:flex;flex-direction:column;gap:8px;border:2px solid var(--line);border-radius:16px;padding:10px;background:#fff;overflow:auto}
+.qimg{display:block;width:100%;height:auto;max-width:100%;border-radius:8px}
+.qimg.loading{min-height:120px;background:repeating-linear-gradient(90deg,var(--ground) 0 20px,var(--paper) 20px 40px)}
+.ansbox{display:flex;flex-direction:column;gap:8px;border:2px dashed var(--grass);border-radius:16px;padding:10px;background:#fff;overflow:auto}
+.anspage{border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -416,7 +423,8 @@ const scol=s=>cvars(SCOLOR[s]||"sky");
 let D=null,SUBJ={},BY={};  // BY: 종류별 id → 항목
 function indexData(d){
   D=d;SUBJ={};d.subjects.forEach(s=>SUBJ[s.id]=s);
-  BY={concept:{},card:{},quiz:{},essay:{},table:{},notice:{},kw:{},mm:{}};
+  BY={concept:{},card:{},quiz:{},essay:{},table:{},notice:{},kw:{},mm:{},gichul:{}};
+  d.gichul=d.gichul||[];d.gichulAns=d.gichulAns||{};d.gichul.forEach(x=>BY.gichul[x.id]=x);
   d.concepts.forEach(x=>BY.concept[x.id]=x);d.cards.forEach(x=>BY.card[x.id]=x);d.quiz.forEach(x=>BY.quiz[x.id]=x);
   d.essays.forEach(x=>BY.essay[x.id]=x);d.tables.forEach(x=>BY.table[x.id]=x);d.notice.forEach(x=>BY.notice[x.id]=x);
   d.kwsets.forEach(x=>BY.kw[x.id]=x);d.mindmaps.forEach(x=>BY.mm[x.id]=x);
@@ -548,7 +556,7 @@ const MENU=[
   ["오늘",[["home","오늘의 코스","sun","★"],["weak","약점 복습","berry","!"]]],
   ["구조 잡기",[["concepts","개념 지도","sky","지"],["mind","마인드맵","grass","M"]]],
   ["외우기",[["kw","키워드 떠올리기","grape","K"],["tables","단계·비교표","tang","표"],["notice","고시문 암기","sun","고"],["cards","암기 카드","sky","A"]]],
-  ["확인하기",[["quiz","퀴즈","sun","Q"],["essay","기출 서답형","berry","✎"]]],
+  ["확인하기",[["quiz","퀴즈","sun","Q"],["gichul","기출 원문","berry","시"],["essay","기출 서답형","berry","✎"]]],
   ["나",[["stats","진도 분석","grass","%"],["search","찾아보기","grape","?"],["profile","내 계정","tang","나"]]]
 ];
 const VIEWS=MENU.flatMap(g=>g[1].map(x=>x[0]));
@@ -1090,6 +1098,67 @@ function printMaps(kind,mp){
   else{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));a.download=title.replace(/[\\/:*?"<>|]/g," ")+".html";document.body.appendChild(a);a.click();a.remove();toast("팝업이 막혀서 파일로 저장했어요");}
 }
 
+/* ================= 기출 원문 (시험지 지문·그림 그대로) ================= */
+const QIMG={};  // 경로 → blob URL (복호화 결과 캐시)
+let IMGKEY=null;
+async function qimgURL(path){
+  if(QIMG[path])return QIMG[path];
+  if(!IMGKEY){IMGKEY=await crypto.subtle.importKey("raw",b64d(D.imgkey),"AES-GCM",false,["decrypt"]);}
+  const r=await fetch("q/"+path+".bin",{cache:"force-cache"});if(!r.ok)throw new Error("이미지를 불러오지 못했어요");
+  const b=new Uint8Array(await r.arrayBuffer());
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b.slice(0,12)},IMGKEY,b.slice(12));
+  return QIMG[path]=URL.createObjectURL(new Blob([pt],{type:"image/webp"}));
+}
+function imgTag(path,alt,cls){
+  const id="im"+Math.random().toString(36).slice(2,8);
+  qimgURL(path).then(u=>{const el=document.getElementById(id);if(el){el.src=u;el.classList.remove("loading");}}).catch(()=>{const el=document.getElementById(id);if(el)el.alt="이미지를 불러오지 못했어요";});
+  return `<img id="${id}" class="qimg loading ${cls||""}" alt="${esc(alt||"")}" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">`;
+}
+let gqSubj=null,gqUnit="",gqId=null,gqAns=false,gqModel=false,gqYear="";
+const gqKey=id=>"gq:"+id;
+VIEWFN.gichul=function(m){
+  const subs=D.subjects.filter(s=>D.gichul.some(x=>x.s===s.id));
+  if(!subs.length){m.innerHTML=head("확인하기","berry","기출 원문","기출 이미지가 아직 없어요.");return;}
+  if(!gqSubj||!subs.some(s=>s.id===gqSubj))gqSubj=(S.scope.s&&subs.some(s=>s.id===S.scope.s))?S.scope.s:subs[0].id;
+  const all=D.gichul.filter(x=>x.s===gqSubj),units=[...new Set(all.map(x=>x.unit).filter(Boolean))];
+  const years=[...new Set(all.map(x=>x.exam.slice(0,4)))].sort();
+  const list=all.filter(x=>(!gqUnit||x.unit===gqUnit)&&(!gqYear||x.exam.startsWith(gqYear)));
+  if(!list.some(x=>x.id===gqId))gqId=list[0]?list[0].id:null;
+  const g=gqId?BY.gichul[gqId]:null,idx=list.findIndex(x=>x.id===gqId);
+  const done=id=>!!S.essays[gqKey(id)];
+  const rel=g?(g.essays||[]).map(id=>BY.essay[id]).filter(Boolean):[];
+  m.innerHTML=head("확인하기 · 시험지 그대로","berry","기출 원문","실제 시험지의 지문·그림·발문을 그대로 보고 답을 써요. 답을 쓴 뒤 '답안 보기'로 확인하세요.",
+    `<span class="small">${esc(subjName(gqSubj))} ${all.length}문항 · 쓴 답 ${all.filter(x=>done(x.id)).length}개</span>`)+
+  `<div class="scope"><label class="l" for="gq-s">과목</label><select id="gq-s">${["개론","각론"].map(gr=>`<optgroup label="${gr}">${subs.filter(s=>s.group===gr).map(s=>`<option value="${s.id}" ${s.id===gqSubj?"selected":""}>${esc(s.name)} (${D.gichul.filter(x=>x.s===s.id).length})</option>`).join("")}</optgroup>`).join("")}</select>
+    <label class="l" for="gq-u">단원</label><select id="gq-u" style="max-width:min(320px,100%)"><option value="">전체 단원</option>${units.map(u=>`<option ${u===gqUnit?"selected":""}>${esc(u)}</option>`).join("")}</select>
+    <label class="l" for="gq-y">연도</label><select id="gq-y"><option value="">전체</option>${years.map(y=>`<option ${y===gqYear?"selected":""}>${y}</option>`).join("")}</select>
+    <span class="small" style="margin-left:auto">${list.length}문항</span></div>
+  ${g?`<div class="cgrid"><div class="clist">${list.map(x=>`<button class="pick" data-gq="${x.id}" aria-pressed="${x.id===gqId}"><span>${esc(x.exam)}<small>${esc(x.unit||"")}</small></span>${done(x.id)?`<span class="ok">✓</span>`:""}</button>`).join("")}</div>
+    <div class="qbox" style="display:flex;flex-direction:column;gap:14px;${scol(g.s)}">
+      <div class="row" style="justify-content:space-between"><b class="fun" style="font-size:22px">${esc(g.exam)}</b><span class="small">${esc(g.unit||"")} · 기출분석 p.${g.page}</span></div>
+      <div class="qwrap">${[g.file].concat(g.more||[]).map((f,i)=>imgTag(f,g.exam+(i?" 이어서":" 시험지"))).join("")}</div>
+      <textarea id="gq-ta" placeholder="답을 써 보세요 (예: ㉠ 근접발달지대, ㉡ 비계설정)">${esc(S.essays[gqKey(g.id)]||"")}</textarea>
+      <div class="row" style="justify-content:space-between"><span class="row"><button class="btn sm soft" id="gq-prev" ${idx>0?"":"disabled"}>이전</button><button class="btn sm soft" id="gq-next" ${idx<list.length-1?"":"disabled"}>다음 <kbd>Enter</kbd></button></span>
+        <span class="row">${rel.length?`<button class="btn grass" id="gq-model">${gqModel?"모범답안 숨기기":`모범답안 보기 (${rel.length})`}</button>`:""}${(D.gichulAns[g.s]||[]).length?`<button class="btn" id="gq-ans">${gqAns?"답안지 닫기":"답안지 보기"}</button>`:""}</span></div>
+      ${gqModel&&rel.length?rel.map(e=>`<div class="model"><div class="small">${esc(e.ch)} ${gtag(e.g)}</div><div style="white-space:pre-line;margin:4px 0">${esc(e.q)}</div><b>답:</b> ${esc(e.ans)}${e.kw.length?`<div class="kws" style="margin-top:6px">${e.kw.map(k=>`<span class="kw hit">${esc(k)}</span>`).join("")}</div>`:""}</div>`).join(""):""}
+      ${gqAns?`<div class="ansbox"><div class="small">답안지 · 표의 '쪽수'가 기출분석 페이지(p.${g.page}) 번호예요.</div>${(D.gichulAns[g.s]||[]).map(a=>imgTag(a.file,"답안지 "+a.page,"anspage")).join("")}</div>`:""}
+    </div></div>`:empty("문항이 없어요","단원이나 연도를 바꿔 보세요.")}`;
+  m.querySelector("#gq-s").onchange=e=>{gqSubj=e.target.value;gqUnit="";gqYear="";gqId=null;gqAns=false;gqModel=false;render();};
+  m.querySelector("#gq-u").onchange=e=>{gqUnit=e.target.value;gqId=null;render();};
+  m.querySelector("#gq-y").onchange=e=>{gqYear=e.target.value;gqId=null;render();};
+  m.querySelectorAll("[data-gq]").forEach(b=>b.onclick=()=>{gqId=b.dataset.gq;gqAns=false;gqModel=false;render();});
+  if(!g)return;
+  const sel=m.querySelector('.clist [aria-pressed="true"]');if(sel)sel.scrollIntoView({block:"nearest"});
+  const on=(id,f)=>{const b=m.querySelector(id);if(b)b.onclick=f;};
+  on("#gq-prev",()=>{gqId=list[idx-1].id;gqAns=false;gqModel=false;render();});
+  on("#gq-next",()=>{gqId=list[idx+1].id;gqAns=false;gqModel=false;render();});
+  on("#gq-model",()=>{gqModel=!gqModel;if(gqModel&&S.essays[gqKey(g.id)])save("essay",true);render();});
+  on("#gq-ans",()=>{gqAns=!gqAns;render();});
+  const ta=m.querySelector("#gq-ta");let t;
+  ta.addEventListener("input",()=>{S.essays[gqKey(g.id)]=ta.value;clearTimeout(t);t=setTimeout(()=>save(null,true),800);});
+};
+KEYS.gichul=e=>{if(e.key==="Enter"){const b=document.getElementById("gq-next");if(b&&!b.disabled){e.preventDefault();b.click();}}};
+
 /* ================= 퀴즈 (교차 · 과목 집중) ================= */
 let Q=null,quizSize=10;
 function startQuiz(mode){
@@ -1132,7 +1201,7 @@ KEYS.quiz=e=>{
 };
 
 /* ================= 기출 서답형 ================= */
-let essayId=null,showModel={},essayPrev=true,essayCover=false;
+let essayId=null,showModel={},essayPrev=true,essayCover=false,essayImg=false;
 VIEWFN.essay=function(m){
   const list=D.essays.filter(e=>!S.scope.s||e.s===S.scope.s);
   if(!list.find(e=>e.id===essayId))essayId=list[0]?list[0].id:null;
@@ -1145,6 +1214,7 @@ VIEWFN.essay=function(m){
       <div class="small">${esc(subjName(p.s))} · ${esc(p.ch)} ${gtag(p.g)}</div>
       ${(p.rel||[]).length?`<div class="prev ${essayPrev?"":"folded"}"><div class="row" style="justify-content:space-between"><b class="fun">이 문제 앞의 전략노트 내용</b><span class="row"><label class="check"><input type="checkbox" id="prev-cover" ${essayCover?"checked":""}> 가리기</label><button class="btn sm soft" id="prev-toggle">${essayPrev?"접기":"펼치기"}</button></span></div>
         ${essayPrev?`<div class="hideable ${essayCover?"cover":""}" id="prev-body" style="display:flex;flex-direction:column;gap:10px;margin-top:8px">${p.rel.map(id=>BY.concept[id]).filter(Boolean).map(c=>`<div class="concept" style="${scol(c.s)};padding:10px 12px"><div class="cn" style="font-size:17px">${esc(c.name)}${c.who?` <span class="who">${esc(c.who)}</span>`:""}</div>${c.def?`<div class="def hx" style="font-size:15px">${esc(c.def)}</div>`:""}${c.list&&c.list.items.length?`<ul class="lst" style="font-size:15px">${c.list.items.map(i=>`<li><span class="hx">${esc(i)}</span></li>`).join("")}</ul>`:""}${c.kw&&c.kw.length?`<div class="kchips">${c.kw.map(k=>`<span class="kchip hx">${esc(k)}</span>`).join("")}</div>`:""}<button class="btn sm soft" data-oc="${c.id}" style="align-self:flex-start">개념 지도에서 보기</button></div>`).join("")}</div>`:""}</div>`:""}
+      ${(p.qimg||[]).length?`<div class="row"><button class="btn sm berry" id="qimg-toggle">${essayImg?"시험지 원문 닫기":`시험지 원문 보기 (${p.qimg.length})`}</button></div>${essayImg?`<div class="qwrap">${p.qimg.map(id=>BY.gichul[id]).filter(Boolean).map(g=>`<div class="small fun">${esc(g.exam)}</div>${[g.file].concat(g.more||[]).map(f=>imgTag(f,g.exam)).join("")}`).join("")}</div>`:""}`:""}
       <div class="q" style="font-size:19px;white-space:pre-line">${esc(p.q)}</div>
       <textarea id="essay-ta" placeholder="예) ㉠ 근접발달지대, ㉡ 비계설정">${esc(text)}</textarea>
       <div class="row" style="justify-content:space-between"><span class="small num" id="cc">${text.length}자</span><button class="btn grass" id="show-model">${showModel[p.id]?"모범답안 숨기기":"모범답안과 비교"}</button></div>
@@ -1152,10 +1222,11 @@ VIEWFN.essay=function(m){
       ${showModel[p.id]?`<div class="model">${esc(p.ans)}</div>`:""}
     </div></div>`:empty("문항이 없어요","과목을 바꿔 보세요."));
   bindScope(m,()=>{essayId=null;render();});
-  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{essayId=b.dataset.p;render();});
-  const rnd=m.querySelector("#rand");if(rnd)rnd.onclick=()=>{essayId=list[Math.floor(Math.random()*list.length)].id;render();};
+  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{essayId=b.dataset.p;essayImg=false;render();});
+  const rnd=m.querySelector("#rand");if(rnd)rnd.onclick=()=>{essayId=list[Math.floor(Math.random()*list.length)].id;essayImg=false;render();};
   if(!p)return;
   const sel=m.querySelector('.plist [aria-pressed="true"]');if(sel)sel.scrollIntoView({block:"nearest"});
+  const qt=m.querySelector("#qimg-toggle");if(qt)qt.onclick=()=>{essayImg=!essayImg;render();};
   const pt=m.querySelector("#prev-toggle");if(pt)pt.onclick=()=>{essayPrev=!essayPrev;render();};
   const pc=m.querySelector("#prev-cover");if(pc)pc.onchange=()=>{essayCover=pc.checked;render();};
   const pb=m.querySelector("#prev-body");if(pb)pb.addEventListener("click",e=>{const hx=e.target.closest(".hx");if(hx&&essayCover){hx.classList.toggle("shown");return;}const oc=e.target.closest("[data-oc]");if(oc){const c=BY.concept[oc.dataset.oc];go("concepts",{s:c.s,ch:c.ch,concept:c.id});}});
