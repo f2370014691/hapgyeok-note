@@ -392,6 +392,9 @@ table.study td .ans{display:block;font-size:13px;color:var(--grass-d);margin-top
 :root{--f-plain:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","Pretendard",system-ui,sans-serif;--f-fun:var(--f-plain);--f-body:var(--f-plain);--f-title:var(--f-plain)}
 body{font-family:var(--f-plain);font-weight:400}
 h1,h2,h3,h4,.fun,.brand b,.btn,.chip,.nav,.navgrp,.tagline,.kwhead,.flash .front,.q,.mmroot,.br>.bt,.kwitem .h,.big,.score,.stat .v,.dday .big,.zone h4,.concept .cn,.timer .t,.initials,.step h4,.pcard .pn,.lock h2,.sk{font-weight:700}
+
+.kw.hid{color:var(--ink-3);border-style:dashed;min-width:2.2em;text-align:center}
+.kw.miss{border-color:var(--berry);background:var(--berry-s);color:var(--berry-d)}
 </style>
 </head>
 <body>
@@ -665,16 +668,10 @@ VIEWFN.home=function(m){
     <div class="stat"><div class="sk">외운 표</div><div class="v">${D.tables.filter(x=>mastered("t:"+x.id)).length}<small> / ${D.tables.length}</small></div></div>
     <div class="stat"><div class="sk">퀴즈 정답률</div><div class="v">${acc==null?"–":acc}<small>${acc==null?"":" %"}</small></div></div>
   </section>
-  <section class="two">
-    <div class="box"><h3>자주 나오는데 아직 약한 단원</h3><div class="small">기출 표시 수가 많고 외운 비율이 낮을수록 위에 와요. 누르면 개념 지도로 가요.</div>
-      <div class="prio">${prio.map(o=>`<button data-prio="${esc(o.s)}|${esc(o.ch)}"><span><span class="small">${esc(subjName(o.s))}</span><br>${esc(o.ch)}</span><span class="gcount">기출 ${o.g}</span><span class="mast">${Math.round(o.mast*100)}%</span></button>`).join("")}</div></div>
-    <div class="box"><h3>최근 2주 공부량</h3><div class="small">학습 1회 = 1</div>
-      <div class="bars">${days.map(d=>{const v=S.log[d]||0;return `<div title="${d}: ${v}"><span class="b ${v?"":"zero"} ${d===t?"today":""}" style="height:${v?Math.max(8,v/max*92):3}px"></span><em>${+d.slice(8)}</em></div>`}).join("")}</div></div>
-  </section>`;
+  <p class="small" style="text-align:right">약한 단원과 공부량 그래프는 <button class="btn sm soft" data-go="stats">진도 분석</button>에서 볼 수 있어요.</p>`;
   m.querySelector("#exam-date").onchange=e=>{S.exam=e.target.value;save();render();};
   const ck=m.querySelector("#cram-kw");if(ck)ck.onclick=()=>{S.scope.g=true;kwMode="list";save();go("kw");};
   const ct=m.querySelector("#cram-tb");if(ct)ct.onclick=()=>{S.scope.g=true;save();go("tables");};
-  m.querySelectorAll("[data-prio]").forEach(b=>b.onclick=()=>{const [s,ch]=b.dataset.prio.split("|");go("concepts",{s,ch});});
 };
 
 /* ================= 약점 복습 ================= */
@@ -1206,25 +1203,27 @@ KEYS.quiz=e=>{
 };
 
 /* ================= 기출 서답형 ================= */
-let essayId=null,showModel={},essayPrev=true,essayCover=false,essayImg=false;
+let essayId=null,showModel={},essayPrev=false,essayCover=false,essayImg=false;
 VIEWFN.essay=function(m){
   const list=D.essays.filter(e=>!S.scope.s||e.s===S.scope.s);
   if(!list.find(e=>e.id===essayId))essayId=list[0]?list[0].id:null;
   const p=essayId?BY.essay[essayId]:null,text=p?(S.essays[p.id]||""):"";
-  const hit=p?matchItems(text,p.kw):[];
-  m.innerHTML=head("확인하기 · 전략노트 속 기출","berry","기출 서답형","임용 답안처럼 '기호 + 개념어'로 써 보세요. 쓰는 동안 채점 핵심어가 초록색으로 켜져요.",list.length>1?`<button class="btn" id="rand">무작위 한 문항</button>`:"")+
+  const hit=p?matchItems(text,p.kw):[],model=p&&showModel[p.id];
+  const kwHTML=()=>p.kw.map((k,i)=>hit[i]?`<span class="kw hit">${esc(k)}</span>`:model?`<span class="kw miss">${esc(k)}</span>`:`<span class="kw hid">?</span>`).join("");
+  m.innerHTML=head("확인하기 · 기출","berry","기출 서답형","답을 쓰면 맞힌 핵심어가 하나씩 나타나요. 다 쓴 뒤 모범답안과 비교하세요.",list.length>1?`<button class="btn" id="rand">무작위 한 문항</button>`:"")+
   scopeBar(`${list.length}문항`).replace(/<label class="check">.*?<\/label>/,"")+
   (p?`<div class="egrid"><div class="plist">${list.map(x=>`<button class="pick" data-p="${x.id}" aria-pressed="${x.id===essayId}"><span><small>${esc(subjName(x.s))}${x.g?" · "+esc(x.g):""}${S.essays[x.id]?" · 작성함":""}</small>${esc(x.q.length>56?x.q.slice(0,56)+"…":x.q)}</span></button>`).join("")}</div>
     <div class="qbox" style="display:flex;flex-direction:column;gap:14px;${scol(p.s)}">
-      <div class="small">${esc(subjName(p.s))} · ${esc(p.ch)} ${gtag(p.g)}</div>
-      ${(p.rel||[]).length?`<div class="prev ${essayPrev?"":"folded"}"><div class="row" style="justify-content:space-between"><b class="fun">이 문제 앞의 전략노트 내용</b><span class="row"><label class="check"><input type="checkbox" id="prev-cover" ${essayCover?"checked":""}> 가리기</label><button class="btn sm soft" id="prev-toggle">${essayPrev?"접기":"펼치기"}</button></span></div>
-        ${essayPrev?`<div class="hideable ${essayCover?"cover":""}" id="prev-body" style="display:flex;flex-direction:column;gap:10px;margin-top:8px">${p.rel.map(id=>BY.concept[id]).filter(Boolean).map(c=>`<div class="concept" style="${scol(c.s)};padding:10px 12px"><div class="cn" style="font-size:17px">${esc(c.name)}${c.who?` <span class="who">${esc(c.who)}</span>`:""}</div>${c.def?`<div class="def hx" style="font-size:15px">${esc(c.def)}</div>`:""}${c.list&&c.list.items.length?`<ul class="lst" style="font-size:15px">${c.list.items.map(i=>`<li><span class="hx">${esc(i)}</span></li>`).join("")}</ul>`:""}${c.kw&&c.kw.length?`<div class="kchips">${c.kw.map(k=>`<span class="kchip hx">${esc(k)}</span>`).join("")}</div>`:""}<button class="btn sm soft" data-oc="${c.id}" style="align-self:flex-start">개념 지도에서 보기</button></div>`).join("")}</div>`:""}</div>`:""}
-      ${(p.qimg||[]).length?`<div class="row"><button class="btn sm berry" id="qimg-toggle">${essayImg?"시험지 원문 닫기":`시험지 원문 보기 (${p.qimg.length})`}</button></div>${essayImg?`<div class="qwrap">${p.qimg.map(id=>BY.gichul[id]).filter(Boolean).map(g=>`<div class="small fun">${esc(g.exam)}</div>${[g.file].concat(g.more||[]).map(f=>imgTag(f,g.exam)).join("")}`).join("")}</div>`:""}`:""}
+      <div class="row" style="justify-content:space-between"><span class="small">${esc(subjName(p.s))} · ${esc(p.ch)} ${gtag(p.g)}</span>
+        <span class="row">${(p.qimg||[]).length?`<button class="btn sm ${essayImg?"":"soft"}" id="qimg-toggle">시험지 원문</button>`:""}${(p.rel||[]).length?`<button class="btn sm ${essayPrev?"":"soft"}" id="prev-toggle">앞 내용</button>`:""}</span></div>
+      ${essayImg&&(p.qimg||[]).length?`<div class="qwrap">${p.qimg.map(id=>BY.gichul[id]).filter(Boolean).map(g=>`<div class="small fun">${esc(g.exam)}</div>${[g.file].concat(g.more||[]).map(f=>imgTag(f,g.exam)).join("")}`).join("")}</div>`:""}
+      ${essayPrev&&(p.rel||[]).length?`<div class="prev"><div class="row" style="justify-content:space-between"><b class="fun">이 문제 앞의 전략노트 내용</b><label class="check"><input type="checkbox" id="prev-cover" ${essayCover?"checked":""}> 가리기</label></div>
+        <div class="hideable ${essayCover?"cover":""}" id="prev-body" style="display:flex;flex-direction:column;gap:10px;margin-top:8px">${p.rel.map(id=>BY.concept[id]).filter(Boolean).map(c=>`<div class="concept" style="${scol(c.s)};padding:10px 12px"><div class="cn" style="font-size:17px">${esc(c.name)}${c.who?` <span class="who">${esc(c.who)}</span>`:""}</div>${c.def?`<div class="def hx" style="font-size:15px">${esc(c.def)}</div>`:""}${c.list&&c.list.items.length?`<ul class="lst" style="font-size:15px">${c.list.items.map(i=>`<li><span class="hx">${esc(i)}</span></li>`).join("")}</ul>`:""}${c.kw&&c.kw.length?`<div class="kchips">${c.kw.map(k=>`<span class="kchip hx">${esc(k)}</span>`).join("")}</div>`:""}</div>`).join("")}</div></div>`:""}
       <div class="q" style="font-size:19px;white-space:pre-line">${esc(p.q)}</div>
       <textarea id="essay-ta" placeholder="예) ㉠ 근접발달지대, ㉡ 비계설정">${esc(text)}</textarea>
-      <div class="row" style="justify-content:space-between"><span class="small num" id="cc">${text.length}자</span><button class="btn grass" id="show-model">${showModel[p.id]?"모범답안 숨기기":"모범답안과 비교"}</button></div>
-      ${p.kw.length?`<div><div class="small" style="margin-bottom:6px">핵심어 체크 <b class="num" id="kwn">${hit.filter(Boolean).length}/${p.kw.length}</b></div><div class="kws" id="kws">${p.kw.map((k,i)=>`<span class="kw ${hit[i]?"hit":""}">${esc(k)}</span>`).join("")}</div></div>`:""}
-      ${showModel[p.id]?`<div class="model">${esc(p.ans)}</div>`:""}
+      ${p.kw.length?`<div class="row" style="justify-content:space-between"><span class="small">핵심어 <b class="num" id="kwn">${hit.filter(Boolean).length}</b> / ${p.kw.length}개 맞힘</span><div class="kws" id="kws">${kwHTML()}</div></div>`:""}
+      <div class="row" style="justify-content:space-between"><span class="small num" id="cc">${text.length}자</span><button class="btn grass" id="show-model">${model?"모범답안 숨기기":"모범답안과 비교"}</button></div>
+      ${model?`<div class="model">${esc(p.ans)}</div>`:""}
     </div></div>`:empty("문항이 없어요","과목을 바꿔 보세요."));
   bindScope(m,()=>{essayId=null;render();});
   m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{essayId=b.dataset.p;essayImg=false;render();});
@@ -1234,13 +1233,13 @@ VIEWFN.essay=function(m){
   const qt=m.querySelector("#qimg-toggle");if(qt)qt.onclick=()=>{essayImg=!essayImg;render();};
   const pt=m.querySelector("#prev-toggle");if(pt)pt.onclick=()=>{essayPrev=!essayPrev;render();};
   const pc=m.querySelector("#prev-cover");if(pc)pc.onchange=()=>{essayCover=pc.checked;render();};
-  const pb=m.querySelector("#prev-body");if(pb)pb.addEventListener("click",e=>{const hx=e.target.closest(".hx");if(hx&&essayCover){hx.classList.toggle("shown");return;}const oc=e.target.closest("[data-oc]");if(oc){const c=BY.concept[oc.dataset.oc];go("concepts",{s:c.s,ch:c.ch,concept:c.id});}});
-  m.querySelector("#show-model").onclick=()=>{showModel[p.id]=!showModel[p.id];if(showModel[p.id]&&S.essays[p.id]){save("essay",true);}render();};
+  const pb=m.querySelector("#prev-body");if(pb)pb.addEventListener("click",e=>{const hx=e.target.closest(".hx");if(hx&&essayCover)hx.classList.toggle("shown");});
+  m.querySelector("#show-model").onclick=()=>{showModel[p.id]=!showModel[p.id];if(showModel[p.id]&&S.essays[p.id])save("essay",true);render();};
   const ta=m.querySelector("#essay-ta");let t;
   ta.addEventListener("input",()=>{
     const v=ta.value;S.essays[p.id]=v;m.querySelector("#cc").textContent=v.length+"자";
-    const h=matchItems(v,p.kw),k=m.querySelector("#kws");
-    if(k){k.innerHTML=p.kw.map((x,i)=>`<span class="kw ${h[i]?"hit":""}">${esc(x)}</span>`).join("");m.querySelector("#kwn").textContent=h.filter(Boolean).length+"/"+p.kw.length;}
+    const h=matchItems(v,p.kw);hit.splice(0,hit.length,...h);
+    const k=m.querySelector("#kws");if(k){k.innerHTML=kwHTML();m.querySelector("#kwn").textContent=h.filter(Boolean).length;}
     clearTimeout(t);t=setTimeout(()=>save(null,true),800);
   });
 };
