@@ -1383,7 +1383,9 @@ async function enterFB(uid,info,raw,keep){
   start(c);setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
   toast(`${ME.id}님, 반가워요!`);
 }
-async function doLogin(id,pw,keep){
+let needCodeLogin=false;
+async function keyWorks(raw){try{await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(BLOB).slice(16,28)},await keyFromRaw(raw),new Uint8Array(BLOB).slice(28));return true;}catch(e){return false;}}
+async function doLogin(id,pw,keep,code){
   const fb=await loadFB(),email=await emailOf(id);
   await fb.setPersistence(fb.auth,keep?fb.browserLocalPersistence:fb.browserSessionPersistence);
   let cred=null;
@@ -1391,8 +1393,17 @@ async function doLogin(id,pw,keep){
   catch(e){const c=e.code||"";if(!/invalid-credential|user-not-found|wrong-password|invalid-login|invalid-email/.test(c))throw new Error(netMsg(e));}
   if(cred){
     const ref=fb.doc(fb.db,"users",cred.user.uid),snap=await fb.getDoc(ref);let info=snap.exists()?snap.data():null,raw;
-    if(info&&info.wrap)raw=await unwrapKey(info.wrap,id,pw);
-    else{raw=await adminRaw(id,pw);info={id,c:"sun",t:Date.now(),wrap:await wrapKey(raw,id,pw)};await fb.setDoc(ref,info);}
+    if(info&&info.wrap){try{raw=await unwrapKey(info.wrap,id,pw);}catch(e){raw=null;}}
+    if(!raw||!(await keyWorks(raw))){
+      /* 자료가 새로 만들어져 서버의 열쇠가 낡음 → 관리자 비밀번호로, 아니면 확인 코드로 새 열쇠를 받는다 */
+      try{raw=await adminRaw(id,pw);}
+      catch(e){
+        if(!code){needCodeLogin=true;throw new Error("학습 자료가 새로 갱신되었어요. 확인 코드를 한 번 더 넣고 로그인해 주세요.");}
+        try{raw=await codeRaw(code);}catch(e2){throw new Error("확인 코드가 맞지 않아요.");}
+      }
+      info=Object.assign(info||{id,c:"sun",t:Date.now()},{wrap:await wrapKey(raw,id,pw)});await fb.setDoc(ref,info);
+    }
+    needCodeLogin=false;
     return enterFB(cred.user.uid,info,raw,keep);
   }
   /* 서버에 아직 없는 아이디 → 관리자 첫 로그인이면 서버 계정을 만든다 */
@@ -1425,6 +1436,7 @@ function showLock(mode){
     ${mode==="login"?`
       <label for="uid" class="small">아이디</label><input type="text" id="uid" ${inputCss} autocomplete="username" required autofocus>
       <label for="pw" class="small">비밀번호</label><input type="password" id="pw" ${inputCss} autocomplete="current-password" required>
+      ${needCodeLogin?`<div class="adm"><b class="fun">확인 코드</b><span class="small">학습 자료가 갱신되어 한 번만 다시 필요해요.</span><label for="lcode" class="small">확인 코드</label><input type="password" id="lcode" ${inputCss} inputmode="numeric" autocomplete="off" required></div>`:""}
       <p class="small" style="margin:0">어느 기기에서든 같은 아이디로 로그인하면 기록이 이어져요.</p>`
     :`
       <p class="small" style="margin:0">새 계정은 기록 없이 처음부터 시작해요.</p>
@@ -1449,7 +1461,7 @@ function showLock(mode){
     const fail=msg=>{btn.disabled=false;btn.textContent=label;err.textContent=msg;};
     btn.disabled=true;btn.textContent="잠시만요…";err.textContent="";
     try{
-      if(mode==="login")await doLogin(norm(m.querySelector("#uid").value),m.querySelector("#pw").value,keep);
+      if(mode==="login"){const lc=m.querySelector("#lcode");await doLogin(norm(m.querySelector("#uid").value),m.querySelector("#pw").value,keep,lc?norm(lc.value):"");}
       else{
         const id=norm(m.querySelector("#nid").value),pw=m.querySelector("#npw").value,pw2=m.querySelector("#npw2").value;
         if(!id)return fail("새 아이디를 넣어 주세요.");
@@ -1458,7 +1470,7 @@ function showLock(mode){
         if(pw!==pw2)return fail("두 비밀번호가 달라요.");
         await doSignup(id,pw,needCode?norm(m.querySelector("#vcode").value):"",(m.querySelector("input[name=pcol]:checked")||{}).value||"sky",keep);
       }
-    }catch(x){fail((x&&x.message)||"문제가 생겼어요. 다시 해 주세요.");}
+    }catch(x){const msg=(x&&x.message)||"";if(needCodeLogin&&!m.querySelector("#lcode")){showLock("login");const e2=document.getElementById("err");if(e2)e2.textContent=msg;return;}fail(msg||"열쇠를 푸는 데 실패했어요. 비밀번호를 다시 확인해 주세요.");}
   });
 }
 (async()=>{
