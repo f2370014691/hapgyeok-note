@@ -234,6 +234,16 @@ body.focus .top,body.focus .tabbar{display:none}
 .card .q{font-size:23px;font-weight:700;line-height:1.55;white-space:pre-wrap;letter-spacing:-.02em}
 .card .a{display:none;margin-top:22px;padding-top:20px;border-top:1px dashed var(--line-2);font-size:17px;line-height:1.85;white-space:pre-wrap;color:var(--ink);animation:reveal .25s ease}
 .card.flip .a{display:block}
+.card.noanim{animation:none}
+.card .a{animation:none}
+.ait{display:none}
+.ait.on{display:block}
+.ait+.ait.on{margin-top:6px}
+.ait.new{animation:reveal .25s ease}
+.reveal{display:flex;gap:10px}
+.reveal .showbtn{flex:1}
+.showbtn .num{opacity:.6;font-weight:700;margin-left:4px}
+.allbtn{border-radius:16px;padding:0 20px;font-size:15px}
 @keyframes reveal{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .a strong{background:linear-gradient(transparent 60%,var(--hl) 60%);font-weight:800}
 .tap{margin-top:auto;padding-top:24px;text-align:center;font-size:13px;color:var(--ink-3)}
@@ -575,7 +585,7 @@ let SES=null;
 function startSession(title,idx,o={}){
   if(!idx.length)return toast("공부할 카드가 없어요");
   const q=(S.shuf&&!o.keepOrder)?shuffle(idx):idx.slice();
-  SES={title,q,pos:0,flip:false,done:0,again:{},hist:[],tally:[0,0,0]};
+  SES={title,q,pos:0,shown:0,last:-1,done:0,again:{},hist:[],tally:[0,0,0]};
   go("#/study");
 }
 function quit(){SES=null;if(history.length>1)history.back();else go("#/");}
@@ -595,6 +605,7 @@ VIEW.study=function(m){
   const i=s.q[s.pos],c=C[i],x=ss(i),d=c[1];
   const tag=!x?`<span class="tag new">처음</span>`:`<span class="tag box">상자 ${x[0]}</span>${x[2]?`<span class="tag lapse">틀림 ${x[2]}</span>`:""}`;
   const nb=Math.min(6,Math.max(2,(x?x[0]:0)+1));
+  const its=ansItems(c[6]),n=its.length,sh=Math.min(s.shown,n),full=sh>=n,same=s.last===s.pos;s.last=s.pos;
   m.innerHTML=`<div class="study" style="--dc:${DC[d]};--ds:${DCS[d]}">
     <div class="sbar2"><button class="iconbtn" id="quit" aria-label="그만하기" title="그만하기 (Esc)">${ico("x")}</button>
       <div class="stt"><b>${esc(s.title)}</b><div class="prog"><i style="width:${s.pos/s.q.length*100}%"></i></div></div>
@@ -602,48 +613,56 @@ VIEW.study=function(m){
       <button class="iconbtn" id="undo" aria-label="채점 되돌리기" title="채점 되돌리기 (Z)" ${s.hist.length?"":"disabled"}>${ico("undo")}</button></div>
     <div class="stage">
       <button class="arr" id="prev" aria-label="이전 문제" title="이전 문제 (←)" ${s.pos?"":"disabled"}>${ico("left",22)}</button>
-      <article class="card ${s.flip?"flip":""}" id="card">
+      <article class="card ${sh?"flip":""} ${same?"noanim":""}" id="card">
         <div class="cmeta"><span class="cd">${esc(DOCS[d])}</span><span class="cp">${esc(c[3])} › ${esc(c[4])}${c[7]&&c[7]!==c[4]?` · ${esc(c[7])}`:""}</span><span class="pg">${c[2]}쪽</span>${tag}</div>
         <div class="q">${fmt(c[5])}</div>
-        <div class="a">${fmt(c[6])}</div>
-        <div class="tap">탭해서 답 보기</div>
+        <div class="a">${its.map((t,k)=>`<div class="ait ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${fmt(t)}</div>`).join("")}</div>
+        ${full?"":`<div class="tap">${sh?`탭하면 다음 답 (${sh}/${n})`:n>1?`탭해서 답 보기 · ${n}개`:"탭해서 답 보기"}</div>`}
       </article>
       <button class="arr" id="next" aria-label="다음 문제" title="다음 문제 (→)">${ico("chev",22)}</button>
     </div>
-    <div class="ctl">${s.flip?`<div class="grade">
+    <div class="ctl">${full?`<div class="grade">
         <button class="g0" data-g="0"><b>몰랐어요</b><small>곧 다시</small></button>
         <button class="g1" data-g="1"><b>헷갈려요</b><small>내일</small></button>
         <button class="g2" data-g="2"><b>알아요</b><small>${IV[nb]}일 뒤</small></button></div>`
-      :`<button class="showbtn" id="show">답 보기</button>`}
-      <p class="keys"><kbd>Space</kbd> 답 보기 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기</p></div></div>`;
+      :`<div class="reveal"><button class="showbtn" id="show">${!sh?"답 보기":"다음 답"}${n>1?` <span class="num">${sh}/${n}</span>`:""}</button>${n>1?`<button class="btn allbtn" id="showall">전체</button>`:""}</div>`}
+      <p class="keys"><kbd>Space</kbd> 답 하나씩 <kbd>A</kbd> 전체 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기</p></div></div>`;
   m.querySelector("#card").onclick=()=>{if(getSelection().toString())return;flipCard();};
-  const sh=m.querySelector("#show");if(sh)sh.onclick=flipCard;
+  const sb=m.querySelector("#show");if(sb)sb.onclick=flipCard;
+  const sa=m.querySelector("#showall");if(sa)sa.onclick=showAll;
   m.querySelector("#quit").onclick=quit;
   m.querySelector("#undo").onclick=undo;
   m.querySelector("#prev").onclick=()=>step(-1);m.querySelector("#next").onclick=()=>step(1);
   m.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>answer(+b.dataset.g));
 };
 const rerender=()=>VIEW.study(document.getElementById("main"));
-function flipCard(){if(!SES||SES.pos>=SES.q.length)return;SES.flip=!SES.flip;rerender();}
+/* 답 항목 나누기: ①·•·1. 같은 머리표로 시작하는 줄마다 한 항목 (머리표 없는 줄은 앞 항목에 이어 붙임) */
+const BUL=/^\s*(?:[①-⑳⑴-⒇❶-❿]|[•·▪■□◆◇○●◦※▶▷⇨⇒→➜\-–]|\d{1,2}[.)]|\(\d{1,2}\)|[가-하][.)]|\([가-하]\)|\[)/;
+function ansItems(a){const out=[];String(a||"").split("\n").forEach(l=>{if(!l.trim())return;if(!out.length||BUL.test(l))out.push(l);else out[out.length-1]+="\n"+l;});return out.length?out:[String(a||"")];}
+const curN=()=>ansItems(C[SES.q[SES.pos]][6]).length;
+function flipCard(){if(!SES||SES.pos>=SES.q.length)return;if(SES.shown<curN()){SES.shown++;rerender();}}
+function showAll(){if(!SES||SES.pos>=SES.q.length)return;SES.shown=curN();rerender();}
 /* 채점 없이 이전·다음 문제로 */
-function step(n){const s=SES;if(!s)return;const p=s.pos+n;if(p<0||p>s.q.length)return;s.pos=p;s.flip=false;rerender();}
+function step(n){const s=SES;if(!s)return;const p=s.pos+n;if(p<0||p>s.q.length)return;s.pos=p;s.shown=0;rerender();}
 function answer(g){
   const s=SES,i=s.q[s.pos];
   s.hist.push({i,prev:S.srs[C[i][0]]?S.srs[C[i][0]].slice():null,q:s.q.slice(),pos:s.pos,g,lg:S.log[today()]||0});
   grade(i,g);s.done++;s.tally[g]++;
   if(g===0&&(s.again[i]||0)<3){s.again[i]=(s.again[i]||0)+1;s.q.splice(Math.min(s.q.length,s.pos+5),0,i);}
-  s.pos++;s.flip=false;save();rerender();
+  s.pos++;s.shown=0;save();rerender();
 }
 function undo(){
   const s=SES,h=s&&s.hist.pop();if(!h)return;
   if(h.prev)S.srs[C[h.i][0]]=h.prev;else delete S.srs[C[h.i][0]];
-  S.log[today()]=h.lg;s.q=h.q;s.pos=h.pos;s.done--;s.tally[h.g]--;s.flip=true;
+  S.log[today()]=h.lg;s.q=h.q;s.pos=h.pos;s.done--;s.tally[h.g]--;s.shown=99;
   save();rerender();
 }
 document.addEventListener("keydown",e=>{
   if(route.v!=="study"||!SES||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
-  if(e.key===" "||e.key==="Enter"){e.preventDefault();if(!SES.flip)flipCard();}
-  else if(SES.flip&&["1","2","3"].includes(e.key)){e.preventDefault();answer(+e.key-1);}
+  const full=SES.pos<SES.q.length&&SES.shown>=curN();
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();flipCard();}
+  else if(e.key==="a"||e.key==="A"){e.preventDefault();showAll();}
+  else if(full&&["1","2","3"].includes(e.key)){e.preventDefault();answer(+e.key-1);}
   else if(e.key==="ArrowLeft"){e.preventDefault();step(-1);}
   else if(e.key==="ArrowRight"){e.preventDefault();step(1);}
   else if(e.key==="z"||e.key==="Z"||e.key==="Backspace"){e.preventDefault();undo();}
