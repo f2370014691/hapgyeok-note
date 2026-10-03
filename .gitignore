@@ -2,3 +2,4 @@
 !manifest.webmanifest
 !code.json
 *.py
+!tax.json

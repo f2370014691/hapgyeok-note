@@ -94,11 +94,13 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 60px}
 .chap.open .arr{transform:rotate(90deg)}
 .tops{display:none;border-top:1px solid var(--line);padding:6px 10px 10px}
 .chap.open .tops{display:block}
-.tp{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:9px;border:0;background:none;width:100%;text-align:left;font-size:15px}
-.tp:hover{background:var(--sunk)}
-.tp .nm{flex:1}
-.tp .n{font-size:13px;color:var(--ink-3)}
-@media (max-width:560px){.chap .pb{width:60px}}
+.tp{display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:9px;font-size:15px;border-top:1px solid var(--line)}
+.tp:first-of-type{border-top:0}
+.tp .nm{flex:1;min-width:0}
+.tp .nm small{display:block;color:var(--ink-3);font-size:12px}
+.tp .pb{width:90px}
+.chap .no{width:28px;height:28px;border-radius:8px;background:var(--dc);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
+@media (max-width:560px){.chap .pb{width:60px}.tp .pb{display:none}.tp [data-tl]{display:none}}
 
 /* 공부 화면 */
 .shead{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
@@ -174,11 +176,13 @@ const FB_VER="12.19.0";
    ================================================================ */
 
 /* ---------- 데이터 ---------- */
-// 카드: [id, 자료번호, 쪽, 단원, 주제, 질문, 답]
-let DOCS=[],C=[],CH=[];   // CH[d] = [{name, topics:[{name, idx:[]}], idx:[]}]
+// 카드: [id, 과목번호, 쪽, 대주제, 소주제, 질문, 답, 세부 주제]
+let DOCS=[],C=[],CH=[];   // CH[d] = 대주제 [{name, topics:소주제[{name, idx:[]}], idx:[]}]
 const DC=["var(--c0)","var(--c1)","var(--c2)"],DCS=["var(--c0-s)","var(--c1-s)","var(--c2-s)"];
+let TAX=null;  // tax.json: 대주제·소주제 분류표 {n:["대|소",...], m:{카드id:번호}}
 function indexData(b){
   DOCS=b.docs;C=b.cards;CH=DOCS.map(()=>[]);
+  if(TAX)C.forEach(c=>{const k=TAX.m[c[0]];if(k==null)return;const [big,small]=TAX.n[k].split("|");if(c.length<8)c[7]=c[4];c[3]=big;c[4]=small;});
   const cm=DOCS.map(()=>({}));
   C.forEach((c,i)=>{
     const d=c[1];let ch=cm[d][c[3]];
@@ -293,7 +297,7 @@ VIEW.home=function(m){
     ${all.due&&nextNew.length?`<div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn sm" id="go-new">새 카드 ${nextNew.length}장 배우기</button></div>`:""}
     <div class="sec">과목</div>
     <div class="decks">${DOCS.map((d,i)=>{const c=counts(C.map((x,j)=>x[1]===i?j:-1).filter(j=>j>=0));
-      return `<button class="deck" style="--dc:${DC[i]}" onclick="go('#/deck/${i}')"><h3>${esc(d)}</h3><div class="cnt">${CH[i].length}개 단원 · ${c.all.toLocaleString()}장</div>${bar(c)}${legend(c)}</button>`;}).join("")}</div>
+      return `<button class="deck" style="--dc:${DC[i]}" onclick="go('#/deck/${i}')"><h3>${esc(d)}</h3><div class="cnt">대주제 ${CH[i].length}개 · ${c.all.toLocaleString()}장</div>${bar(c)}${legend(c)}</button>`;}).join("")}</div>
     <div class="sec">최근 7일</div>
     <div class="week">${days.map(x=>`<div><span class="num">${x.n||""}</span><i style="height:${x.n/mx*42}px"></i>${x.l}</div>`).join("")}</div>
     ${all.k+all.l?`<div class="row" style="margin-top:14px"><button class="btn sm" id="go-wrong">틀린 적 있는 카드 ${C.filter((_,i)=>isWrong(i)).length}장 다시 보기</button></div>`:""}`;
@@ -305,11 +309,12 @@ VIEW.home=function(m){
 function nextNewCards(n){const out=[];for(let i=0;i<C.length&&out.length<n;i++)if(isNew(i))out.push(i);return out;}
 
 /* ---------- 과목(단원 목록) ---------- */
-let openCh={};
+let closedCh={};
 VIEW.deck=function(m){
   const d=route.d,dc=DC[d],idx=C.map((x,j)=>x[1]===d?j:-1).filter(j=>j>=0),c=counts(idx);
+  const nSmall=CH[d].reduce((s,ch)=>s+ch.topics.length,0);
   m.innerHTML=`<div class="crumb"><button onclick="go('#/')">홈</button>›<span>${esc(DOCS[d])}</span></div>
-    <div class="dhead" style="--dc:${dc}"><h2>${esc(DOCS[d])}</h2><span class="muted small">${CH[d].length}개 단원 · ${c.all.toLocaleString()}장</span></div>
+    <div class="dhead" style="--dc:${dc}"><h2>${esc(DOCS[d])}</h2><span class="muted small">대주제 ${CH[d].length}개 · 소주제 ${nSmall}개 · ${c.all.toLocaleString()}장</span></div>
     <div class="panel">${bar(c)}<div style="margin-top:8px">${legend(c)}</div>
       <div class="row" style="margin-top:12px">
         <button class="btn pri" data-s="learn">이 과목 공부하기</button>
@@ -317,10 +322,10 @@ VIEW.deck=function(m){
         <button class="btn" data-s="wrong">틀린 카드</button>
         <button class="btn" data-s="all">처음부터 전부</button>
       </div></div>
-    <div class="chaps">${CH[d].map((ch,k)=>{const cc=counts(ch.idx);const o=openCh[d+":"+k];
-      return `<div class="chap ${o?"open":""}"><button class="ch" data-ch="${k}"><span class="nm">${esc(ch.name)}<small>${ch.topics.length}개 주제 · ${cc.all}장${cc.due?` · <span style="color:var(--bad)">복습 ${cc.due}</span>`:""}</small></span><span class="pb">${bar(cc)}</span><span class="arr">›</span></button>
-        <div class="tops"><div class="row" style="padding:4px 6px 8px"><button class="btn sm pri" data-chs="${k}">이 단원 공부</button><button class="btn sm" data-chl="${k}">목록으로 보기</button></div>
-        ${ch.topics.map((tp,t)=>{const tc=counts(tp.idx);return `<button class="tp" data-tp="${k}:${t}"><span class="nm">${esc(tp.name)}</span><span class="n num">${tc.k}/${tc.all}</span></button>`;}).join("")}</div></div>`;}).join("")}</div>`;
+    <div class="chaps">${CH[d].map((ch,k)=>{const cc=counts(ch.idx);const o=!closedCh[d+":"+k];
+      return `<div class="chap ${o?"open":""}" style="--dc:${dc}"><button class="ch" data-ch="${k}"><span class="no">${k+1}</span><span class="nm">${esc(ch.name)}<small>소주제 ${ch.topics.length}개 · ${cc.all}장 · 외움 ${cc.k}${cc.due?` · <span style="color:var(--bad)">복습 ${cc.due}</span>`:""}</small></span><span class="pb">${bar(cc)}</span><span class="arr">›</span></button>
+        <div class="tops"><div class="row" style="padding:4px 6px 8px"><button class="btn sm pri" data-chs="${k}">대주제 전체 공부</button><button class="btn sm" data-chl="${k}">목록으로 보기</button></div>
+        ${ch.topics.map((tp,t)=>{const tc=counts(tp.idx);return `<div class="tp"><span class="nm">${k+1}-${t+1}. ${esc(tp.name)}<small class="n num">${tc.all}장 · 외움 ${tc.k}${tc.due?` · <span style="color:var(--bad)">복습 ${tc.due}</span>`:""}</small></span><span class="pb">${bar(tc)}</span><button class="btn sm" data-tl="${k}:${t}" title="목록">목록</button><button class="btn sm pri" data-tp="${k}:${t}">공부</button></div>`;}).join("")}</div></div>`;}).join("")}</div>`;
   m.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{
     const s=b.dataset.s,nm=DOCS[d];
     if(s==="learn")startSession(nm,learnQueue(idx));
@@ -328,9 +333,10 @@ VIEW.deck=function(m){
     else if(s==="wrong"){const w=idx.filter(isWrong);if(!w.length)return toast("아직 틀린 카드가 없어요");startSession(nm+" 틀린 카드",w);}
     else startSession(nm+" 전체",idx,{keepOrder:!S.shuf});
   });
-  m.querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{const k=d+":"+b.dataset.ch;openCh[k]=!openCh[k];b.parentElement.classList.toggle("open");});
+  m.querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{const k=d+":"+b.dataset.ch;closedCh[k]=!closedCh[k];b.parentElement.classList.toggle("open");});
   m.querySelectorAll("[data-chs]").forEach(b=>b.onclick=()=>{const ch=CH[d][+b.dataset.chs];startSession(ch.name,learnQueue(ch.idx));});
-  m.querySelectorAll("[data-chl]").forEach(b=>b.onclick=()=>{LS={q:"",d:String(d),ch:CH[d][+b.dataset.chl].name,f:"all",hide:LS.hide,n:60};go("#/list");});
+  m.querySelectorAll("[data-chl]").forEach(b=>b.onclick=()=>{LS={q:"",d:String(d),ch:CH[d][+b.dataset.chl].name,tp:"",f:"all",hide:LS.hide,n:60};go("#/list");});
+  m.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>{const [k,t]=b.dataset.tl.split(":").map(Number);LS={q:"",d:String(d),ch:CH[d][k].name,tp:CH[d][k].topics[t].name,f:"all",hide:LS.hide,n:60};go("#/list");});
   m.querySelectorAll("[data-tp]").forEach(b=>b.onclick=()=>{const [k,t]=b.dataset.tp.split(":").map(Number),tp=CH[d][k].topics[t];startSession(CH[d][k].name+" › "+tp.name,learnQueue(tp.idx));});
 };
 /* 공부 순서: 복습할 카드 → 아직 안 본 카드 (다 외웠으면 전부 다시) */
@@ -362,7 +368,7 @@ VIEW.study=function(m){
   m.innerHTML=`<div class="shead"><button class="btn sm" id="quit">✕ 그만</button><span class="ttl">${esc(s.title)}</span><span class="num small muted">${s.pos+1} / ${s.q.length}</span>${s.hist.length?`<button class="btn sm" id="undo" title="되돌리기 (Z)">↶</button>`:""}</div>
     <div class="sbar"><i style="width:${s.pos/s.q.length*100}%"></i></div>
     <div class="card ${s.flip?"flip":""}" id="card" style="--dc:${DC[d]}">
-      <div class="meta"><span class="d">${esc(DOCS[d])}</span><span>${esc(c[3])} › ${esc(c[4])}</span><span>${c[2]}쪽</span>${tag}</div>
+      <div class="meta"><span class="d">${esc(DOCS[d])}</span><span>${esc(c[3])} › ${esc(c[4])}</span>${c[7]&&c[7]!==c[4]?`<span>· ${esc(c[7])}</span>`:""}<span>${c[2]}쪽</span>${tag}</div>
       <div class="q">${fmt(c[5])}</div><div class="a">${fmt(c[6])}</div>
       <div class="tap">눌러서 답 보기</div></div>
     ${s.flip?`<div class="grade"><button class="g0" data-g="0">몰랐어요<small>곧 다시</small></button><button class="g1" data-g="1">헷갈려요<small>내일</small></button><button class="g2" data-g="2">알아요<small>${IV[Math.min(6,Math.max(2,(x?x[0]:0)+1))]}일 뒤</small></button></div>`
@@ -397,39 +403,41 @@ document.addEventListener("keydown",e=>{
 });
 
 /* ---------- 찾기·목록 ---------- */
-let LS={q:"",d:"",ch:"",f:"all",hide:false,n:60};
+let LS={q:"",d:"",ch:"",tp:"",f:"all",hide:false,n:60};
 VIEW.list=function(m){
-  const chs=LS.d===""?[]:CH[+LS.d];
+  const chs=LS.d===""?[]:CH[+LS.d],chO=chs.find(x=>x.name===LS.ch),tps=chO?chO.topics:[];
   m.innerHTML=`<div class="tools">
-      <input type="search" id="lq" placeholder="질문·답·단원에서 찾기" value="${esc(LS.q)}">
+      <input type="search" id="lq" placeholder="질문·답·주제에서 찾기" value="${esc(LS.q)}">
       <select id="ld"><option value="">모든 과목</option>${DOCS.map((d,i)=>`<option value="${i}" ${LS.d===String(i)?"selected":""}>${esc(d)}</option>`).join("")}</select>
-      <select id="lc" ${LS.d===""?"disabled":""}><option value="">모든 단원</option>${chs.map(ch=>`<option ${ch.name===LS.ch?"selected":""}>${esc(ch.name)}</option>`).join("")}</select>
+      <select id="lc" ${LS.d===""?"disabled":""}><option value="">모든 대주제</option>${chs.map(ch=>`<option ${ch.name===LS.ch?"selected":""}>${esc(ch.name)}</option>`).join("")}</select>
+      <select id="lt" ${!chO?"disabled":""}><option value="">모든 소주제</option>${tps.map(t=>`<option ${t.name===LS.tp?"selected":""}>${esc(t.name)}</option>`).join("")}</select>
       <select id="lf">${[["all","모든 카드"],["new","안 본 카드"],["learn","익히는 중"],["k","외운 카드"],["wrong","틀린 적 있는 카드"]].map(([v,l])=>`<option value="${v}" ${LS.f===v?"selected":""}>${l}</option>`).join("")}</select>
     </div>
     <div class="row" style="margin-bottom:10px"><label class="small row" style="gap:4px"><input type="checkbox" id="lh" ${LS.hide?"checked":""}> 답 가리기 (눌러서 보기)</label><span class="sp" style="flex:1"></span><span class="small muted" id="lcnt"></span><button class="btn sm pri" id="lstudy">이 목록으로 공부</button></div>
     <div id="lout"></div>`;
   const $=s=>m.querySelector(s);
   $("#lq").oninput=e=>{LS.q=e.target.value;LS.n=60;out();};
-  $("#ld").onchange=e=>{LS.d=e.target.value;LS.ch="";LS.n=60;VIEW.list(m);};
-  $("#lc").onchange=e=>{LS.ch=e.target.value;LS.n=60;out();};
+  $("#ld").onchange=e=>{LS.d=e.target.value;LS.ch="";LS.tp="";LS.n=60;VIEW.list(m);};
+  $("#lc").onchange=e=>{LS.ch=e.target.value;LS.tp="";LS.n=60;VIEW.list(m);};
+  $("#lt").onchange=e=>{LS.tp=e.target.value;LS.n=60;out();};
   $("#lf").onchange=e=>{LS.f=e.target.value;LS.n=60;out();};
   $("#lh").onchange=e=>{LS.hide=e.target.checked;out();};
-  $("#lstudy").onclick=()=>{const r=filtered();if(!r.length)return toast("카드가 없어요");startSession(LS.q?`'${LS.q}' 찾은 카드`:LS.ch||(LS.d!==""?DOCS[+LS.d]:"전체"),r,{keepOrder:!S.shuf});};
+  $("#lstudy").onclick=()=>{const r=filtered();if(!r.length)return toast("카드가 없어요");startSession(LS.q?`'${LS.q}' 찾은 카드`:LS.tp?LS.ch+" › "+LS.tp:LS.ch||(LS.d!==""?DOCS[+LS.d]:"전체"),r,{keepOrder:!S.shuf});};
   out();
   function filtered(){
     const qs=LS.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
     return ALL().filter(i=>{const c=C[i];
-      if(LS.d!==""&&c[1]!==+LS.d)return false;if(LS.ch&&c[3]!==LS.ch)return false;
+      if(LS.d!==""&&c[1]!==+LS.d)return false;if(LS.ch&&c[3]!==LS.ch)return false;if(LS.tp&&c[4]!==LS.tp)return false;
       if(LS.f==="new"&&!isNew(i))return false;if(LS.f==="learn"&&(isNew(i)||isMastered(i)))return false;
       if(LS.f==="k"&&!isMastered(i))return false;if(LS.f==="wrong"&&!isWrong(i))return false;
-      if(qs.length){const t=(c[3]+" "+c[4]+" "+c[5]+" "+c[6]).toLowerCase();return qs.every(q=>t.includes(q));}
+      if(qs.length){const t=(c[3]+" "+c[4]+" "+c[7]+" "+c[5]+" "+c[6]).toLowerCase();return qs.every(q=>t.includes(q));}
       return true;});
   }
   function out(){
     const r=filtered(),qs=LS.q.trim().split(/\s+/).filter(Boolean);
     const hl=s=>{let h=fmt(s);for(const q of qs){const re=new RegExp("("+esc(q).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");h=h.replace(/(<[^>]+>)|([^<]+)/g,(m0,tag,txt)=>tag||txt.replace(re,"<mark>$1</mark>"));}return h;};
     $("#lcnt").textContent=r.length.toLocaleString()+"장";
-    $("#lout").innerHTML=r.slice(0,LS.n).map(i=>{const c=C[i];return `<div class="li ${LS.hide?"hide":""}" style="--dc:${DC[c[1]]}" data-li="1"><div class="meta">${esc(DOCS[c[1]])} · ${esc(c[3])} › ${esc(c[4])} · ${c[2]}쪽${isMastered(i)?" · ✔ 외움":isWrong(i)?" · 틀림 "+ss(i)[2]:""}</div><div class="q">${hl(c[5])}</div><div class="a">${hl(c[6])}</div></div>`;}).join("")
+    $("#lout").innerHTML=r.slice(0,LS.n).map(i=>{const c=C[i];return `<div class="li ${LS.hide?"hide":""}" style="--dc:${DC[c[1]]}" data-li="1"><div class="meta">${esc(DOCS[c[1]])} · ${esc(c[3])} › ${esc(c[4])}${c[7]&&c[7]!==c[4]?" · "+esc(c[7]):""} · ${c[2]}쪽${isMastered(i)?" · ✔ 외움":isWrong(i)?" · 틀림 "+ss(i)[2]:""}</div><div class="q">${hl(c[5])}</div><div class="a">${hl(c[6])}</div></div>`;}).join("")
       +(r.length>LS.n?`<button class="btn more" id="lmore">더 보기 (${(r.length-LS.n).toLocaleString()}장 남음)</button>`:"")
       +(r.length?"":`<p class="muted" style="text-align:center;padding:40px">찾는 카드가 없어요</p>`);
     const mo=$("#lmore");if(mo)mo.onclick=()=>{LS.n+=100;out();};
@@ -591,7 +599,7 @@ function showLock(mode){
 (async()=>{
   const main=document.getElementById("main");
   if(!window.crypto||!crypto.subtle||!window.DecompressionStream){main.innerHTML=`<p class="loading">브라우저가 오래됐어요. 최신 크롬·사파리·엣지에서 열어 주세요.</p>`;return;}
-  try{const r=await fetch("content.bin",{cache:"no-cache"});if(!r.ok)throw 0;BLOB=await r.arrayBuffer();}
+  try{const r=await fetch("content.bin",{cache:"no-cache"});if(!r.ok)throw 0;BLOB=await r.arrayBuffer();try{const t=await fetch("tax.json",{cache:"no-cache"});if(t.ok)TAX=await t.json();}catch(e){}}
   catch(e){main.innerHTML=`<p class="loading">자료를 못 불러왔어요. 인터넷 연결을 확인하고 새로 고쳐 주세요.</p>`;return;}
   let saved=null,auto=null;try{saved=localStorage.getItem(BASE+":key");auto=localStorage.getItem(BASE+":auto");}catch(e){}
   if(saved){
