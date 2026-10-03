@@ -383,6 +383,15 @@ body.noscroll{overflow:hidden}
 .qm b{display:block;font-size:15px;font-weight:600}
 .qm small{font-size:12px;color:var(--ink-3)}
 @media (max-width:760px){.tabbar{grid-template-columns:repeat(6,1fr)}}
+
+/* 기출 답란 (시험지처럼 밑줄 칸) */
+.abox{margin-top:10px;display:flex;flex-direction:column;gap:2px}
+.aline{display:flex;align-items:flex-end;gap:8px;min-height:34px;border-bottom:1px solid var(--ink-3);padding:4px 2px 3px}
+.aline .mk{font-weight:700;color:var(--ink-2);flex:none;line-height:1.6}
+.aline .av{flex:1;font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--good);font-weight:600;visibility:hidden}
+.abox.on .av{visibility:visible}
+.abox.empty .aline{border-bottom-style:dashed;border-color:var(--line-2)}
+.ashow{align-self:flex-start;margin-top:8px;border:0;background:var(--good-s);color:var(--good);font-weight:700;font-size:13px;border-radius:999px;padding:5px 12px}
 </style>
 </head>
 <body>
@@ -811,7 +820,7 @@ function openQ(qid,hl){
       <p class="stem">${esc(q.stem)}</p>
       ${q.subs.map(([n,ask,ans])=>{const on=hl&&hl.includes(n);const lc=(q.links[n]||[]).filter(c=>CID[c]!=null);
         return `<div class="qsub ${on?"hl":""}"><div class="qask"><b>${esc(n)}</b> ${esc(ask)}</div>
-          ${ans?`<details class="qans"><summary>민쌤 답안 보기</summary><div>${esc(ans)}</div></details>`:""}
+          ${ansBox(ask,ans)}
           ${lc.length?`<div class="qlc">${lc.map(c=>{const i=CID[c];return `<button class="qcard" data-ci="${i}" style="--dc:${DC[C[i][1]]}"><span>${esc(C[i][5])}</span><small>${esc(C[i][4])}</small></button>`;}).join("")}</div>`:""}</div>`;}).join("")}
       <div class="row qacts">${cards.length?`<button class="btn pri" id="qstudy">${ico("play",16)}관련 카드 ${cards.length}장 공부</button>`:""}${q.pages.length?`<button class="btn" id="qimg">${ico("book",16)}시험지 원문 보기</button>`:""}</div>
       <div id="qpages"></div>
@@ -819,6 +828,7 @@ function openQ(qid,hl){
   document.body.appendChild(el);document.body.classList.add("noscroll");
   el.onclick=e=>{if(e.target===el)closeQ();};
   el.querySelector("#qclose").onclick=closeQ;
+  el.querySelectorAll(".ashow").forEach(b=>b.onclick=()=>{const box=b.closest(".abox");box.classList.toggle("on");b.textContent=box.classList.contains("on")?"답안 가리기":"민쌤 답안 보기";});
   el.querySelectorAll("[data-ci]").forEach(b=>b.onclick=()=>{const i=+b.dataset.ci;closeQ();startSession(`${qLabel(qid)} 관련 카드`,[i].concat(cards.filter(x=>x!==i)),{keepOrder:true});});
   const qs=el.querySelector("#qstudy");if(qs)qs.onclick=()=>{closeQ();startSession(`${qLabel(qid)} 관련 카드`,cards,{keepOrder:true});};
   const qi=el.querySelector("#qimg");if(qi)qi.onclick=async e=>{
@@ -826,6 +836,23 @@ function openQ(qid,hl){
     try{const urls=await Promise.all(q.pages.map(gImg));box.innerHTML=urls.map((u,k)=>`<img class="qpage" src="${u}" alt="${esc(qLabel(qid))} 시험지 ${k+1}쪽">`).join("");}
     catch(x){box.innerHTML=`<p class="muted small">시험지를 불러오지 못했어요.</p>`;}
   };
+}
+/* 시험지 답란처럼: 물음의 ①②… 개수만큼 밑줄 칸, 답은 해당 칸에 */
+const MK="①②③④⑤⑥⑦⑧⑨⑩";
+function ansBox(ask,ans){
+  const mk=[...new Set([...String(ask)].filter(ch=>MK.includes(ch)))];
+  const slots=mk.length?mk:[""];
+  let parts=slots.map(()=> "");
+  if(ans){
+    if(mk.length){const re=new RegExp("(["+mk.join("")+"])");const seg=String(ans).split(re);let cur=-1,pre="";
+      for(const t of seg){const k=mk.indexOf(t);if(k>=0){cur=k;continue;}if(cur<0)pre+=t;else parts[cur]+=t;}
+      parts=parts.map(x=>x.replace(/^[\s:：)]+/,"").trim());
+      if(pre.trim())parts[0]=(pre.trim()+" "+parts[0]).trim();
+      if(parts.every(x=>!x))parts[0]=String(ans).trim();}
+    else parts[0]=String(ans).trim();
+  }
+  return `<div class="abox ${ans?"":"empty"}">${slots.map((m,k)=>`<div class="aline">${m?`<span class="mk">${m}</span>`:""}<span class="av">${esc(parts[k])}</span></div>`).join("")}
+    ${ans?`<button class="ashow" type="button">민쌤 답안 보기</button>`:""}</div>`;
 }
 function closeQ(){const o=document.getElementById("qsheet");if(o)o.remove();document.body.classList.remove("noscroll");}
 document.addEventListener("keydown",e=>{if(document.getElementById("qsheet")){if(e.key==="Escape")closeQ();e.stopImmediatePropagation();}},true);
