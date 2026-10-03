@@ -392,6 +392,13 @@ body.noscroll{overflow:hidden}
 .abox.on .av{visibility:visible}
 .abox.empty .aline{border-bottom-style:dashed;border-color:var(--line-2)}
 .ashow{align-self:flex-start;margin-top:8px;border:0;background:var(--good-s);color:var(--good);font-weight:700;font-size:13px;border-radius:999px;padding:5px 12px}
+
+/* 기출 시험지 사진 */
+.qpages{margin:-4px -6px 14px}
+.qpages .qpage{margin-top:0;margin-bottom:8px;border-radius:12px;box-shadow:var(--sh)}
+.qph{aspect-ratio:729/1032;border-radius:12px;background:linear-gradient(90deg,var(--sunk),var(--hover),var(--sunk));background-size:200% 100%;animation:shimmer 1.2s infinite linear;margin-bottom:8px}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.qsec{font-size:14px;color:var(--ink-3);margin:6px 2px 10px;font-weight:700}
 </style>
 </head>
 <body>
@@ -780,7 +787,7 @@ VIEW.list=function(m){
 
 /* ---------- 기출 (2014~2026 교육과정 A·B) ---------- */
 // gichul.bin: 자료 열쇠로 암호화된 {q:{문항id:{y,s,no,pts,pages,stem,subs:[[n,물음,답]]}}, l:{문항id:{하위물음:[카드id]}}}
-let GQ=null,GL={},CID={};
+let GQ=null,GL={},CID={},GPUB=false;
 const GKEYS=()=>GQ?Object.keys(GQ):[];
 async function loadGichul(){
   try{
@@ -789,7 +796,7 @@ async function loadGichul(){
       const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b.slice(0,12)},await keyFromRaw(RAWKEY),b.slice(12));
       d=await new Response(new Blob([pt]).stream().pipeThrough(new DecompressionStream("gzip"))).json();}
     else{const r2=await fetch("gichul.json",{cache:"no-cache"});if(!r2.ok)return;d=await r2.json();}  // 답안·시험지 없는 공개판
-    GQ=d.q;GL={};CID={};C.forEach((c,i)=>CID[c[0]]=i);
+    GQ=d.q;GPUB=!!d.pub;GL={};CID={};C.forEach((c,i)=>CID[c[0]]=i);
     for(const qid in d.l)for(const n in d.l[qid])for(const cid of d.l[qid][n]){(GL[cid]=GL[cid]||[]);if(!GL[cid].some(x=>x[0]===qid&&x[1]===n))GL[cid].push([qid,n]);}
     for(const qid in GQ){GQ[qid].links=d.l[qid]||{};}
     if(C.length&&route.v!=="study")renderRoute();
@@ -802,6 +809,7 @@ const qCards=qid=>{const s=new Set();const l=GQ[qid].links;for(const n in l)l[n]
 const IMGS={};
 async function gImg(key){
   if(IMGS[key])return IMGS[key];
+  if(GPUB)return IMGS[key]=`gp/${encodeURIComponent(key)}.webp`;
   const r=await fetch(`g/${encodeURIComponent(key)}.bin`);if(!r.ok)throw 0;
   const b=new Uint8Array(await r.arrayBuffer());
   const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b.slice(0,12)},await keyFromRaw(RAWKEY),b.slice(12));
@@ -817,13 +825,13 @@ function openQ(qid,hl){
     <div class="shd"><div><span class="ytag">${esc(q.y.replace("추"," 추시"))}학년도</span><h2>교육과정 ${q.s} ${q.no}번 <small>${q.pts?q.pts+"점":""}</small></h2></div>
       <button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
     <div class="sbd">
-      <p class="stem">${esc(q.stem)}</p>
+      ${q.pages.length?`<div class="qpages" id="qpages">${q.pages.map(()=>`<div class="qph"></div>`).join("")}</div>`:`<p class="stem">${esc(q.stem)}</p>`}
+      ${q.pages.length?`<h3 class="qsec">물음과 답란</h3>`:""}
       ${q.subs.map(([n,ask,ans])=>{const on=hl&&hl.includes(n);const lc=(q.links[n]||[]).filter(c=>CID[c]!=null);
         return `<div class="qsub ${on?"hl":""}"><div class="qask"><b>${esc(n)}</b> ${esc(ask)}</div>
           ${ansBox(ask,ans)}
           ${lc.length?`<div class="qlc">${lc.map(c=>{const i=CID[c];return `<button class="qcard" data-ci="${i}" style="--dc:${DC[C[i][1]]}"><span>${esc(C[i][5])}</span><small>${esc(C[i][4])}</small></button>`;}).join("")}</div>`:""}</div>`;}).join("")}
-      <div class="row qacts">${cards.length?`<button class="btn pri" id="qstudy">${ico("play",16)}관련 카드 ${cards.length}장 공부</button>`:""}${q.pages.length?`<button class="btn" id="qimg">${ico("book",16)}시험지 원문 보기</button>`:""}</div>
-      <div id="qpages"></div>
+      <div class="row qacts">${cards.length?`<button class="btn pri" id="qstudy">${ico("play",16)}관련 카드 ${cards.length}장 공부</button>`:""}</div>
     </div></div>`;
   document.body.appendChild(el);document.body.classList.add("noscroll");
   el.onclick=e=>{if(e.target===el)closeQ();};
@@ -831,11 +839,9 @@ function openQ(qid,hl){
   el.querySelectorAll(".ashow").forEach(b=>b.onclick=()=>{const box=b.closest(".abox");box.classList.toggle("on");b.textContent=box.classList.contains("on")?"답안 가리기":"민쌤 답안 보기";});
   el.querySelectorAll("[data-ci]").forEach(b=>b.onclick=()=>{const i=+b.dataset.ci;closeQ();startSession(`${qLabel(qid)} 관련 카드`,[i].concat(cards.filter(x=>x!==i)),{keepOrder:true});});
   const qs=el.querySelector("#qstudy");if(qs)qs.onclick=()=>{closeQ();startSession(`${qLabel(qid)} 관련 카드`,cards,{keepOrder:true});};
-  const qi=el.querySelector("#qimg");if(qi)qi.onclick=async e=>{
-    const box=el.querySelector("#qpages");e.currentTarget.remove();box.innerHTML=`<p class="muted small">불러오는 중…</p>`;
+  if(q.pages.length)(async()=>{const box=el.querySelector("#qpages");
     try{const urls=await Promise.all(q.pages.map(gImg));box.innerHTML=urls.map((u,k)=>`<img class="qpage" src="${u}" alt="${esc(qLabel(qid))} 시험지 ${k+1}쪽">`).join("");}
-    catch(x){box.innerHTML=`<p class="muted small">시험지를 불러오지 못했어요.</p>`;}
-  };
+    catch(x){box.innerHTML=`<p class="muted small">시험지 사진을 불러오지 못했어요.</p><p class="stem">${esc(q.stem)}</p>`;}})();
 }
 /* 시험지 답란처럼: 물음의 ①②… 개수만큼 밑줄 칸, 답은 해당 칸에 */
 const MK="①②③④⑤⑥⑦⑧⑨⑩";
