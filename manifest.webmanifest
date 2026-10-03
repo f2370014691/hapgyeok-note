@@ -3,8 +3,8 @@
  "short_name": "합격노트",
  "start_url": "./",
  "display": "standalone",
- "background_color": "#FFFBF1",
- "theme_color": "#FFD54F",
+ "background_color": "#F4F3FA",
+ "theme_color": "#24234A",
  "lang": "ko",
  "icons": [
   {
