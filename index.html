@@ -349,6 +349,19 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 .lock .switch{justify-content:center}
 .btn.lg{padding:13px 22px;font-size:16px;border-radius:14px}.btn.block{width:100%}
 .err{color:var(--bad);font-size:14px;min-height:1.2em}
+
+/* 기출: 왼쪽 사진(화면 높이에 맞춤) | 오른쪽 문제 */
+.player.wide{max-width:1280px}
+.qsplit{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+.qsplit .qimg,.qsplit .qpages{position:sticky;top:0;text-align:center}
+.qsplit .qimg img,.qsplit .qpage{max-width:100%;max-height:calc(100dvh - 190px);width:auto;height:auto;margin:0 auto;display:block}
+.qsplit .qph{aspect-ratio:3/4;max-width:100%;max-height:calc(100dvh - 190px)}
+.qsplit .qright{min-width:0}
+.qsplit .qright .qsub:first-child{margin-top:0}
+.sheet.wide{max-width:1280px}
+.sheet.wide .qsplit .qpage{max-height:calc(100dvh - 150px)}
+.qpc.card{min-height:0}
+@media (max-width:899px){.qsplit{grid-template-columns:minmax(0,1fr)}.qsplit .qimg,.qsplit .qpages{position:static}.qsplit .qimg img,.qsplit .qpage{max-height:none}}
 </style>
 </head>
 <body>
@@ -722,15 +735,16 @@ function gichulIn(box,sc,items){
   const s=QPI;if(s.pos>=items.length)s.pos=items.length-1;
   const [qid,n]=items[s.pos],q=GQ[qid],sub=q.subs.find(x=>x[0]===n)||q.subs[0];
   const cards=(q.links[n]||[]).map(c=>CID[c]).filter(x=>x!=null);
-  box.innerHTML=`<div class="player">
+  box.innerHTML=`<div class="player wide">
     <div class="pbar"><div class="prog"><i style="width:${(s.pos+1)/items.length*100}%"></i></div><span class="num cnt">${s.pos+1} / ${items.length}</span>
       <select id="qsel" aria-label="문항 고르기">${items.map(([a,b],j)=>`<option value="${j}" ${j===s.pos?"selected":""}>${esc(GQ[a].y.replace("추"," 추시"))} ${GQ[a].s}-${GQ[a].no} ${esc(b)}</option>`).join("")}</select></div>
     <article class="card qpc">
       <div class="cmeta"><span class="tag gtag">${esc(q.y.replace("추"," 추시"))}학년도 ${q.s} ${q.no}번 ${esc(n)}</span>${q.pts?`<span>${q.pts}점 문항</span>`:""}</div>
-      <div class="qimg" id="qpi"><div class="qph"></div></div>
+      <div class="qsplit"><div class="qimg" id="qpi"><div class="qph"></div></div><div class="qright">
       <div class="qask"><b>${esc(n)}</b> ${esc(sub[1])}</div>
       ${s.open?`<div class="qpa">${ansBox(sub[1],sub[2]).replace('class="abox ','class="abox on ')}
         ${cards.length?`<h4 class="qsec">연결된 카드</h4>${cards.map(i=>`<div class="qpcard"><b>${fmt(C[i][5])}</b><div>${fmt(C[i][6])}</div></div>`).join("")}`:""}</div>`:""}
+      </div></div>
       <button class="arr l" id="qpp" aria-label="이전 문제" ${s.pos?"":"disabled"}>${ico("left",18)}</button><button class="arr r" id="qpn" aria-label="다음 문제" ${s.pos<items.length-1?"":"disabled"}>${ico("chev",18)}</button>
     </article>
     <div class="ctl"><div class="reveal">${s.open?`<button class="showbtn" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 문제</button><button class="btn allbtn" id="qpall">문항 전체</button>`:`<button class="showbtn" id="qpo">답 보기</button><button class="btn allbtn" id="qpall">문항 전체</button>`}</div></div></div>`;
@@ -776,14 +790,14 @@ function openQ(qid,hl,others){
   const q=GQ&&GQ[qid];if(!q)return;closeQ();
   const one=hl&&hl.length===1&&q.img&&q.img.subs&&q.img.subs[hl[0]];
   const el=document.createElement("div");el.className="sheetbg";el.id="qsheet";
-  el.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-label="기출 문항">
+  el.innerHTML=`<div class="sheet wide" role="dialog" aria-modal="true" aria-label="기출 문항">
     <div class="shd"><div><span class="ytag">${esc(q.y.replace("추"," 추시"))}학년도 · 교육과정 ${q.s}</span><h2>${q.no}번 <small>${q.pts?q.pts+"점":""}</small></h2></div>
       ${others&&others.length>1?`<select id="qoth" aria-label="다른 기출">${others.map(o=>`<option value="${esc(o)}" ${o===qid?"selected":""}>${esc(qLabel(o))}</option>`).join("")}</select>`:""}
       <button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
-    <div class="sbd">
+    <div class="sbd"><div class="qsplit">
       <div class="qpages" id="qpages"><div class="qph"></div></div>
-      ${q.subs.map(([n,ask,ans])=>`<div class="qsub ${hl&&hl.includes(n)?"hl":""}"><div class="qask"><b>${esc(n)}</b> ${esc(ask)}</div>${ansBox(ask,ans)}</div>`).join("")}
-    </div></div>`;
+      <div class="qright">${q.subs.map(([n,ask,ans])=>`<div class="qsub ${hl&&hl.includes(n)?"hl":""}"><div class="qask"><b>${esc(n)}</b> ${esc(ask)}</div>${ansBox(ask,ans)}</div>`).join("")}</div>
+    </div></div></div>`;
   document.body.appendChild(el);document.body.classList.add("noscroll");
   el.onclick=e=>{if(e.target===el)closeQ();};
   el.querySelector("#qclose").onclick=closeQ;
