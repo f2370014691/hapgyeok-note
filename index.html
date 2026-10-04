@@ -1081,6 +1081,11 @@ td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;w
 .optbtn .obc{display:grid;place-items:center;color:var(--ink-3);transform:rotate(90deg)}
 .optbtn.open .obc{transform:rotate(-90deg)}
 .opts9[hidden]{display:none}
+.btn.dangerline{border-color:color-mix(in srgb,var(--bad) 45%,var(--line-2));color:var(--bad)}
+.btn.dangerline:hover{background:var(--bad-s)!important}
+.rst9 .row{flex-wrap:nowrap}
+.wmbtn{margin:6px 0 12px}
+.wmleg{justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -1545,6 +1550,7 @@ function listIn(box,sc){
 function weakMap(){return DOCS.map((dn0,d)=>`<div class="wm" style="--dc:${DC[d]}"><b>${esc(dn0)}</b><div class="wmg">${CH[d].map((ch,k)=>ch.topics.map((tp,t)=>{let seen=0,lap=0;for(const i of tp.idx){const x=ss(i);if(x){seen++;if(x[2])lap++;}}
   const r=seen?lap/seen:0,st=seen<3?"n":r>=.3?"w3":r>=.15?"w2":"w1";
   return `<button class="wt ${st}" data-w="${d},${k},${t}" title="${esc(ch.name)} › ${esc(tp.name)} · ${seen?`본 카드 ${seen}장 · 틀린 적 ${lap}장`:"아직 안 봄"}"><span>${esc(tp.name)}</span>${seen>=3?`<em class="num">${Math.round((1-r)*100)}%</em>`:""}</button>`;}).join("")).join("")}</div></div>`).join("");}
+let WMOPEN=false;
 VIEW.home=function(m){
   const all=counts(ALL()),due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,dd=ddays(),L=lvOf(S.xp||0),now=new Date();
   const ring=(c,sz,col)=>{const r=(sz-8)/2,Lc=2*Math.PI*r;return `<svg class="ring8" width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" aria-hidden="true"><circle cx="${sz/2}" cy="${sz/2}" r="${r}" stroke-width="7" class="r0"/><circle cx="${sz/2}" cy="${sz/2}" r="${r}" stroke-width="7" stroke="${col}" stroke-dasharray="${c.k/(c.all||1)*Lc} ${Lc}" stroke-linecap="round"/></svg>`;};
@@ -1575,12 +1581,14 @@ VIEW.home=function(m){
       <span class="s9t"><b>${esc(d)}</b><small class="num">${c.k.toLocaleString()} / ${c.all.toLocaleString()}장 외움</small>
         <span class="s9bar"><i class="k" style="width:${c.k/(c.all||1)*100}%"></i><i class="l" style="width:${c.l/(c.all||1)*100}%"></i></span>
         <small class="s9m">대주제 ${CH[i].length}개${c.due?` · 복습 ${c.due}장`:""}</small></span>${ico("chev",18)}</a>`;}).join("")}</section>
-    <div class="h9sec"><h2>약점 지도</h2><span class="wleg"><i class="w3"></i>자주 틀림<i class="w2"></i>가끔 틀림<i class="w1"></i>잘함<i class="n"></i>아직</span></div>
-    <section class="wmap">${weakMap()}</section>
+    <button class="optbtn wmbtn ${WMOPEN?"open":""}" id="wmt" aria-expanded="${WMOPEN}"><span class="ob1">약점 지도</span><span class="ob2">소주제별로 자주 틀리는 곳을 색으로 보여 줘요</span><span class="obc">${ico("chev",16)}</span></button>
+    ${WMOPEN?`<div class="h9sec wmleg"><span class="wleg"><i class="w3"></i>자주 틀림<i class="w2"></i>가끔 틀림<i class="w1"></i>잘함<i class="n"></i>아직</span></div>
+    <section class="wmap">${weakMap()}</section>`:""}
   </div>`;
   const hd=m.querySelector("#hdue");if(hd)hd.onclick=e=>{e.preventDefault();loadSC();SC.sp="due";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   const hp=m.querySelector("#hplan");if(hp)hp.onclick=e=>{e.preventDefault();loadSC();SC.sp="plan";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const [d,k,t]=b.dataset.w.split(",").map(Number);loadSC();SC.sp="";SC.d=d;SC.k=k;SC.t=t;saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");});
+  m.querySelector("#wmt").onclick=()=>{WMOPEN=!WMOPEN;const y=window.scrollY;VIEW.home(m);window.scrollTo({top:y});};
   const hw=m.querySelector("#hwr");if(hw)hw.onclick=e=>{e.preventDefault();loadSC();SC.sp="wrong";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   const hx=m.querySelector("#hdd");if(hx)hx.onclick=()=>go("#/set");
   m.querySelectorAll(".s9[data-d]").forEach(a=>a.onclick=e=>{e.preventDefault();loadSC();SC.sp="";SC.d=+a.dataset.d;SC.k=null;SC.t=null;saveSC();FCRUN=false;go("#/fc");});
@@ -1880,7 +1888,7 @@ function ansKeys(a){
 function typeScore(input,a){return ansKeys(a).map(k=>({k,ok:cellOk(input,k)}));}
 
 /* ---------- 설정 ---------- */
-let resetAsk=false;
+let resetAsk=false,RSD="all";
 VIEW.set=function(m){
   const theme=document.documentElement.dataset.theme||"",o=FCO();
   m.innerHTML=`<div class="page narrow9 set9">
@@ -1901,7 +1909,11 @@ VIEW.set=function(m){
     </section>
     <section class="group"><h3>계정</h3>
       <div class="item"><span><b>${esc(ME.id)}</b><small>기록은 서버에 자동 저장돼요</small></span><button class="btn sm" id="lo">로그아웃</button></div>
-      <div class="item"><span><b>진도 처음부터</b><small>외운 기록과 복습 일정을 모두 지워요</small></span>${resetAsk?`<span class="row"><button class="btn sm danger" id="rs-ok">정말 지우기</button><button class="btn sm" id="rs-no">취소</button></span>`:`<button class="btn sm" id="rs">지우기</button>`}</div>
+    </section>
+    <section class="group rst9"><h3>학습 내역</h3>
+      <div class="item"><span><b>학습 내역 초기화</b><small>외운 기록·복습 일정·틀린 카드${RSD==="all"?"·오늘 목표 기록·연속일·레벨·배지·시간 기록":"·배지"}을 지워요. 되돌릴 수 없어요</small></span>
+        <span class="row"><select id="rs-d" aria-label="초기화 범위"><option value="all" ${RSD==="all"?"selected":""}>전체</option>${DOCS.map((x,i)=>`<option value="${i}" ${RSD===String(i)?"selected":""}>${x}만</option>`).join("")}</select>
+        ${resetAsk?`<button class="btn sm danger" id="rs-ok">정말 초기화</button><button class="btn sm" id="rs-no">취소</button>`:`<button class="btn sm dangerline" id="rs">초기화</button>`}</span></div>
     </section></div>`;
   const $=s=>m.querySelector(s),set=(k,v)=>{S.fc=Object.assign(FCO(),{[k]:v});save();SES=null;};
   $("#o-rv").onchange=e=>set("reveal",e.target.value);$("#o-ty").onchange=e=>{set("typing",e.target.checked);set("mode",e.target.checked?"type":"click");};$("#o-sh").onchange=e=>set("order",e.target.checked?"shuf":"seq");
@@ -1913,7 +1925,11 @@ VIEW.set=function(m){
   $("#lo").onclick=logout;
   const on=(s,f)=>{const b=$(s);if(b)b.onclick=f;};
   on("#rs",()=>{resetAsk=true;VIEW.set(m);});on("#rs-no",()=>{resetAsk=false;VIEW.set(m);});
-  on("#rs-ok",()=>{resetAsk=false;const keep={exam:S.exam,fc:S.fc};S=blank();Object.assign(S,keep);save();SES=null;toast("진도를 지웠어요");VIEW.set(m);});
+  {const rd=$("#rs-d");if(rd)rd.onchange=()=>{RSD=rd.value;resetAsk=false;VIEW.set(m);};}
+  on("#rs-ok",()=>{resetAsk=false;
+    if(RSD==="all"){const keep={exam:S.exam,fc:S.fc,goal:S.goal};S=blank();Object.assign(S,keep);toast("학습 내역을 모두 초기화했어요");}
+    else{const d=+RSD;docIdx(d).forEach(i=>delete S.srs[C[i][0]]);if(S.badges)for(const k in S.badges)if(k.startsWith(`t:${d}:`))delete S.badges[k];if(S.best)for(const k in S.best)if(k.startsWith(`t:${d}:`))delete S.best[k];toast(`${DOCS[d]} 학습 내역을 초기화했어요`);}
+    save();SES=null;VIEW.set(m);});
 };
 try{const th=localStorage.getItem(SBASE+":theme");if(th)document.documentElement.dataset.theme=th;}catch(e){}
 const renderTop=()=>renderSide();
