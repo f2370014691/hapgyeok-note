@@ -378,6 +378,46 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 .card textarea{-webkit-user-select:text;user-select:text}
 
 .pane.wide{max-width:1600px}
+
+/* ===== v6: 메뉴 페이지형 사이드바 + 범위 선택 칸 ===== */
+.top{display:none!important}
+.shell{grid-template-columns:220px minmax(0,1fr)}
+.side{padding:18px 12px 12px;gap:4px}
+.sbrand{display:flex;align-items:center;gap:10px;padding:2px 8px 18px;font-size:17px}
+.snav{display:flex;flex-direction:column;gap:3px}
+.nv{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;font-weight:700;font-size:15.5px;color:var(--ink-2)}
+.nv:hover{background:var(--hover);color:var(--ink)}
+.nv.on{background:var(--pri-s);color:var(--pri)}
+.sfoot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+.sfoot .dd{align-self:flex-start;margin-left:10px}.sfoot .sync{padding-left:12px}
+@media (max-width:899px){
+  .tabbar{display:grid!important;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabbar:empty{display:none!important}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--ink-3);padding:3px 0}
+  .tabbar a.on{color:var(--pri)}
+  main{padding:0 0 96px}
+  body.locked main{padding-bottom:24px}
+  .ctl{bottom:62px}
+}
+.page{max-width:900px;margin:0 auto}
+.page.wide2{max-width:1100px}.page.wide3{max-width:1400px}
+.phd{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.phd h1{font-size:24px;margin-right:6px}
+.picker{display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex:1;min-width:0}
+.picker select{font-size:14.5px;padding:8px 30px 8px 12px;border-radius:11px;max-width:260px;font-weight:600}
+.picker select:disabled{opacity:.45}
+.pnav{display:flex;gap:2px}
+.pmeta{margin:2px 2px 14px}
+@media (max-width:899px){
+  .page{padding:12px 12px 0}
+  .phd{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);margin:-12px -12px 6px;padding:10px 12px 8px;gap:6px}
+  .phd h1{font-size:19px;width:100%}
+  .picker select{flex:1 1 30%;max-width:none;font-size:13.5px;padding:7px 24px 7px 9px}
+}
+.sbox{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 14px;color:var(--ink-3);margin-bottom:14px}
+.sbox input{flex:1;border:0;background:none;padding:13px 0;font-size:16px;outline:none;color:var(--ink);min-width:0}
+/* 기출 사진: 지금의 약 70% 폭 */
+.qsplit{grid-template-columns:minmax(0,1.15fr) minmax(280px,1fr)!important;gap:20px}
 </style>
 </head>
 <body>
@@ -490,7 +530,7 @@ const IC={
   undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
   play:'<path d="M7 4v16l13-8z"/>',file:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
   shuffle:'<path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',kbd:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
-  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',today:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',cards:'<rect x="3" y="6" width="14" height="15" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>',grid:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',today:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
 };
 const ico=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
 const DLET=["개","각","교"];
@@ -507,121 +547,111 @@ function buildIdx(){
 const qSort=(a,b)=>GQ[b].y.localeCompare(GQ[a].y)||GQ[a].s.localeCompare(GQ[b].s)||GQ[a].no-GQ[b].no;
 function learnQueue(idx){const q=idx.filter(isDue).concat(idx.filter(isNew));return q.length?q:idx.slice();}
 
-/* ---------- 주소: #/ · #/t/과목[/대[/소]][/탭] · #/due · #/wrong · #/s/검색어 · #/set ---------- */
-let route={v:"home"};
-const TABS=["cards","list","table","gichul"];
+/* ---------- 페이지: #/fc 플래시카드 · #/table 표 · #/gichul 기출 · #/search 찾기 · #/set 설정 ---------- */
+let route={v:"fc"};
+const PAGES=[["fc","플래시카드","cards"],["table","표","grid"],["gichul","기출","file"],["search","찾기","search"]];
 function go(h){if(location.hash===h)renderRoute();else location.hash=h;}
-function parseHash(){
-  const p=location.hash.replace(/^#\/?/,"").split("/").map(decodeURIComponent);
-  if(p[0]==="t"){const r={v:"topic",d:+p[1],k:null,t:null,tab:"cards"};let j=2;
-    if(!CH[r.d])return{v:"home"};
-    if(p[j]!=null&&p[j]!==""&&!TABS.includes(p[j])){r.k=+p[j++];if(!CH[r.d][r.k])r.k=null;}
-    if(r.k!=null&&p[j]!=null&&p[j]!==""&&!TABS.includes(p[j])){r.t=+p[j++];if(!CH[r.d][r.k].topics[r.t])r.t=null;}
-    if(TABS.includes(p[j]))r.tab=p[j];return r;}
-  if(p[0]==="due"||p[0]==="wrong")return{v:"topic",special:p[0],tab:"cards"};
-  if(p[0]==="s")return{v:"topic",special:"search",q:p[1]||"",tab:"list"};
-  if(p[0]==="set")return{v:"set"};
-  return{v:"home"};
-}
-const scopeHref=(r,tab)=>r.special==="search"?`#/s/${encodeURIComponent(r.q)}`:r.special?`#/${r.special}`:`#/t/${r.d}`+(r.k!=null?`/${r.k}`:"")+(r.t!=null?`/${r.t}`:"")+(tab&&tab!=="cards"?`/${tab}`:"");
+function parseHash(){const p=location.hash.replace(/^#\/?/,"").split("/").map(decodeURIComponent);
+  if(PAGES.some(x=>x[0]===p[0])||p[0]==="set")return{v:p[0],q:p[1]||""};return{v:"fc"};}
 window.addEventListener("hashchange",()=>{if(C.length)renderRoute();});
-function scopeOf(r){
-  if(r.special==="due")return{key:"due",title:"오늘 복습",sub:"복습할 때가 된 카드",idx:ALL().filter(isDue).sort((a,b)=>ss(a)[1]-ss(b)[1])};
-  if(r.special==="wrong")return{key:"wrong",title:"틀린 카드",sub:"한 번이라도 '몰랐어요'를 누른 카드",idx:ALL().filter(isWrong)};
-  if(r.special==="search"){const qs=r.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    return{key:"s:"+r.q,title:r.q?`'${r.q}' 찾기`:"찾기",sub:"",idx:qs.length?ALL().filter(i=>{const c=C[i],t=(c[3]+" "+c[4]+" "+c[7]+" "+c[5]+" "+c[6]).toLowerCase();return qs.every(q=>t.includes(q));}):[]};}
-  const d=r.d,ch=r.k!=null?CH[d][r.k]:null,tp=ch&&r.t!=null?ch.topics[r.t]:null;
-  return{key:`t:${d}:${r.k}:${r.t}`,d,k:r.k,t:r.t,title:tp?tp.name:ch?ch.name:DOCS[d],
-    sub:tp?`${DOCS[d]} › ${ch.name}`:ch?DOCS[d]:"",idx:tp?tp.idx:ch?ch.idx:docIdx(d)};
+/* 범위: 모든 페이지가 같이 쓴다 (sp = due|wrong 은 플래시카드용) */
+let SC=null;
+function loadSC(){if(SC)return;SC={d:0,k:null,t:null,sp:""};try{Object.assign(SC,JSON.parse(localStorage.getItem(SBASE+":scope")||"{}"));}catch(e){}
+  if(!CH[SC.d])SC.d=0;if(SC.k!=null&&!CH[SC.d][SC.k])SC.k=null;if(SC.k==null)SC.t=null;else if(SC.t!=null&&!CH[SC.d][SC.k].topics[SC.t])SC.t=null;}
+const saveSC=()=>{try{localStorage.setItem(SBASE+":scope",JSON.stringify(SC));}catch(e){}};
+function curScope(pageSp){
+  const sp=pageSp!==false?SC.sp:"";
+  if(sp==="due")return{key:"due",title:"오늘 복습",idx:ALL().filter(isDue).sort((a,b)=>ss(a)[1]-ss(b)[1])};
+  if(sp==="wrong")return{key:"wrong",title:"틀린 카드",idx:ALL().filter(isWrong)};
+  const d=SC.d,ch=SC.k!=null?CH[d][SC.k]:null,tp=ch&&SC.t!=null?ch.topics[SC.t]:null;
+  return{key:`t:${d}:${SC.k}:${SC.t}`,d,k:SC.k,t:SC.t,title:tp?tp.name:ch?ch.name:DOCS[d],idx:tp?tp.idx:ch?ch.idx:docIdx(d)};
 }
+const scopeOf=()=>curScope();
+function picker(withSp){
+  const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,d=SC.d,sp=withSp&&SC.sp;
+  const opt=(v,l,on)=>`<option value="${v}" ${on?"selected":""}>${l}</option>`;
+  return `<div class="picker">
+    <select id="pd" aria-label="과목">${withSp?opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${DOCS.map((x,i)=>opt(i,`${x} (${docIdx(i).length})`,!sp&&d===i)).join("")}</select>
+    ${sp?"":`<select id="pk" aria-label="대주제">${opt("","대주제 전체",SC.k==null)}${CH[d].map((ch,k)=>opt(k,`${k+1}. ${esc(ch.name)} (${ch.idx.length})`,SC.k===k)).join("")}</select>
+    <select id="pt" aria-label="소주제" ${SC.k==null?"disabled":""}>${opt("","소주제 전체",SC.t==null)}${SC.k!=null?CH[d][SC.k].topics.map((tp,t)=>opt(t,`${SC.k+1}-${t+1}. ${esc(tp.name)} (${tp.idx.length})`,SC.t===t)).join(""):""}</select>
+    ${SC.t!=null?`<span class="pnav"><button class="iconbtn sm" id="pprev" aria-label="이전 소주제" ${SC.t>0?"":"disabled"}>${ico("left",16)}</button><button class="iconbtn sm" id="pnext" aria-label="다음 소주제" ${SC.t<CH[d][SC.k].topics.length-1?"":"disabled"}>${ico("chev",16)}</button></span>`:""}`}
+  </div>`;
+}
+function bindPicker(m){
+  const ch=()=>{saveSC();SES=null;renderRoute();};
+  const pd=m.querySelector("#pd");if(pd)pd.onchange=()=>{const v=pd.value;if(v==="due"||v==="wrong"){SC.sp=v;}else{SC.sp="";SC.d=+v;SC.k=null;SC.t=null;}ch();};
+  const pk=m.querySelector("#pk");if(pk)pk.onchange=()=>{SC.k=pk.value===""?null:+pk.value;SC.t=null;ch();};
+  const pt=m.querySelector("#pt");if(pt)pt.onchange=()=>{SC.t=pt.value===""?null:+pt.value;ch();};
+  const pp=m.querySelector("#pprev");if(pp)pp.onclick=()=>{SC.t--;ch();};
+  const pn=m.querySelector("#pnext");if(pn)pn.onclick=()=>{SC.t++;ch();};
+}
+function nextTopic(){if(SC.sp||SC.k==null)return null;const tps=CH[SC.d][SC.k].topics;
+  if(SC.t!=null&&SC.t<tps.length-1)return ()=>{SC.t++;saveSC();SES=null;renderRoute();};
+  if(SC.k<CH[SC.d].length-1)return ()=>{SC.k++;SC.t=SC.t==null?null:0;saveSC();SES=null;renderRoute();};return null;}
 function renderRoute(){
-  route=parseHash();buildIdx();
-  document.body.classList.toggle("intopic",route.v!=="home");
-  renderToc();(VIEW[route.v]||VIEW.home)(document.getElementById("main"));
+  loadSC();route=parseHash();buildIdx();renderSide();
+  const m=document.getElementById("main");(VIEW[route.v]||VIEW.fc)(m);window.scrollTo({top:0});
 }
 function setSync(st){cloudState=st;document.querySelectorAll(".sync").forEach(el=>{
   el.className="sync "+st;el.title=st==="ok"?"서버에 저장됨":st==="err"?"저장 실패 · 다시 시도 중":st==="big"?"기록이 너무 커요":"저장 중…";
   el.innerHTML=`<i></i><span>${st==="ok"?"저장됨":st==="err"?"저장 실패":st==="big"?"용량 초과":"저장 중"}</span>`;});}
 const VIEW={};
-
-/* ---------- 왼쪽 목차 ---------- */
-let TOCOPEN=null;   // 펼친 과목·대주제 (기본: 지금 보고 있는 곳만)
-function renderToc(){
-  const side=document.getElementById("side");if(!side)return;
-  if(!ME){side.innerHTML="";return;}
-  if(!TOCOPEN){TOCOPEN={};try{Object.assign(TOCOPEN,JSON.parse(localStorage.getItem(SBASE+":toc")||"{}"));}catch(e){}}
-  const r=route,due=ALL().filter(isDue).length,wrong=ALL().filter(isWrong).length,dd=ddays();
-  const on=(d,k,t)=>r.v==="topic"&&!r.special&&r.d===d&&r.k===k&&r.t===t;
-  side.innerHTML=`<div class="tochd"><button class="brand" onclick="go('#/')"><span class="logo">합</span><span>합격노트</span></button>${dd!=null?`<span class="dd">${dlabel(dd)}</span>`:""}</div>
-    <label class="tsearch">${ico("search",16)}<input type="search" id="tq" placeholder="카드 찾기" value="${esc(r.special==="search"?r.q:"")}" aria-label="카드 찾기"></label>
-    <nav class="toc" aria-label="목차">
-      <a class="tsp ${r.special==="due"?"on":""}" href="#/due">${ico("today",17)}<span>오늘 복습</span><b class="num">${due}</b></a>
-      <a class="tsp ${r.special==="wrong"?"on":""}" href="#/wrong">${ico("undo",17)}<span>틀린 카드</span><b class="num">${wrong}</b></a>
-      ${DOCS.map((dn_,d)=>{const od=TOCOPEN["d"+d]??(r.d===d&&!r.special),c=counts(docIdx(d));
-        return `<div class="td ${od?"open":""}" style="--dc:${DC[d]};--ds:${DCS[d]}">
-          <div class="trw l0 ${on(d,null,null)?"on":""}"><button class="tg" data-tg="d${d}" aria-label="${esc(dn_)} 펼치기">${ico("chev",14)}</button><a href="#/t/${d}"><span class="dl">${DLET[d]}</span><b>${esc(dn_)}</b></a><span class="tp num">${pct(c)}%</span></div>
-          <div class="tk">${CH[d].map((ch,k)=>{const ok=TOCOPEN[`k${d}:${k}`]??(r.d===d&&r.k===k),cc=counts(ch.idx);
-            return `<div class="tkk ${ok?"open":""}"><div class="trw l1 ${on(d,k,null)?"on":""}"><button class="tg" data-tg="k${d}:${k}" aria-label="${esc(ch.name)} 펼치기">${ico("chev",13)}</button><a href="#/t/${d}/${k}"><span class="tn">${esc(ch.name)}</span></a><span class="tp num">${pct(cc)}%</span></div>
-              <div class="tt2">${ch.topics.map((tp,t)=>{const ct=counts(tp.idx);return `<a class="trw l2 ${on(d,k,t)?"on":""}" href="#/t/${d}/${k}/${t}"><span class="tn">${esc(tp.name)}</span><span class="pip ${ct.k===ct.all?"done":ct.k||ct.l?"half":""}" title="외움 ${ct.k}/${ct.all}"></span></a>`;}).join("")}</div></div>`;}).join("")}</div></div>`;}).join("")}
-    </nav>
-    <div class="tocft"><span class="sync"></span><button class="iconbtn" onclick="go('#/set')" aria-label="설정" ${r.v==="set"?'aria-current="page"':""}>${ico("gear")}</button></div>`;
-  side.querySelectorAll("[data-tg]").forEach(b=>b.onclick=()=>{const k=b.dataset.tg,el=b.closest(".td,.tkk"),o=!el.classList.contains("open");TOCOPEN[k]=o;el.classList.toggle("open",o);try{localStorage.setItem(SBASE+":toc",JSON.stringify(TOCOPEN));}catch(e){}});
-  const q=side.querySelector("#tq");let tmr;q.oninput=()=>{clearTimeout(tmr);tmr=setTimeout(()=>{if(q.value.trim())go(`#/s/${encodeURIComponent(q.value.trim())}`);},350);};
-  q.onkeydown=e=>{if(e.key==="Enter"&&q.value.trim())go(`#/s/${encodeURIComponent(q.value.trim())}`);};
+/* 사이드바: 페이지 이름만 */
+function renderSide(){
+  const side=document.getElementById("side"),tab=document.getElementById("tabbar");
+  if(!ME){if(side)side.innerHTML="";if(tab)tab.innerHTML="";return;}
+  const dd=ddays(),cur=route.v;
+  const items=PAGES.map(([v,l,ic])=>`<a href="#/${v}" class="nv ${cur===v?"on":""}">${ico(ic,19)}<span>${l}</span></a>`).join("");
+  if(side)side.innerHTML=`<div class="sbrand"><span class="logo">합</span><b>합격노트</b></div>
+    <nav class="snav">${items}</nav>
+    <div class="sfoot">${dd!=null?`<span class="dd">${dlabel(dd)}</span>`:""}<span class="sync"></span><a href="#/set" class="nv ${cur==="set"?"on":""}">${ico("gear",19)}<span>설정</span></a></div>`;
+  if(tab)tab.innerHTML=PAGES.concat([["set","설정","gear"]]).map(([v,l,ic])=>`<a href="#/${v}" class="${cur===v?"on":""}">${ico(ic,21)}<span>${l}</span></a>`).join("");
   setSync(cloudState||"ok");
 }
+const renderToc=renderSide;
+const pageHead=(title,withSp)=>`<header class="phd"><h1>${title}</h1>${picker(withSp)}</header>`;
 
-/* ---------- 첫 화면: 오늘 할 일 ---------- */
-VIEW.home=function(m){
-  const all=counts(ALL()),due=ALL().filter(isDue).length,st=streak(),td=S.log[today()]||0;
-  let last=null;try{last=localStorage.getItem(SBASE+":last");}catch(e){}
-  m.innerHTML=`<div class="pane home">
-    <div class="mbar"><span class="brand"><span class="logo">합</span>합격노트</span><span class="sync"></span><button class="iconbtn" onclick="go('#/set')" aria-label="설정">${ico("gear")}</button></div>
-    <h1>${esc(ME.id)}님, 오늘도 한 장씩</h1>
-    <p class="muted">오늘 ${td}장 · 연속 ${st}일 · 전체 ${all.all.toLocaleString()}장 중 ${all.k.toLocaleString()}장 외움</p>
-    <div class="hgo">
-      <a class="hbtn pri" href="#/due"><b class="num">${due}</b><span>오늘 복습</span></a>
-      ${last?`<a class="hbtn" href="${esc(last)}"><b>${ico("play",18)}</b><span>하던 곳 이어서</span></a>`:""}
-      <a class="hbtn" href="#/wrong"><b class="num">${ALL().filter(isWrong).length}</b><span>틀린 카드</span></a>
-    </div>
-    <p class="hint">${ico("menu",16)}<span>목차에서 과목·대주제·소주제를 누르면 바로 카드가 나와요</span></p>
-    <div class="hdocs">${DOCS.map((d,i)=>{const c=counts(docIdx(i));return `<a class="hdoc" href="#/t/${i}" style="--dc:${DC[i]}"><span class="dl">${DLET[i]}</span><b>${esc(d)}</b><span class="num">${pct(c)}%</span>${bar(c)}</a>`;}).join("")}</div>
-    <nav class="mtoc" id="mtoc"></nav>
-  </div>`;
-  // 휴대폰: 첫 화면 아래에 목차를 그대로 보여 준다
-  const side=document.getElementById("side");if(side)m.querySelector("#mtoc").innerHTML=side.querySelector(".toc").outerHTML;
-  m.querySelectorAll("#mtoc [data-tg]").forEach(b=>b.onclick=()=>{const k=b.dataset.tg,el=b.closest(".td,.tkk"),o=!el.classList.contains("open");TOCOPEN[k]=o;el.classList.toggle("open",o);try{localStorage.setItem(SBASE+":toc",JSON.stringify(TOCOPEN));}catch(e){}});
-  setSync(cloudState||"ok");
+/* 플래시카드 */
+VIEW.fc=function(m){
+  const sc=curScope(),c=counts(sc.idx);
+  m.innerHTML=`<div class="page">${pageHead("플래시카드",true)}
+    <p class="pmeta muted small">${esc(sc.title)} · ${sc.idx.length.toLocaleString()}장 · 외움 ${c.k}${c.due?` · <em>복습 ${c.due}</em>`:""}</p>
+    <section id="pbody"></section></div>`;
+  bindPicker(m);playerIn(m.querySelector("#pbody"),sc);
 };
-
-/* ---------- 주제 화면: 카드 · 목록 · 표 · 기출 ---------- */
-VIEW.topic=function(m){
-  const r=route,sc=scopeOf(r),c=counts(sc.idx);
-  if(!r.special)try{localStorage.setItem(SBASE+":last",scopeHref(r,"cards"));}catch(e){}
-  const d=sc.d!=null?sc.d:2;
-  const tbs=sc.d!=null?tablesOf(sc.d,sc.k,sc.t):[];
-  const qitems=GQ?qpItems(sc.idx):[];
-  const tabs=[["cards","카드",sc.idx.length],["list","목록",null],["table","표",tbs.length],["gichul","기출",qitems.length]].filter(x=>x[0]!=="table"||tbs.length).filter(x=>x[0]!=="gichul"||qitems.length);
-  const tab=tabs.some(x=>x[0]===r.tab)?r.tab:"cards";
-  const crumbs=[];if(sc.d!=null){crumbs.push([`#/t/${sc.d}`,DOCS[sc.d]]);if(sc.k!=null)crumbs.push([`#/t/${sc.d}/${sc.k}`,CH[sc.d][sc.k].name]);}
-  // 소주제 이동 (같은 대주제 안 이전·다음)
-  let nav="";if(sc.t!=null){const tps=CH[sc.d][sc.k].topics;const pv=sc.t>0?`#/t/${sc.d}/${sc.k}/${sc.t-1}`:"",nx=sc.t<tps.length-1?`#/t/${sc.d}/${sc.k}/${sc.t+1}`:"";
-    nav=`<span class="tnav">${pv?`<a class="iconbtn sm" href="${pv}${tab!=="cards"?"/"+tab:""}" title="이전 소주제">${ico("left",16)}</a>`:""}${nx?`<a class="iconbtn sm" href="${nx}${tab!=="cards"?"/"+tab:""}" title="다음 소주제">${ico("chev",16)}</a>`:""}</span>`;}
-  m.innerHTML=`<div class="pane ${tab==="gichul"?"wide":""}" style="--dc:${DC[d]};--ds:${DCS[d]}">
-    <header class="th">
-      <a class="back iconbtn" href="#/" aria-label="목차로">${ico("left")}</a>
-      <div class="thl"><nav class="crumb">${crumbs.map(([h,l])=>`<a href="${h}">${esc(l)}</a>`).join(ico("chev",12))}</nav>
-        <h1>${esc(sc.title)}</h1>
-        <p class="muted small">${sc.idx.length.toLocaleString()}장 · 외움 ${c.k}${c.due?` · <em>복습 ${c.due}</em>`:""}</p></div>${nav}
-    </header>
-    <div class="tabs" role="tablist">${tabs.map(([v,l,n])=>`<a role="tab" href="${scopeHref(r,v)}" aria-selected="${v===tab}">${l}${n!=null?` <span class="num">${n}</span>`:""}</a>`).join("")}</div>
-    <section class="tbody" id="tbody"></section></div>`;
-  const b=m.querySelector("#tbody");
-  if(tab==="cards")playerIn(b,sc);
-  else if(tab==="list")listIn(b,sc);
-  else if(tab==="table"){b.innerHTML=`<div class="tbs">${tbs.map(t=>(sc.t==null?`<p class="tbsrc">${esc(t.small)}</p>`:"")+tableHTML(t)).join("")}</div>`;bindTables(b);}
-  else gichulIn(b,sc,qitems);
+/* 표 */
+VIEW.table=function(m){
+  const sc=curScope(false),tbs=tablesOf(sc.d,sc.k,sc.t);
+  m.innerHTML=`<div class="page wide2">${pageHead("표")}
+    <p class="pmeta muted small">${esc(sc.title)} · 표 ${tbs.length}개 · 칸을 누르면 답이 보여요 (타이핑으로도 연습)</p>
+    <div class="tbs">${tbs.length?tbs.map(t=>(sc.t==null?`<p class="tbsrc">${esc(t.small)}</p>`:"")+tableHTML(t)).join(""):`<div class="empty">${TB.length?"이 범위에는 표가 없어요":"표를 불러오는 중이에요"}</div>`}</div></div>`;
+  bindPicker(m);bindTables(m);
 };
+/* 기출 */
+VIEW.gichul=function(m){
+  const sc=curScope(false),items=GQ?qpItems(sc.idx):[];
+  m.innerHTML=`<div class="page wide3">${pageHead("기출")}
+    <p class="pmeta muted small">${esc(sc.title)} · 연결된 기출 ${items.length}개 (2014~2026 교육과정 A·B)</p>
+    <section id="gbody"></section></div>`;
+  bindPicker(m);
+  const b=m.querySelector("#gbody");
+  if(!GQ)b.innerHTML=`<div class="empty">기출을 불러오는 중이에요</div>`;
+  else if(!items.length)b.innerHTML=`<div class="empty">이 범위와 연결된 기출이 없어요</div>`;
+  else gichulIn(b,sc,items);
+};
+/* 찾기 */
+VIEW.search=function(m){
+  const sc=curScope(false),q=route.q||"";
+  const qs=q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const idx=qs.length?ALL().filter(i=>{const c=C[i],t=(c[3]+" "+c[4]+" "+c[7]+" "+c[5]+" "+c[6]).toLowerCase();return qs.every(x=>t.includes(x));}):sc.idx;
+  m.innerHTML=`<div class="page">${pageHead("찾기")}
+    <label class="sbox">${ico("search",18)}<input type="search" id="sq" placeholder="모든 카드에서 찾기 (비우면 위 범위 목록)" value="${esc(q)}" aria-label="찾기"></label>
+    <section id="sbody"></section></div>`;
+  bindPicker(m);
+  const inp=m.querySelector("#sq");let tmr;inp.oninput=()=>{clearTimeout(tmr);tmr=setTimeout(()=>{history.replaceState(null,"",`#/search/${encodeURIComponent(inp.value.trim())}`);route.q=inp.value.trim();const v=inp.value;VIEW.search(m);const n=m.querySelector("#sq");n.focus();n.setSelectionRange(v.length,v.length);},300);};
+  listIn(m.querySelector("#sbody"),{key:qs.length?"s:"+q:sc.key,q,idx});
+};
+VIEW.home=VIEW.fc;
 
 /* ---------- 카드 (주제를 누르면 바로) ---------- */
 let SES=null;
@@ -644,8 +674,8 @@ function drawCard(){
     const tot=s.tally[0]+s.tally[1]+s.tally[2]||1;
     box.innerHTML=`<div class="done"><h2>다 봤어요</h2><p class="muted">${s.done}장 채점 · 알아요 ${s.tally[2]} · 헷갈려요 ${s.tally[1]} · 몰랐어요 ${s.tally[0]}</p>
       <div class="dbar"><i class="g2" style="width:${s.tally[2]/tot*100}%"></i><i class="g1" style="width:${s.tally[1]/tot*100}%"></i><i class="g0" style="width:${s.tally[0]/tot*100}%"></i></div>
-      <div class="row center"><button class="btn" id="back1">${ico("left",16)}마지막 카드</button><button class="btn" id="again">처음부터 다시</button>${nextTopicHref()?`<a class="btn pri" href="${nextTopicHref()}">다음 소주제 ${ico("chev",16)}</a>`:""}</div></div>`;
-    box.querySelector("#back1").onclick=()=>step(-1);box.querySelector("#again").onclick=()=>{SES=null;renderRoute();};
+      <div class="row center"><button class="btn" id="back1">${ico("left",16)}마지막 카드</button><button class="btn" id="again">처음부터 다시</button>${nextTopic()?`<button class="btn pri" id="nxt">다음 주제 ${ico("chev",16)}</button>`:""}</div></div>`;
+    box.querySelector("#back1").onclick=()=>step(-1);box.querySelector("#again").onclick=()=>{SES=null;renderRoute();};{const n=box.querySelector("#nxt"),f=nextTopic();if(n&&f)n.onclick=f;}
     return;
   }
   const i=s.q[s.pos],c=C[i],x=ss(i);
@@ -680,15 +710,13 @@ function drawCard(){
   on("#prev",()=>step(-1));on("#next",()=>step(1));
   on("#gq",()=>openQ(gq[0],gOf(i).filter(y=>y[0]===gq[0]).map(y=>y[1]),gq));
   on("#tytg",()=>{S.fc=Object.assign(FCO(),{typing:!FCO().typing});save();s.typed=null;drawCard();});
-  on("#shtg",()=>{S.fc=Object.assign(FCO(),{order:FCO().order==="shuf"?"seq":"shuf"});save();const sc=scopeOf(route);newSes(sc);drawCard();toast(FCO().order==="shuf"?"섞었어요":"차례대로 볼게요");});
+  on("#shtg",()=>{S.fc=Object.assign(FCO(),{order:FCO().order==="shuf"?"seq":"shuf"});save();const sc=curScope();newSes(sc);drawCard();toast(FCO().order==="shuf"?"섞었어요":"차례대로 볼게요");});
   box.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>answer(+b.dataset.g));
   const ta=$("#tya");
   if(ta){const sub=v=>{s.typed=v;s.shown=99;drawCard();};if(window.matchMedia&&matchMedia("(min-width:900px)").matches)ta.focus();
     ta.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sub(ta.value.trim());}};
     on("#tyok",()=>sub(ta.value.trim()));on("#tyskip",()=>sub(""));}
 }
-function nextTopicHref(){const r=route;if(r.special||r.t==null)return "";const tps=CH[r.d][r.k].topics;
-  if(r.t<tps.length-1)return `#/t/${r.d}/${r.k}/${r.t+1}`;if(r.k<CH[r.d].length-1)return `#/t/${r.d}/${r.k+1}/0`;return "";}
 const BUL=/^\s*(?:[①-⑳⑴-⒇❶-❿]|[•·▪■□◆◇○●◦※▶▷⇨⇒→➜\-–]|\d{1,2}[.)]|\(\d{1,2}\)|[가-하][.)]|\([가-하]\)|\[)/;
 function ansItems(a){const out=[];String(a||"").split("\n").forEach(l=>{if(!l.trim())return;if(!out.length||BUL.test(l))out.push(l);else out[out.length-1]+="\n"+l;});return out.length?out:[String(a||"")];}
 const curN=()=>ansItems(C[SES.q[SES.pos]][6]).length;
@@ -707,7 +735,7 @@ function undo(){
   if(h.prev)S.srs[C[h.i][0]]=h.prev;else delete S.srs[C[h.i][0]];
   S.log[today()]=h.lg;s.q=h.q;s.pos=h.pos;s.done--;s.tally[h.g]--;s.shown=99;s.typed=null;save();drawCard();
 }
-const inPlayer=()=>route.v==="topic"&&(route.tab||"cards")==="cards"&&SES&&PBOX&&PBOX.isConnected&&!document.getElementById("qsheet");
+const inPlayer=()=>route.v==="fc"&&SES&&PBOX&&PBOX.isConnected&&!document.getElementById("qsheet");
 document.addEventListener("keydown",e=>{
   if(!inPlayer()||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
   const full=SES.pos<SES.q.length&&SES.shown>=curN();
@@ -728,7 +756,7 @@ document.addEventListener("click",e=>{if(Date.now()-swiped<400&&e.target.closest
 let LF="all",LOPEN={},LN=80;
 function listIn(box,sc){
   const l=sc.idx.filter(i=>LF==="all"||(LF==="todo"&&!isMastered(i))||(LF==="g"&&isG(i))||(LF==="wrong"&&isWrong(i)));
-  const qs=sc.key.startsWith("s:")?route.q.trim().split(/\s+/).filter(Boolean):[];
+  const qs=sc.key.startsWith("s:")?(sc.q||"").trim().split(/\s+/).filter(Boolean):[];
   const hl=s=>{let h=fmt(s);for(const q of qs){const re=new RegExp("("+esc(q).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");h=h.replace(/(<[^>]+>)|([^<]+)/g,(m0,tag,txt)=>tag||txt.replace(re,"<mark>$1</mark>"));}return h;};
   box.innerHTML=`<div class="lbar"><div class="seg2">${[["all","전체"],["todo","아직"],["g","기출"],["wrong","틀림"]].map(([v,t])=>`<button data-f="${v}" aria-pressed="${LF===v}">${t}</button>`).join("")}</div><span class="muted small num">${l.length.toLocaleString()}장</span><span class="sp"></span><button class="btn sm" id="opall">모두 펼치기</button></div>
     <div class="clist">${l.slice(0,LN).map(i=>{const c=C[i],x=ss(i),gq=[...new Set(gOf(i).map(y=>y[0]))].sort(qSort);
@@ -902,7 +930,7 @@ let resetAsk=false;
 VIEW.set=function(m){
   const theme=document.documentElement.dataset.theme||"",o=FCO();
   m.innerHTML=`<div class="pane narrow">
-    <header class="th"><a class="back iconbtn" href="#/" aria-label="목차로">${ico("left")}</a><div class="thl"><h1>설정</h1></div></header>
+    <header class="th"><div class="thl"><h1>설정</h1></div></header>
     <section class="group"><h3>카드</h3>
       <label class="item"><span><b>답 보기</b><small>답이 여러 개인 카드</small></span><select id="o-rv"><option value="step" ${o.reveal==="step"?"selected":""}>하나씩</option><option value="all" ${o.reveal==="all"?"selected":""}>한 번에</option></select></label>
       <label class="item"><span><b>타이핑해서 맞히기</b><small>카드 화면 위 '타이핑' 버튼과 같아요</small></span><span class="switch"><input type="checkbox" id="o-ty" ${o.typing?"checked":""}><i></i></span></label>
@@ -927,8 +955,8 @@ VIEW.set=function(m){
   on("#rs-ok",()=>{resetAsk=false;const keep={exam:S.exam,fc:S.fc};S=blank();Object.assign(S,keep);save();SES=null;toast("진도를 지웠어요");VIEW.set(m);});
 };
 try{const th=localStorage.getItem(SBASE+":theme");if(th)document.documentElement.dataset.theme=th;}catch(e){}
-const renderTop=()=>renderToc();
-const renderNav=renderToc;
+const renderTop=()=>renderSide();
+const renderNav=renderSide;
 
 
 /* ================= 로그인 · 회원가입 (Firebase, 예전 계정 그대로) ================= */
