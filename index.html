@@ -1680,6 +1680,34 @@ html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-se
   .gsdoc{padding:14px 12px 18px;border-radius:14px}
   .gsst{gap:6px}.gsst span{padding:2px 7px}
 }
+/* v51: 기출·문제풀이·모의고사 풀기 화면 한 줄 제목줄 */
+.phd9.ph1{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;margin:0 0 8px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff);min-height:0}
+.ph1>div:first-child{flex:none}
+.ph1>div:first-child h1{font-size:17px;margin:0;white-space:nowrap;letter-spacing:-.02em}
+.ph1 .phx{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;flex:1;min-width:0}
+.ph1 .phx .picker{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0}
+.ph1 .pk9{padding:3px 8px;min-height:0}
+.ph1 .pk9 small{font-size:11px}
+.ph1 .scnt{font-size:12.5px;color:var(--ink-3);white-space:nowrap;margin:0}
+.ph1 .qfbar{margin:0;gap:6px}
+.ph1 .qfbar .seg2 button{padding:4px 9px;font-size:12.5px}
+.ph1 .qfbar .btn{padding:4px 9px;font-size:12.5px}
+.ph1 .mph{display:flex;gap:6px;align-items:center}
+.ph1 .chg9{margin-left:auto;flex:none}
+body.glock .phd9.ph1{margin-bottom:6px}
+@media (max-width:699px){body.grun .ph1 .phx{display:none!important}body.grun .phd9.ph1{border:0;background:none;padding:0;margin:0 0 6px}}
+.ph1 .phx .picker{flex-wrap:nowrap;min-width:0}
+.ph1 .pk9{flex-direction:row;align-items:center;gap:5px;padding:3px 4px 3px 9px;border-radius:9px;max-width:220px}
+.ph1 .pk9 small{white-space:nowrap}
+.ph1 .pk9 select,.ph1 .picker select{font-size:13px}
+.ph1 .dd9,.ph1 .ddb{font-size:13px}
+body.glock.grun main>.page{padding-top:12px}
+@media (min-width:700px){body.grun main>.page.wide3{padding-top:10px}}
+.ph1 .pk9{max-width:none}
+.ph1 .phx .picker{flex-wrap:wrap}
+@media (min-width:700px){body.glock main>.page.wide3{padding-top:14px}}
+.ph1 .phx .picker{flex-wrap:nowrap!important;flex:none}
+.ph1 .pnav{display:inline-flex;gap:2px;flex:none}
 </style>
 </head>
 <body>
@@ -1914,6 +1942,15 @@ const pageHead=(title,withSp,sub,cnt,withAll,cf)=>`<header class="phd9"><div><h1
 /* 표 */
 /* ---------- 표·기출·문제풀이: 플래시카드처럼 먼저 범위 고르기 ---------- */
 let PGRUN={table:false,gichul:false,munpul:false,heisil:false,mock:false},PGKEEP=false;
+/* 풀기 화면: 제목·범위 선택·문항 수·필터·범위 바꾸기를 한 줄 제목줄로 → 문제 사진·답란 공간을 넓게 */
+function compactHead(m){
+  const ph=m.querySelector(".phd9"),sc=m.querySelector(".scope9"),qf=m.querySelector(".qfbar");if(!ph||ph.classList.contains("ph1"))return;
+  ph.classList.add("ph1");const t=ph.firstElementChild,p=t&&t.querySelector("p");if(p){t.title=p.textContent;p.remove();}
+  const x=document.createElement("div");x.className="phx";
+  if(sc){[...sc.childNodes].forEach(n=>x.appendChild(n));sc.remove();}
+  if(qf)x.appendChild(qf);
+  ph.insertBefore(x,ph.querySelector(".chg9"));
+}
 function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+"범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
 /* 고르기 화면: 한 단계씩 (고르면 다음 단계, 앞 단계는 '뒤로'로) */
 let WZ={};const WZ0={fc:"ver",table:"d",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
@@ -2018,7 +2055,7 @@ VIEW.gichul=function(m){
   const sc0=curScope(false),items0=!GQ?[]:SC.sa?allItems(GQ):gItems(sc0),qf=qfGet("gichul"),items=qfApply(items0,qf),sc=Object.assign({},sc0,{key:(SC.sa?"all":sc0.key)+":"+qf});
   m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출",false,`2009~2026학년도 평가원 공개 기출${GQ?` ${Object.keys(GQ).length}문항(하위 물음 ${Object.values(GQ).reduce((a,q)=>a+q.subs.length,0)}개)`:""}을 모두 소주제로 나눴어요. 두 소주제에 걸친 물음은 양쪽에 다 나와요`,`<b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개`,true,(d,k,t)=>!GQ?0:d==="all"?allItems(GQ).length:gItems({d,k,t,idx:idxOf(d,k,t)}).length)}
     ${GQ?qfBar("gichul",items0):""}<section id="gbody"></section></div>`;
-  bindPicker(m);bindQf(m,"gichul",GQ||{},items0);addChg(m,"gichul");
+  bindPicker(m);bindQf(m,"gichul",GQ||{},items0);addChg(m,"gichul");compactHead(m);
   const b=m.querySelector("#gbody");
   if(!GQ)b.innerHTML=`<div class="empty">기출을 불러오는 중이에요</div>`;
   else if(!items.length)b.innerHTML=`<div class="empty">${qf==="wrong"?"이 범위에 틀린 물음이 없어요":qf==="new"?"이 범위의 물음을 모두 풀었어요":"이 범위와 연결된 기출이 없어요"}</div>`;
@@ -2055,7 +2092,7 @@ VIEW.munpul=function(m){
   const qf=qfGet("munpul"),items0=items;items=qfApply(items0,qf);sc=Object.assign({},sc,{key:sc.key+":"+qf});
   bar=bar.replace(/<span class="scnt">[\s\S]*?<\/span><\/div>$/,`<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`);
   m.innerHTML=`<div class="page wide3" style="--dc:${dc};--ds:${ds}">${head}${bar}${MQS?qfBar("munpul",items0):""}<section id="gbody"></section></div>`;
-  bindQf(m,"munpul",MQS||{},items0);addChg(m,"munpul");
+  bindQf(m,"munpul",MQS||{},items0);addChg(m,"munpul");compactHead(m);
   if(MPV==="topic")bindPicker(m);
   const sv=()=>{try{localStorage.setItem(SBASE+":mpv2",MPV);localStorage.setItem(SBASE+":mps",MPS);}catch(e){}};
   m.querySelectorAll("[data-mpv]").forEach(b=>b.onclick=()=>{MPV=b.dataset.mpv;sv();VIEW.munpul(m);});
@@ -2117,7 +2154,7 @@ VIEW.mock=function(m){
   const sc={key:`mk:${KW}:${KR}:${KS}:${qf}`};
   bar=bar.replace('<span class="scnt"></span>',`<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span>`);
   m.innerHTML=`<div class="page wide3">${head}${bar}${qfBar("mock",items0)}<section id="gbody"></section></div>`;
-  bindQf(m,"mock",KQS,items0);addChg(m,"mock");
+  bindQf(m,"mock",KQS,items0);addChg(m,"mock");compactHead(m);
   const s=m.querySelector("#kss");if(s)s.onchange=()=>{KS=s.value;kSave();VIEW.mock(m);};
   const b=m.querySelector("#gbody");
   if(!items.length)b.innerHTML=`<div class="empty">${qf==="wrong"?"틀린 물음이 없어요":qf==="new"?"모두 풀었어요":"문제가 없어요"}</div>`;
