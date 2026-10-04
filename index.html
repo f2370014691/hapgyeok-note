@@ -1226,13 +1226,15 @@ function curScope(pageSp){
   return{key:`t:${d}:${SC.k}:${SC.t}`,d,k:SC.k,t:SC.t,title:tp?tp.name:ch?ch.name:DOCS[d],idx:tp?tp.idx:ch?ch.idx:docIdx(d)};
 }
 const scopeOf=()=>curScope();
-function picker(withSp,withAll){
+const idxOf=(d,k,t)=>t!=null?CH[d][k].topics[t].idx:k!=null?CH[d][k].idx:docIdx(d);
+function picker(withSp,withAll,cf){
+  const N=(d,k,t)=>cf?cf(d,k,t):idxOf(d,k,t).length;
   const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,d=SC.d,sp=withSp&&SC.sp,sa=withAll&&SC.sa;
   const opt=(v,l,on)=>`<option value="${v}" ${on?"selected":""}>${l}</option>`;
   return `<div class="picker">
-    <label class="pk9"><small>과목</small><select id="pd" aria-label="과목">${withSp?(planInfo()?opt("plan",`오늘 계획 (${planIdx().length})`,sp==="plan"):"")+opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${withAll?opt("all",`전체 (${ALL().length.toLocaleString()})`,sa):""}${DOCS.map((x,i)=>opt(i,`${x} (${docIdx(i).length})`,!sp&&!sa&&d===i)).join("")}</select></label>
-    ${sp||sa?"":`<label class="pk9"><small>대주제</small><select id="pk" aria-label="대주제">${opt("","대주제 전체",SC.k==null)}${CH[d].map((ch,k)=>opt(k,`${k+1}. ${esc(ch.name)} (${ch.idx.length})`,SC.k===k)).join("")}</select></label>
-    <label class="pk9 ${SC.k==null?"off":""}"><small>소주제</small><select id="pt" aria-label="소주제" ${SC.k==null?"disabled":""}>${opt("","소주제 전체",SC.t==null)}${SC.k!=null?CH[d][SC.k].topics.map((tp,t)=>opt(t,`${SC.k+1}-${t+1}. ${esc(tp.name)} (${tp.idx.length})`,SC.t===t)).join(""):""}</select></label>
+    <label class="pk9"><small>과목</small><select id="pd" aria-label="과목">${withSp?(planInfo()?opt("plan",`오늘 계획 (${planIdx().length})`,sp==="plan"):"")+opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${withAll?opt("all",`전체 (${ALL().length.toLocaleString()})`,sa):""}${DOCS.map((x,i)=>opt(i,`${x} (${N(i,null,null)})`,!sp&&!sa&&d===i)).join("")}</select></label>
+    ${sp||sa?"":`<label class="pk9"><small>대주제</small><select id="pk" aria-label="대주제">${opt("","대주제 전체",SC.k==null)}${CH[d].map((ch,k)=>opt(k,`${k+1}. ${esc(ch.name)} (${N(d,k,null)})`,SC.k===k)).join("")}</select></label>
+    <label class="pk9 ${SC.k==null?"off":""}"><small>소주제</small><select id="pt" aria-label="소주제" ${SC.k==null?"disabled":""}>${opt("","소주제 전체",SC.t==null)}${SC.k!=null?CH[d][SC.k].topics.map((tp,t)=>opt(t,`${SC.k+1}-${t+1}. ${esc(tp.name)} (${N(d,SC.k,t)})`,SC.t===t)).join(""):""}</select></label>
     ${SC.t!=null?`<span class="pnav"><button class="iconbtn sm" id="pprev" aria-label="이전 소주제" ${SC.t>0?"":"disabled"}>${ico("left",16)}</button><button class="iconbtn sm" id="pnext" aria-label="다음 소주제" ${SC.t<CH[d][SC.k].topics.length-1?"":"disabled"}>${ico("chev",16)}</button></span>`:""}`}
   </div>`;
 }
@@ -1268,20 +1270,20 @@ function renderSide(){
   setSync(cloudState||"ok");
 }
 const renderToc=renderSide;
-const pageHead=(title,withSp,sub,cnt,withAll)=>`<header class="phd9"><div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}</div></header>
-  <div class="scope9">${picker(withSp,withAll)}${cnt?`<span class="scnt">${cnt}</span>`:""}</div>`;
+const pageHead=(title,withSp,sub,cnt,withAll,cf)=>`<header class="phd9"><div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}</div></header>
+  <div class="scope9">${picker(withSp,withAll,cf)}${cnt?`<span class="scnt">${cnt}</span>`:""}</div>`;
 
 /* 표 */
 VIEW.table=function(m){
   const sc=curScope(false),tbs=tablesOf(sc.d,sc.k,sc.t);
-  m.innerHTML=`<div class="page wide2" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("표",false,"칸을 눌러 답을 확인하거나, 타이핑으로 채워 보세요",`표 <b class="num">${tbs.length}</b>개`)}
+  m.innerHTML=`<div class="page wide2" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("표",false,"칸을 눌러 답을 확인하거나, 타이핑으로 채워 보세요",`표 <b class="num">${tbs.length}</b>개`,false,(d,k,t)=>tablesOf(d,k,t).length)}
     <div class="tbs">${tbs.length?tbs.map(t=>(sc.t==null?`<p class="tbsrc">${esc(t.small)}</p>`:"")+tableHTML(t)).join(""):`<div class="empty">${TB.length?"이 범위에는 표가 없어요":"표를 불러오는 중이에요"}</div>`}</div></div>`;
   bindPicker(m);bindTables(m);
 };
 /* 기출 */
 VIEW.gichul=function(m){
   const sc=curScope(false),items=GQ?gItems(sc):[];
-  m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출",false,"2009~2026학년도 평가원 공개 유치원 기출을 소주제별로 모았어요",`물음 <b class="num">${items.length}</b>개`)}
+  m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출",false,`2009~2026학년도 평가원 공개 기출${GQ?` ${Object.keys(GQ).length}문항(하위 물음 ${Object.values(GQ).reduce((a,q)=>a+q.subs.length,0)}개)`:""}을 모두 소주제로 나눴어요. 두 소주제에 걸친 물음은 양쪽에 다 나와요`,`<b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개`,false,(d,k,t)=>GQ?gItems({d,k,t,idx:idxOf(d,k,t)}).length:0)}
     <section id="gbody"></section></div>`;
   bindPicker(m);
   const b=m.querySelector("#gbody");
