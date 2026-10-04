@@ -639,6 +639,17 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 .gstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin:6px 0}
 .gstats div{background:var(--sunk);border-radius:14px;padding:10px}
 .gstats b{display:block;font-size:24px;font-weight:900}.gstats span{font-size:12px;color:var(--ink-3)}
+
+/* v9: 방식 고르기 · 기출 안내 */
+.modes8{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.md8{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:0 12px;align-items:center;text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:16px;padding:14px 16px;box-shadow:var(--sh)}
+.md8 .mi{grid-row:1/3;font-size:26px}.md8 b{font-size:16px}.md8 small{font-size:12.5px;color:var(--ink-3)}
+.md8:hover{border-color:var(--pri)}.md8.on{border-color:var(--pri);background:var(--pri-s)}
+@media (max-width:520px){.modes8{grid-template-columns:1fr}}
+.gnote{display:flex;align-items:center;gap:12px;margin-top:18px;padding:12px 14px;border-radius:16px;background:var(--mid-s);border:1.5px solid color-mix(in srgb,var(--mid) 45%,transparent);cursor:default;animation:reveal .3s ease}
+.gnote .gi{font-size:24px}.gnote div{flex:1;min-width:0;display:flex;flex-direction:column}
+.gnote b{font-size:14.5px;color:color-mix(in srgb,var(--mid) 55%,var(--ink))}.gnote small{font-size:12.5px;color:var(--ink-2)}
+.gnote.end{width:100%;text-align:left;margin-top:4px}
 </style>
 </head>
 <body>
@@ -893,6 +904,7 @@ function drawCard(){
       <div class="gstats"><div><b class="num">${s.score}</b><span>점수</span></div><div><b class="num">${acc}%</b><span>정답률</span></div><div><b class="num">${s.best}</b><span>최고 콤보</span></div></div>
       <div class="dbar"><i class="g2" style="width:${s.tally[2]/(s.done||1)*100}%"></i><i class="g1" style="width:${s.tally[1]/(s.done||1)*100}%"></i><i class="g0" style="width:${s.tally[0]/(s.done||1)*100}%"></i></div>
       <p class="muted small">알아요 ${s.tally[2]} · 헷갈려요 ${s.tally[1]} · 몰랐어요 ${s.tally[0]} · 경험치 +${s.xp}</p>
+      ${s.seenG&&s.seenG.size?`<div class="gnote end"><span class="gi">📝</span><div><b>이번 카드와 연결된 기출 ${s.seenG.size}문항</b><small>방금 외운 내용이 실제로 어떻게 나왔는지 확인해 보세요</small></div><a class="btn sm pri" href="#/gichul">기출 풀기</a></div>`:""}
       <div class="row center"><button class="btn" id="back1">${ico("left",16)}마지막 카드</button><button class="btn" id="again">다시 하기</button>${nextTopic()?`<button class="btn pri" id="nxt">다음 주제 ${ico("chev",16)}</button>`:""}</div></div>`;
     box.querySelector("#back1").onclick=()=>step(-1);box.querySelector("#again").onclick=()=>{SES=null;renderRoute();};
     {const n=box.querySelector("#nxt"),f=nextTopic();if(n&&f)n.onclick=f;}
@@ -919,6 +931,7 @@ function drawCard(){
       <div class="q">${fmt(c[5])}</div>
       <div class="a">${its.map((t,k)=>`<div class="ait ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${fmt(t)}</div>`).join("")}</div>
       ${tr?`<div class="tyres"><div class="tyh"><b>내 답</b><span class="${tok>=tr.length*.8?"good":tok>=tr.length*.5?"mid":"bad"}">핵심어 ${tok}/${tr.length}</span></div><p>${esc(s.typed)||"(비워 둠)"}</p><div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}</div></div>`:""}
+      ${full&&gq.length?`<div class="gnote"><span class="gi">📝</span><div><b>이 내용, 기출에 나왔어요</b><small>${gq.slice(0,3).map(q=>esc(qLabel(q))).join(" · ")}${gq.length>3?` 외 ${gq.length-3}`:""}</small></div><button class="btn sm pri" id="gq2">기출 보기</button></div>`:""}
       ${full||(o.typing&&!sh)?"":`<div class="tap">${sh?`탭하면 다음 답 · ${sh}/${n}`:"탭해서 답 보기"}</div>`}
       <button class="arr l" id="prev" aria-label="이전 카드" ${s.pos?"":"disabled"}>${ico("left",18)}</button><button class="arr r" id="next" aria-label="다음 카드">${ico("chev",18)}</button>
     </article>
@@ -934,6 +947,8 @@ function drawCard(){
   on("#show",flipCard);on("#showall",showAll);on("#undo",undo);
   on("#prev",()=>step(-1));on("#next",()=>step(1));
   on("#gq",()=>openQ(gq[0],gOf(i).filter(y=>y[0]===gq[0]).map(y=>y[1]),gq));
+  on("#gq2",()=>openQ(gq[0],gOf(i).filter(y=>y[0]===gq[0]).map(y=>y[1]),gq));
+  if(gq.length&&!s.seenG)s.seenG=new Set();if(gq.length)gq.forEach(q=>s.seenG.add(q));
   on("#tytg",()=>{S.fc=Object.assign(FCO(),{typing:!FCO().typing});save();s.typed=null;drawCard();});
   on("#shtg",()=>{S.fc=Object.assign(FCO(),{order:FCO().order==="shuf"?"seq":"shuf"});save();const sc=curScope();newSes(sc);drawCard();toast(FCO().order==="shuf"?"섞었어요":"차례대로 볼게요");});
   box.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>answer(+b.dataset.g));
@@ -1057,13 +1072,18 @@ function fcChooser(m){
     </div>
     ${SC.k!=null?`<h2 class="st8"><span>3</span>소주제</h2>
     <div class="chips8"><button class="c8 ${SC.t==null?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>{const c=counts(tp.idx);return `<button class="c8 ${SC.t===t?"on":""}" data-t="${t}">${esc(tp.name)}<span class="num">${tp.idx.length}</span>${c.k===c.all?`<i class="okd" title="다 외움"></i>`:""}</button>`;}).join("")}</div>`:""}
-    <div class="go8"><div class="go8t"><small>선택한 범위</small><b>${esc(sc.title)}</b><span class="muted small num">${sc.idx.length.toLocaleString()}장</span></div><button class="btn pri lg gobtn" id="start">${ico("play",17)}게임 시작</button></div>
+    <h2 class="st8"><span>${SC.k!=null?4:3}</span>방식</h2>
+    <div class="modes8">
+      <button class="md8 ${FCO().typing?"":"on"}" data-ty="0"><span class="mi">👆</span><b>클릭으로</b><small>눌러서 답 보고 스스로 채점</small></button>
+      <button class="md8 ${FCO().typing?"on":""}" data-ty="1"><span class="mi">⌨️</span><b>타이핑으로</b><small>답을 써 보고 핵심어로 채점</small></button></div>
+    <div class="go8"><div class="go8t"><small>선택한 범위</small><b>${esc(sc.title)}</b><span class="muted small num">${sc.idx.length.toLocaleString()}장 · ${FCO().typing?"타이핑":"클릭"}</span></div><button class="btn pri lg gobtn" id="start">${ico("play",17)}게임 시작</button></div>
   </div>`;
   const re=()=>{saveSC();fcChooser(m);};
   m.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{SC.sp=b.dataset.q;saveSC();FCRUN=true;SES=null;VIEW.fc(m);});
   m.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;re();});
   m.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;re();});
   m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{SC.t=b.dataset.t===""?null:+b.dataset.t;re();});
+  m.querySelectorAll("[data-ty]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{typing:b.dataset.ty==="1"});save();re();});
   m.querySelector("#start").onclick=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};
 }
 
