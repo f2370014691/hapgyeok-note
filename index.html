@@ -876,6 +876,66 @@ main{padding:30px 40px 72px}
 .s9t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (min-width:900px) and (max-width:1180px){.g9{padding:14px;gap:10px}.g9i{width:40px;height:40px}.s9{gap:10px;padding:14px 10px 14px 12px}}
 @media (max-width:899px){.h9go,.h9subj{grid-template-columns:minmax(0,1fr)}.h9go{gap:8px}.g9{padding:14px 16px}.h9c{padding:10px 14px}.h9c b{font-size:20px}}
+
+/* ===== v14: 표 칸 크기 고정 — 보기·가리기·타이핑 모두 같은 글자(.cv)가 자리를 잡고, 가리개·입력칸은 위에 덮기만 ===== */
+.tt td{padding:8px 10px}
+.cw{position:relative;min-height:1.55em}
+.cw .cv{display:block;white-space:pre-wrap}
+.cw.hid{cursor:pointer}
+.cw.hid .cv,.cw.typ .cv{visibility:hidden}
+.hc9{position:absolute;inset:-4px -6px;display:grid;place-items:center;border:1px dashed var(--line-2);background:var(--sunk);border-radius:8px;color:var(--ink-3);font-weight:800;font-size:12px;padding:0;transition:background .12s,border-color .12s}
+.cw.hid:hover .hc9{border-color:var(--pri);background:var(--pri-s);color:var(--pri)}
+.cw.hid.on .cv{visibility:visible}.cw.hid.on .hc9{display:none}
+.cw.typ .ti{position:absolute;inset:-4px -6px;width:auto;min-width:0;height:auto;margin:0;resize:none;overflow:auto;font-size:14px;line-height:1.55;padding:3px 6px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-family:inherit}
+.cw.typ .ti:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 2px var(--pri-s)}
+td.ok .cw.typ .ti{border-color:var(--good);background:var(--good-s)}
+td.ng .cw.typ .ti{border-color:var(--bad);background:var(--bad-s)}
+.tt.rev .cw.typ .cv,.cw.typ.peek .cv{visibility:visible}
+.tt.rev .cw.typ .ti,.cw.typ.peek .ti{opacity:0;pointer-events:none}
+.tt.rev td.ng .cw .cv{color:var(--bad)}
+.tbf{min-height:52px;align-items:center}
+
+/* ===== v14: 드롭다운 (모든 select → .dd9 단추 + .ddp 펼침 목록) ===== */
+.ddsel{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-width:0!important;padding:0!important;border:0!important;overflow:hidden}
+.dd9{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:100%;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:12px;padding:8px 10px 8px 13px;font-size:14.5px;font-weight:650;line-height:1.35;cursor:pointer;text-align:left;transition:border-color .12s,box-shadow .12s,background .12s}
+.dd9 .ddv{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd9 .ddn{flex:none;font-size:11.5px;font-weight:750;color:var(--ink-3);background:var(--sunk);border-radius:99px;padding:1px 8px}
+.dd9 .ddc{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:7px;color:var(--ink-3);transition:transform .18s,background .12s}
+.dd9 .ddc .ic{transform:rotate(90deg)}
+.dd9:hover:not(:disabled){border-color:color-mix(in srgb,var(--pri) 45%,var(--line-2))}
+.dd9:hover:not(:disabled) .ddc{background:var(--sunk);color:var(--ink)}
+.dd9[aria-expanded="true"]{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-s)}
+.dd9[aria-expanded="true"] .ddc{transform:rotate(180deg);color:var(--pri)}
+.dd9:disabled{opacity:.5;cursor:default}
+.pk9 .dd9{border:0;background:transparent;padding:1px 0 0;font-size:14.5px;font-weight:750;box-shadow:none;width:100%}
+.pk9 .dd9 .ddn{background:var(--surface)}
+.pk9 .dd9[aria-expanded="true"]{box-shadow:none}
+.pk9:has(.dd9[aria-expanded="true"]){background:var(--surface);box-shadow:0 0 0 2px var(--pri)}
+.pk9{cursor:pointer;padding-right:8px}
+.qtr .dd9{flex:1}
+.shd .dd9{margin-left:8px;max-width:240px}
+.item .dd9{min-width:150px}
+.ddp{position:fixed;z-index:1000;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 6px rgba(16,24,40,.06),0 18px 48px rgba(16,24,40,.18);padding:6px;overflow:auto;overscroll-behavior:contain;max-width:min(460px,calc(100vw - 16px));animation:ddin .14s cubic-bezier(.2,.8,.2,1);scrollbar-width:thin}
+.ddp.up{animation-name:ddinu}
+@keyframes ddin{from{opacity:0;transform:translateY(-6px) scale(.98)}}
+@keyframes ddinu{from{opacity:0;transform:translateY(6px) scale(.98)}}
+.ddo{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:9px 10px 9px 12px;border-radius:10px;font-size:14.5px;line-height:1.4;color:var(--ink);font-weight:550;cursor:pointer}
+.ddo .ddt{flex:1;min-width:0}
+.ddo em{flex:none;font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:750;background:var(--sunk);border-radius:99px;padding:1px 8px}
+.ddo .ddk{flex:none;width:16px;display:grid;place-items:center}
+.ddo:hover,.ddo:focus{background:var(--hover);outline:none}
+.ddo:focus-visible{box-shadow:inset 0 0 0 2px var(--pri)}
+.ddo.on{color:var(--pri);font-weight:750;background:var(--pri-s)}
+.ddo.on em{background:var(--surface);color:var(--pri)}
+.ddo:disabled{opacity:.4;cursor:default}
+.ddp.sheetp{left:0;right:0;bottom:0;top:auto;max-height:68vh;max-width:none;border-radius:22px 22px 0 0;border-width:1px 0 0;padding:8px 10px calc(12px + env(safe-area-inset-bottom));box-shadow:0 0 0 100vmax rgba(10,12,20,.38);animation:ddup .2s cubic-bezier(.2,.8,.2,1)}
+.ddp.sheetp::before{content:"";display:block;width:40px;height:4px;border-radius:99px;background:var(--line-2);margin:2px auto 8px}
+.ddp.sheetp .ddo{padding:13px 12px;font-size:15.5px}
+@keyframes ddup{from{transform:translateY(40px);opacity:.4}}
+
+/* 표: 채점 방식 알림 */
+.ord9{font-size:12px;font-weight:700;color:var(--ink-3);background:var(--sunk);border-radius:99px;padding:3px 10px;margin-right:auto}
+.ord9.free{color:var(--good);background:var(--good-s)}
 </style>
 </head>
 <body>
@@ -1026,19 +1086,19 @@ function curScope(pageSp){
   return{key:`t:${d}:${SC.k}:${SC.t}`,d,k:SC.k,t:SC.t,title:tp?tp.name:ch?ch.name:DOCS[d],idx:tp?tp.idx:ch?ch.idx:docIdx(d)};
 }
 const scopeOf=()=>curScope();
-function picker(withSp){
-  const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,d=SC.d,sp=withSp&&SC.sp;
+function picker(withSp,withAll){
+  const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,d=SC.d,sp=withSp&&SC.sp,sa=withAll&&SC.sa;
   const opt=(v,l,on)=>`<option value="${v}" ${on?"selected":""}>${l}</option>`;
   return `<div class="picker">
-    <label class="pk9"><small>과목</small><select id="pd" aria-label="과목">${withSp?opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${DOCS.map((x,i)=>opt(i,`${x} (${docIdx(i).length})`,!sp&&d===i)).join("")}</select></label>
-    ${sp?"":`<label class="pk9"><small>대주제</small><select id="pk" aria-label="대주제">${opt("","대주제 전체",SC.k==null)}${CH[d].map((ch,k)=>opt(k,`${k+1}. ${esc(ch.name)} (${ch.idx.length})`,SC.k===k)).join("")}</select></label>
+    <label class="pk9"><small>과목</small><select id="pd" aria-label="과목">${withSp?opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${withAll?opt("all",`전체 (${ALL().length.toLocaleString()})`,sa):""}${DOCS.map((x,i)=>opt(i,`${x} (${docIdx(i).length})`,!sp&&!sa&&d===i)).join("")}</select></label>
+    ${sp||sa?"":`<label class="pk9"><small>대주제</small><select id="pk" aria-label="대주제">${opt("","대주제 전체",SC.k==null)}${CH[d].map((ch,k)=>opt(k,`${k+1}. ${esc(ch.name)} (${ch.idx.length})`,SC.k===k)).join("")}</select></label>
     <label class="pk9 ${SC.k==null?"off":""}"><small>소주제</small><select id="pt" aria-label="소주제" ${SC.k==null?"disabled":""}>${opt("","소주제 전체",SC.t==null)}${SC.k!=null?CH[d][SC.k].topics.map((tp,t)=>opt(t,`${SC.k+1}-${t+1}. ${esc(tp.name)} (${tp.idx.length})`,SC.t===t)).join(""):""}</select></label>
     ${SC.t!=null?`<span class="pnav"><button class="iconbtn sm" id="pprev" aria-label="이전 소주제" ${SC.t>0?"":"disabled"}>${ico("left",16)}</button><button class="iconbtn sm" id="pnext" aria-label="다음 소주제" ${SC.t<CH[d][SC.k].topics.length-1?"":"disabled"}>${ico("chev",16)}</button></span>`:""}`}
   </div>`;
 }
 function bindPicker(m){
   const ch=()=>{saveSC();SES=null;renderRoute();};
-  const pd=m.querySelector("#pd");if(pd)pd.onchange=()=>{const v=pd.value;if(v==="due"||v==="wrong"){SC.sp=v;}else{SC.sp="";SC.d=+v;SC.k=null;SC.t=null;}ch();};
+  const pd=m.querySelector("#pd");if(pd)pd.onchange=()=>{const v=pd.value;if(v==="all"){SC.sa=true;}else if(v==="due"||v==="wrong"){SC.sp=v;}else{SC.sp="";SC.sa=false;SC.d=+v;SC.k=null;SC.t=null;}ch();};
   const pk=m.querySelector("#pk");if(pk)pk.onchange=()=>{SC.k=pk.value===""?null:+pk.value;SC.t=null;ch();};
   const pt=m.querySelector("#pt");if(pt)pt.onchange=()=>{SC.t=pt.value===""?null:+pt.value;ch();};
   const pp=m.querySelector("#pprev");if(pp)pp.onclick=()=>{SC.t--;ch();};
@@ -1068,8 +1128,8 @@ function renderSide(){
   setSync(cloudState||"ok");
 }
 const renderToc=renderSide;
-const pageHead=(title,withSp,sub,cnt)=>`<header class="phd9"><div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}</div></header>
-  <div class="scope9">${picker(withSp)}${cnt?`<span class="scnt">${cnt}</span>`:""}</div>`;
+const pageHead=(title,withSp,sub,cnt,withAll)=>`<header class="phd9"><div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}</div></header>
+  <div class="scope9">${picker(withSp,withAll)}${cnt?`<span class="scnt">${cnt}</span>`:""}</div>`;
 
 /* 표 */
 VIEW.table=function(m){
@@ -1091,10 +1151,10 @@ VIEW.gichul=function(m){
 };
 /* 찾기 */
 VIEW.search=function(m){
-  const sc=curScope(false),q=route.q||"";
+  const sc0=curScope(false),sc=SC.sa?{key:"all",title:"전체",idx:ALL()}:sc0,q=route.q||"";
   const qs=q.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const idx=qs.length?ALL().filter(i=>{const c=C[i],t=(c[3]+" "+c[4]+" "+c[7]+" "+c[5]+" "+c[6]).toLowerCase();return qs.every(x=>t.includes(x));}):sc.idx;
-  m.innerHTML=`<div class="page">${pageHead("찾기",false,"모든 카드에서 낱말로 찾거나, 범위를 골라 목록으로 봐요")}
+  m.innerHTML=`<div class="page">${pageHead("찾기",false,"모든 카드에서 낱말로 찾거나, 범위를 골라 목록으로 봐요",`카드 <b class="num">${idx.length.toLocaleString()}</b>장`,true)}
     <label class="sbox">${ico("search",18)}<input type="search" id="sq" placeholder="모든 카드에서 찾기 (비우면 위 범위 목록)" value="${esc(q)}" aria-label="찾기"></label>
     <section id="sbody"></section></div>`;
   bindPicker(m);
@@ -1207,7 +1267,7 @@ function undo(){
 }
 const inPlayer=()=>route.v==="fc"&&SES&&PBOX&&PBOX.isConnected&&!document.getElementById("qsheet");
 document.addEventListener("keydown",e=>{
-  if(!inPlayer()||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+  if(!inPlayer()||DDOPEN||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
   const full=SES.pos<SES.q.length&&SES.shown>=curN();
   if(e.key===" "||e.key==="Enter"){e.preventDefault();flipCard();}
   else if(e.key==="a"||e.key==="A"){e.preventDefault();showAll();}
@@ -1480,7 +1540,7 @@ function bindSubWrite(el,qid,q){
   });
 }
 function closeQ(){const o=document.getElementById("qsheet");if(o)o.remove();document.body.classList.remove("noscroll");}
-document.addEventListener("keydown",e=>{if(document.getElementById("qsheet")){if(e.key==="Escape")closeQ();e.stopImmediatePropagation();}},true);
+document.addEventListener("keydown",e=>{if(DDOPEN)return;if(document.getElementById("qsheet")){if(e.key==="Escape")closeQ();e.stopImmediatePropagation();}},true);
 
 /* ---------- 표 ---------- */
 let TB=[];
@@ -1501,30 +1561,51 @@ const nrm=s=>String(s||"").toLowerCase().replace(/\([^)]*\)/g,"").replace(/[\s·
 function lev(a,b){const m=a.length,n=b.length;if(!m||!n)return Math.max(m,n);let p=[...Array(n+1).keys()];for(let i=1;i<=m;i++){let q=[i];for(let j=1;j<=n;j++)q[j]=Math.min(p[j]+1,q[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=q;}return p[n];}
 function cellOk(input,cell){const a=nrm(input);if(!a)return false;
   return keyOf(cell).every(k=>{const b=nrm(k);if(!b)return true;return a.includes(b)||(b.length>=3&&1-lev(a,b)/Math.max(a.length,b.length)>=.78);});}
+const tOrdered=t=>/단계|순서|절차|과정|시기|전개|흐름|연도|연대|시대|세기|발달 순|위계|수준/.test(t.title+" "+t.cols.join(" "))||t.rows.filter(r=>/^\s*(\d+[.)단]|[①-⑩]|제\s*\d)/.test(plain(r[0]||""))).length>=2;
 function tableHTML(t){
   const md=TBM[t.id]||"hide";
   return `<div class="tb" data-tb="${t.id}"><div class="tbh"><b>${esc(t.title)}</b><span class="seg2">${[["hide","가리기"],["type","타이핑"],["view","보기"]].map(([v,l])=>`<button data-tm="${v}" aria-pressed="${md===v}">${l}</button>`).join("")}</span></div>
     <div class="tbw"><table class="tt ${md}"><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>
-    ${t.rows.map((r,ri)=>`<tr>${t.cols.map((_,ci)=>{const v=r[ci]||"";if(md==="view"||!v||v==="-")return `<td class="${ci===0?"rh":""}">${fmt(v)}</td>`;
-      if(md==="hide")return `<td class="${ci===0?"rh":""}"><button class="hc" data-r="${ri}" data-c="${ci}"><span class="hv">${fmt(v)}</span><span class="hq">?</span></button></td>`;
-      return `<td class="${ci===0?"rh":""}"><span class="sz" aria-hidden="true">${fmt(v)}</span><input class="ti" data-r="${ri}" data-c="${ci}" aria-label="${esc(t.cols[ci])} ${esc(plain(r[0]))}" autocomplete="off"><span class="tv">${fmt(v)}</span></td>`;}).join("")}</tr>`).join("")}
+    ${t.rows.map((r,ri)=>`<tr>${t.cols.map((_,ci)=>{const v=r[ci]||"",rh=ci===0?"rh":"";
+      if(md==="view"||!v||v==="-")return `<td class="${rh}"><div class="cw"><span class="cv">${fmt(v)}</span></div></td>`;
+      if(md==="hide")return `<td class="${rh}"><div class="cw hid"><span class="cv">${fmt(v)}</span><button class="hc9" data-r="${ri}" data-c="${ci}" aria-label="${esc(t.cols[ci])} 답 보기">?</button></div></td>`;
+      return `<td class="${rh}"><div class="cw typ"><span class="cv">${fmt(v)}</span><textarea class="ti" rows="1" data-r="${ri}" data-c="${ci}" aria-label="${esc(t.cols[ci])} ${esc(plain(r[0]))}" autocomplete="off" spellcheck="false"></textarea></div></td>`;}).join("")}</tr>`).join("")}
     </tbody></table></div>
     ${md==="hide"?`<div class="tbf"><button class="btn sm" data-ta="show">모두 보기</button><button class="btn sm" data-ta="hide">모두 가리기</button></div>`:""}
-    ${md==="type"?`<div class="tbf"><span class="tsc muted small"></span><button class="btn sm" data-ta="reset">다시</button><button class="btn sm" data-ta="reveal">정답 보기</button><button class="btn sm pri" data-ta="check">채점</button></div>`:""}</div>`;
+    ${md==="view"?`<div class="tbf"><span class="muted small">모든 답이 보여요</span><span class="sp"></span><button class="btn sm" data-tm2="hide">가리고 연습하기</button></div>`:""}
+    ${md==="type"?`<div class="tbf"><span class="ord9 ${tOrdered(t)?"":"free"}">${tOrdered(t)?"순서대로 채점":"줄 순서 상관없이 채점 · 같은 답 두 번은 오답"}</span><span class="tsc muted small"></span><button class="btn sm" data-ta="reset">다시</button><button class="btn sm" data-ta="reveal">정답 보기</button><button class="btn sm pri" data-ta="check">채점</button></div>`:""}</div>`;
 }
 function bindTables(m){
   m.querySelectorAll(".tb").forEach(el=>{
     const t=TB[+el.dataset.tb];
     const redraw=()=>{el.outerHTML=tableHTML(t);bindTables(m);};
     el.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm;redraw();});
-    el.querySelectorAll(".hc").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+    el.querySelectorAll("[data-tm2]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm2;redraw();});
+    el.querySelectorAll(".cw.hid").forEach(w=>w.onclick=()=>w.classList.toggle("on"));
     const ins=[...el.querySelectorAll(".ti")];
-    const check=inp=>{const td=inp.parentElement,ok=cellOk(inp.value,t.rows[+inp.dataset.r][+inp.dataset.c]);td.classList.remove("ok","ng");if(inp.value.trim())td.classList.add(ok?"ok":"ng");return ok;};
-    const score=()=>{const s=el.querySelector(".tsc");if(!s)return;const done=ins.filter(i=>i.value.trim()).length,ok=ins.filter(i=>i.parentElement.classList.contains("ok")).length;s.textContent=`${ok} / ${ins.length} 맞음${done<ins.length?` · ${ins.length-done}칸 남음`:""}`;};
+    /* 채점: 순서 있는 표는 그 줄과 비교. 순서 없는 표는 쓴 줄마다 가장 잘 맞는 실제 줄을 하나씩 짝지음(한 줄은 한 번만 → 같은 답 중복은 오답) */
+    const ORD=tOrdered(t),blank=v=>!v||v==="-";
+    const grade=()=>{
+      const R=t.rows.length,typed=[...new Set(ins.filter(i=>i.value.trim()).map(i=>+i.dataset.r))],as={};
+      if(ORD)typed.forEach(r=>as[r]=r);
+      else{
+        const compat=(r,a)=>t.cols.every((_,c)=>blank(t.rows[r][c])===blank(t.rows[a][c]));
+        const sc=(r,a)=>ins.filter(i=>+i.dataset.r===r&&i.value.trim()&&cellOk(i.value,t.rows[a][+i.dataset.c])).length;
+        const pr=[];typed.forEach(r=>{for(let a=0;a<R;a++)if(compat(r,a)){const v=sc(r,a);if(v)pr.push([v,a===r?1:0,r,a]);}});
+        pr.sort((x,y)=>y[0]-x[0]||y[1]-x[1]);
+        const used=new Set();for(const [,,r,a] of pr){if(r in as||used.has(a))continue;as[r]=a;used.add(a);}
+        typed.forEach(r=>{if(!(r in as))as[r]=-1;});
+      }
+      ins.forEach(i=>{const td=i.closest("td");td.classList.remove("ok","ng");if(!i.value.trim())return;const a=as[+i.dataset.r];td.classList.add(a>=0&&cellOk(i.value,t.rows[a][+i.dataset.c])?"ok":"ng");});
+    };
+    const check=()=>grade();
+    ins.forEach(inp=>{const w=inp.parentElement;inp.addEventListener("focus",()=>w.classList.remove("peek"));});
+    el.querySelectorAll(".cw.typ").forEach(w=>w.addEventListener("dblclick",()=>w.classList.toggle("peek")));
+    const score=()=>{const s=el.querySelector(".tsc");if(!s)return;const done=ins.filter(i=>i.value.trim()).length,ok=ins.filter(i=>i.closest("td").classList.contains("ok")).length;s.textContent=`${ok} / ${ins.length} 맞음${done<ins.length?` · ${ins.length-done}칸 남음`:""}`;};
     ins.forEach((inp,k)=>{inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();check(inp);score();const nx=ins[k+1];if(nx)nx.focus();}};inp.onblur=()=>{if(inp.value.trim()){check(inp);score();}};});
     el.querySelectorAll("[data-ta]").forEach(b=>b.onclick=()=>{const a=b.dataset.ta;
-      if(a==="show")el.querySelectorAll(".hc").forEach(x=>x.classList.add("on"));
-      else if(a==="hide")el.querySelectorAll(".hc").forEach(x=>x.classList.remove("on"));
+      if(a==="show")el.querySelectorAll(".cw.hid").forEach(x=>x.classList.add("on"));
+      else if(a==="hide")el.querySelectorAll(".cw.hid").forEach(x=>x.classList.remove("on"));
       else if(a==="check"){ins.forEach(check);score();}
       else if(a==="reveal")el.querySelector("table").classList.toggle("rev");
       else if(a==="reset")redraw();});
@@ -1721,10 +1802,59 @@ function showLock(mode){
 })();
 /* 기출 페이지: ←/→ 키로 이전·다음 문제 (글쓰기 칸 밖에서) */
 document.addEventListener("keydown",e=>{
-  if(document.getElementById("qsheet")||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+  if(DDOPEN||document.getElementById("qsheet")||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
   const b=e.key==="ArrowLeft"?document.getElementById("qal"):e.key==="ArrowRight"?document.getElementById("qar"):null;
   if(b&&!b.disabled){e.preventDefault();b.click();}
 });
+
+/* ---------- 예쁜 드롭다운: 모든 <select>를 단추 + 펼침 목록으로 덮어 그림 (원래 select는 숨겨 두고 값만 맞춤) ---------- */
+let DDOPEN=null;
+function ddClose(){if(!DDOPEN)return;DDOPEN.pop.remove();DDOPEN.btn.setAttribute("aria-expanded","false");DDOPEN=null;}
+const ddLabel=o=>{const m=String(o.textContent).match(/^(.*?)\s*\(([\d,]+)\)\s*$/);return m?[m[1],m[2]]:[o.textContent,""];};
+function ddEnhance(sel){
+  if(sel.dataset.dd)return;sel.dataset.dd="1";sel.classList.add("ddsel");sel.tabIndex=-1;sel.setAttribute("aria-hidden","true");
+  const btn=document.createElement("button");btn.type="button";btn.className="dd9";btn.setAttribute("aria-haspopup","listbox");btn.setAttribute("aria-expanded","false");
+  if(sel.getAttribute("aria-label"))btn.setAttribute("aria-label",sel.getAttribute("aria-label"));
+  const paint=()=>{const o=sel.options[sel.selectedIndex],[a,n]=o?ddLabel(o):["",""];btn.innerHTML=`<span class="ddv">${esc(a)}</span>${n?`<span class="ddn">${n}</span>`:""}<span class="ddc">${ico("chev",14)}</span>`;btn.disabled=sel.disabled;};
+  paint();sel.after(btn);sel.addEventListener("change",paint);
+  btn.onclick=e=>{e.preventDefault();e.stopPropagation();if(DDOPEN&&DDOPEN.sel===sel)return ddClose();ddOpen(sel,btn,paint);};
+  btn.onkeydown=e=>{if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();e.stopPropagation();ddOpen(sel,btn,paint);}};
+  const lab=sel.closest("label");if(lab)lab.addEventListener("click",e=>{if(btn.contains(e.target))return;e.preventDefault();if(!btn.disabled)btn.click();});
+}
+function ddOpen(sel,btn,paint){
+  ddClose();
+  const pop=document.createElement("div");pop.className="ddp";pop.setAttribute("role","listbox");
+  const cur=sel.selectedIndex;
+  pop.innerHTML=[...sel.options].map((o,i)=>{const [a,n]=ddLabel(o);return `<button type="button" role="option" class="ddo ${i===cur?"on":""}" data-i="${i}" aria-selected="${i===cur}" ${o.disabled?"disabled":""}><span class="ddt">${esc(a)}</span>${n?`<em class="num">${n}</em>`:""}<span class="ddk">${i===cur?ico("check",15):""}</span></button>`;}).join("");
+  document.body.appendChild(pop);
+  const r=btn.getBoundingClientRect();
+  if(innerWidth<600){pop.classList.add("sheetp");}
+  else{const host=btn.closest(".pk9")||btn,hr=host.getBoundingClientRect();
+    pop.style.minWidth=Math.max(hr.width,220)+"px";
+    pop.style.left=Math.max(8,Math.min(hr.left,innerWidth-pop.offsetWidth-8))+"px";
+    const below=innerHeight-hr.bottom-14,above=hr.top-14;
+    if(below<260&&above>below){const h=Math.min(400,above);pop.style.maxHeight=h+"px";pop.style.top=Math.max(8,hr.top-8-Math.min(pop.scrollHeight,h))+"px";pop.classList.add("up");}
+    else{pop.style.maxHeight=Math.min(400,below)+"px";pop.style.top=(hr.bottom+8)+"px";}}
+  btn.setAttribute("aria-expanded","true");DDOPEN={sel,btn,pop};
+  const on=pop.querySelector(".ddo.on");
+  if(on)pop.scrollTop=on.offsetTop-pop.clientHeight/2+on.offsetHeight/2;
+  try{(on||pop.querySelector(".ddo:not(:disabled)")).focus({preventScroll:true});}catch(e){}
+  pop.onclick=e=>{e.stopPropagation();const o=e.target.closest(".ddo");if(!o||o.disabled)return;ddClose();
+    if(sel.selectedIndex!==+o.dataset.i){sel.selectedIndex=+o.dataset.i;paint();sel.dispatchEvent(new Event("change",{bubbles:true}));}
+    if(document.body.contains(btn))btn.focus({preventScroll:true});};
+  pop.onkeydown=e=>{const os=[...pop.querySelectorAll(".ddo:not(:disabled)")],k=os.indexOf(document.activeElement);
+    if(e.key==="ArrowDown"){e.preventDefault();(os[k+1]||os[0]).focus();}
+    else if(e.key==="ArrowUp"){e.preventDefault();(os[k-1]||os[os.length-1]).focus();}
+    else if(e.key==="Home"){e.preventDefault();os[0].focus();}else if(e.key==="End"){e.preventDefault();os[os.length-1].focus();}
+    else if(e.key==="Escape"){e.preventDefault();ddClose();btn.focus();}
+    else if(e.key==="Tab")ddClose();
+    e.stopPropagation();};
+}
+document.addEventListener("click",e=>{if(DDOPEN&&!DDOPEN.pop.contains(e.target))ddClose();});
+window.addEventListener("resize",()=>{if(DDOPEN&&innerWidth>=600)ddClose();});
+document.addEventListener("scroll",e=>{if(DDOPEN&&!DDOPEN.pop.contains(e.target))ddClose();},true);
+window.addEventListener("hashchange",ddClose);
+new MutationObserver(()=>document.querySelectorAll("select:not([data-dd])").forEach(ddEnhance)).observe(document.documentElement,{childList:true,subtree:true});
 </script>
 </body>
 </html>
