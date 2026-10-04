@@ -1074,6 +1074,13 @@ td.ok .cw.typ .ti,td.ng .cw.typ .ti{padding-right:8px}
 td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;width:19px;height:19px;font-size:11px;box-shadow:0 0 0 2px var(--surface)}
 .cw.typ .ti{scrollbar-width:none}.cw.typ .ti::-webkit-scrollbar{display:none}
 .cw.hid .cv,.cw.hid .hc9,.cw.typ .ti{animation:none!important;transition:none!important}
+.optbtn{display:flex;align-items:center;gap:10px;width:100%;margin:22px 0 10px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px 12px 16px;box-shadow:var(--sh);text-align:left;cursor:pointer}
+.optbtn:hover{border-color:var(--line-2)}
+.optbtn .ob1{font-weight:800;font-size:15px}
+.optbtn .ob2{flex:1;min-width:0;font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.optbtn .obc{display:grid;place-items:center;color:var(--ink-3);transform:rotate(90deg)}
+.optbtn.open .obc{transform:rotate(-90deg)}
+.opts9[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -1593,6 +1600,7 @@ VIEW.fc=function(m){
   m.querySelector("#chg").onclick=()=>{FCRUN=false;SES=null;VIEW.fc(m);};
   bindPicker(m);playerIn(m.querySelector("#pbody"),sc);
 };
+let OPTOPEN=false;
 function fcChooser(m){
   const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length;
   if(SC.sp)SC.sp="";
@@ -1613,8 +1621,8 @@ function fcChooser(m){
     <div class="chips8"><button class="c8 ${SC.t==null?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>{const c=counts(tp.idx);return `<button class="c8 ${SC.t===t?"on":""}" data-t="${t}">${S.badges&&S.badges[`t:${d}:${SC.k}:${t}`]?`<i class="bdg" title="배지">🏅</i>`:""}${esc(tp.name)}<span class="num">${tp.idx.length}</span>${c.k===c.all?`<i class="okd" title="다 외움"></i>`:""}</button>`;}).join("")}</div>`:""}
     <h2 class="st8"><span>${SC.k!=null?4:3}</span>방식</h2>
     <div class="modes8 m4">${MODES.map(([v,ic,l,sm])=>`<button class="md8 ${fmode()===v?"on":""}" data-md="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>
-    <h2 class="st8"><span>${SC.k!=null?5:4}</span>옵션</h2>
-    <div class="opts9">
+    <button class="optbtn ${OPTOPEN?"open":""}" id="optt" aria-expanded="${OPTOPEN}"><span class="ob1">옵션</span><span class="ob2">${[FCO().gtrace?"기출 역추적":"",+FCO().timer?`${FCO().timer/60}분 제한`:"",FCO().sound?"효과음":""].filter(Boolean).join(" · ")||"기출 역추적 · 시간 제한 · 효과음"}</span><span class="obc">${ico("chev",16)}</span></button>
+    <div class="opts9" ${OPTOPEN?"":"hidden"}>
       <label class="op9"><span class="oi">📝</span><span class="ot"><b>기출 역추적</b><small>답을 본 뒤 이 내용이 나온 기출 물음을 한 줄로 보여 줘요</small></span><span class="switch"><input type="checkbox" id="ogt" ${FCO().gtrace?"checked":""}><i></i></span></label>
       <div class="op9"><span class="oi">⏱</span><span class="ot"><b>시간 제한</b><small>정해진 시간 안에 몇 장 맞히는지 기록을 세워요</small></span><span class="seg2">${[[0,"없음"],[60,"1분"],[180,"3분"],[300,"5분"]].map(([v,l])=>`<button data-tl="${v}" aria-pressed="${(+FCO().timer||0)===v}">${l}</button>`).join("")}</span></div>
       <label class="op9"><span class="oi">🔊</span><span class="ot"><b>효과음</b><small>맞히거나 연속으로 맞힐 때 소리가 나요</small></span><span class="switch"><input type="checkbox" id="osn" ${FCO().sound?"checked":""}><i></i></span></label>
@@ -1628,6 +1636,7 @@ function fcChooser(m){
   m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{SC.t=b.dataset.t===""?null:+b.dataset.t;re();});
   m.querySelectorAll("[data-md]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();re();});
   m.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{timer:+b.dataset.tl});save();re();});
+  m.querySelector("#optt").onclick=()=>{OPTOPEN=!OPTOPEN;re();};
   m.querySelector("#ogt").onchange=e=>{S.fc=Object.assign(FCO(),{gtrace:e.target.checked});save();};
   m.querySelector("#osn").onchange=e=>{S.fc=Object.assign(FCO(),{sound:e.target.checked});save();if(e.target.checked)sfx("good");};
   m.querySelector("#start").onclick=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};
