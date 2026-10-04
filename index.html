@@ -1509,7 +1509,7 @@ html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-se
 .hyc{max-width:860px}
 .hyhd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:4px 0 18px}
 .hyhd h1{font-size:30px;font-weight:900;letter-spacing:-.03em;margin:0}.hyhd p{margin:2px 0 0;color:var(--ink-3);font-size:14px}
-.hydots{display:flex;gap:6px}.hydots i{width:26px;height:6px;border-radius:3px;background:var(--line)}.hydots i.done{background:color-mix(in srgb,var(--pri) 45%,var(--line))}.hydots i.on{background:var(--pri)}
+.hydots{display:flex;gap:6px}.hydots i{width:26px;height:6px;border-radius:3px;background:var(--line)}.hydots i.dn{background:color-mix(in srgb,var(--pri) 45%,var(--line))}.hydots i.on{background:var(--pri)}
 .hyst{display:flex;align-items:center;gap:10px;margin:0 0 12px}.hyst h2{margin:0;font-size:18px;font-weight:800}
 .hyt9{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
 .hyt9.two{grid-template-columns:repeat(2,minmax(0,1fr))}.hyt9.four{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -1619,6 +1619,67 @@ html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-se
 .optpop9{border:1px solid var(--line);border-radius:16px;background:var(--surface,#fff);box-shadow:0 10px 28px rgba(0,0,0,.08);padding:12px 14px;margin:0 0 14px}
 .optph{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.optph b{font-size:15px}
 .optpop9 .opts9{display:block;margin:0}
+/* v49: 해이실 깔끔하게 — 흰 카드 + 은은한 색 포인트 */
+.hyc{max-width:820px}
+.hyhd{margin:6px 0 22px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.hyhd h1{font-size:28px}
+.hydots i{width:22px;height:5px}
+.hyst h2{font-size:17px;color:var(--ink)}
+.hyt9{gap:12px}
+.hytile{background:var(--surface,#fff)!important;color:var(--ink)!important;border:1px solid var(--line);border-radius:16px;min-height:112px;padding:16px 16px 14px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.hytile::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--tc)}
+.hytile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,24,40,.08);border-color:color-mix(in srgb,var(--tc) 35%,var(--line))}
+.hytile.on{outline:0;border-color:var(--tc);box-shadow:0 0 0 3px color-mix(in srgb,var(--tc) 18%,transparent)}
+.hytile .hti{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--tc) 12%,transparent);color:var(--tc);font-size:19px}
+.hytile .hti.num{font-size:17px;font-weight:900;opacity:1}
+.hytile b{color:var(--ink);font-size:16px;margin-top:8px}
+.hytile small,.hytile em{color:var(--ink-3)!important;opacity:1}
+.hytile em{margin-top:2px;font-weight:700}
+.hytile.all{--tc:#475569}
+.hygo1{background:var(--surface,#fff)!important;color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 24px rgba(16,24,40,.06)}
+.hygo1 .hti{width:58px;height:58px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--tc) 12%,transparent);font-size:28px}
+.hygo1 small,.hygo1 em{color:var(--ink-3)!important;opacity:1}
+.hystart{border-radius:14px;background:var(--pri);color:#fff;box-shadow:0 8px 20px color-mix(in srgb,var(--pri) 28%,transparent)}
+/* 실행 화면 */
+.hyrh{position:sticky;top:0;z-index:20;margin:0 -4px 14px;padding:8px 4px;background:color-mix(in srgb,var(--bg,#f6f6fa) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.hyback{border-radius:10px;background:var(--surface,#fff);border:1px solid var(--line)}
+.hymt{border-radius:12px;background:var(--surface,#fff);border:1px solid var(--line);padding:3px}
+.hymt button{border-radius:9px}
+.hymt button.on{background:color-mix(in srgb,var(--pri) 12%,transparent);color:var(--pri);box-shadow:none}
+.hybar{border-radius:14px}
+.gsdoc{border-radius:18px;padding:22px 24px 26px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.gsh{background:none;color:var(--ink);padding:0 0 8px;margin:22px 0 10px;font-size:19px;border-bottom:2px solid color-mix(in srgb,var(--pri) 30%,var(--line));border-radius:0}
+.gss{display:inline-block;font-size:13.5px;padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--pri) 10%,transparent);color:var(--pri);margin:14px 0 8px}
+.gl{padding:5px 6px;border-radius:10px;transition:background .15s}
+.gl:hover{background:color-mix(in srgb,var(--pri) 4%,transparent)}
+.gl.g-now{background:color-mix(in srgb,var(--pri) 7%,transparent);outline:0;box-shadow:inset 3px 0 0 var(--pri)}
+.gb{gap:3px;row-gap:4px}
+.gb i{border-radius:6px;border-color:color-mix(in srgb,var(--line) 70%,transparent);background:color-mix(in srgb,var(--bg-2,#f4f5f8) 60%,var(--surface,#fff))}
+.gb i b{opacity:.28}
+.gb i.ok{background:var(--ink);border-color:var(--ink)}
+.gl.g-done .gb i.ok{background:linear-gradient(180deg,color-mix(in srgb,var(--pri) 92%,#fff),var(--pri));border-color:transparent}
+.gb i.bad{background:#ef4444;border-color:#ef4444}
+.gb i.cur{border-color:var(--pri);box-shadow:0 0 0 2px color-mix(in srgb,var(--pri) 20%,transparent)}
+.gn{color:color-mix(in srgb,var(--pri) 70%,var(--ink-3))}
+.gst{border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.gst th,.gst td{border:0;border-bottom:1px solid var(--line)}
+.gst tr:last-child th,.gst tr:last-child td{border-bottom:0}
+.gst thead th{background:color-mix(in srgb,var(--pri) 6%,var(--surface,#fff));color:var(--ink-2);font-weight:800}
+.gst tbody th{border-right:1px solid var(--line);background:color-mix(in srgb,var(--pri) 3%,var(--surface,#fff))}
+.gsbar{border-radius:18px 18px 0 0;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 -10px 30px rgba(16,24,40,.08)}
+.gsst span{padding:2px 10px;border-radius:999px;background:var(--bg-2,#f3f4f7)}
+.gsst b{font-size:15px}
+.gsin input{border-radius:12px;border-width:1.5px}
+.gsin input:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 18%,transparent)}
+.gsin .btn{border-radius:12px}
+.gsprog{height:5px;border-radius:999px}
+.hybi{border-radius:7px 7px 0 0}
+.hyb{border-radius:7px}
+@media (max-width:699px){
+  .hytile{min-height:98px;padding:13px}.hytile .hti{width:32px;height:32px;font-size:16px}
+  .gsdoc{padding:14px 12px 18px;border-radius:14px}
+  .gsst{gap:6px}.gsst span{padding:2px 7px}
+}
 </style>
 </head>
 <body>
@@ -2591,7 +2652,7 @@ function hyLines(ds){const L=[];let lh="";ds.forEach(d=>d.lines.forEach(x=>{if(x
 const HYM=[["see","👀","보며 타이핑","문장을 보며 한 줄씩 따라 치기","t1"],["type","⌨️","안 보고 타이핑","안 보고 한 줄씩 그대로","t2"],["fill","✏️","빈칸 채우기","핵심어를 직접 쓰기","t3"],["click","👆","빈칸 클릭","가려진 핵심어 눌러 확인","t4"]];
 const hyCnt=ds=>{const L=hyLines(ds).filter(x=>x.t!=null);return{l:L.length,b:L.reduce((a,x)=>a+hyBlanks(x.t).length,0)};};
 function hyChooser(m){
-  const pg="heisil",steps=["k","d","md","go"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
+  const pg="heisil",steps=["k","d","md"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
   const D=hyG(HY.k==="area"?"영역":"총론");
   const TT={k:"무엇을 외울까요",d:HY.k==="area"?"영역 고르기":"범위 고르기",md:"방식 고르기",go:"준비 완료"};
   if(!HYM.some(x=>x[0]===HY.md))HY.md="see";
@@ -2605,13 +2666,13 @@ function hyChooser(m){
   else if(cur==="md")body=`<div class="hyt9 four">${HYM.map(([v,ic,l,sm,c])=>`<button class="hytile ${c} ${HY.md===v?"on":""}" data-hm="${v}"><span class="hti">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`;
   else{const M=HYM.find(x=>x[0]===HY.md),n=hyCnt(hyCurDocs());
     body=`<div class="hygo"><div class="hygo1 ${M[4]}"><span class="hti">${M[1]}</span><div><small>${M[2]}</small><b>${esc(hyTitle())}</b><em>${n.l}줄 · 빈칸 ${n.b}개</em></div></div><button class="hystart" id="hgo">${ico("play",20)}시작하기</button></div>`;}
-  m.innerHTML=`<div class="page hyc"><header class="hyhd"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문 암기</p></div><div class="hydots">${steps.map((s,i)=>`<i class="${s===cur?"on":steps.indexOf(cur)>i?"done":""}"></i>`).join("")}</div></header>
+  m.innerHTML=`<div class="page hyc"><header class="hyhd"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문 암기</p></div><div class="hydots">${steps.map((s,i)=>`<i class="${s===cur?"on":steps.indexOf(cur)>i?"dn":""}"></i>`).join("")}</div></header>
     <div class="hyst">${wzBack(steps,cur)}<h2>${TT[cur]}</h2></div>${body}</div>`;
   const go=st=>{WZ[pg]=st;hySave();hyChooser(m);window.scrollTo({top:0});};
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   on("[data-wzb]",b=>go(b.dataset.wzb));
   on("[data-hk]",b=>{if(HY.k!==b.dataset.hk){HY.k=b.dataset.hk;HY.d=-1;}go("d");});
-  on("[data-hd]",b=>{HY.d=+b.dataset.hd;go("md");});on("[data-hm]",b=>{HY.md=b.dataset.hm;go("go");});
+  on("[data-hd]",b=>{HY.d=+b.dataset.hd;go("md");});on("[data-hm]",b=>{HY.md=b.dataset.hm;hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});});
   const g=m.querySelector("#hgo");if(g)g.onclick=()=>{hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});};
 }
 VIEW.heisil=function(m){
