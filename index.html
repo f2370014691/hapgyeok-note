@@ -1485,6 +1485,12 @@ body.glock .qfbar{flex:none}
 /* v40: 아이패드 기출·문제풀이: 펜으로 쓸 때 주변 글자가 선택(드래그)되지 않게 */
 html.ipad body.grun main,html.ipad body.grun main *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-select:text;user-select:text}
+/* v41: 해이실 (고시문) 빈칸 줄 */
+.hyl2{display:grid;grid-template-columns:40px minmax(0,1fr);gap:6px;align-items:baseline;margin:2px 0}
+.hyl2 .hyn{padding-top:0}
+.hyl2 .hyp{margin:4px 0}
+.hyl2.cat .hyp{font-weight:800}.hyl2.big .hyp{font-weight:700}
+@media (max-width:699px){.hyl2{grid-template-columns:28px minmax(0,1fr);gap:4px}}
 </style>
 </head>
 <body>
@@ -1734,7 +1740,7 @@ function pgChooser(m,pg){
   }else if(sa){selTitle="전체";selN=cf("all");}
   else{const c0=curScope(false);selTitle=c0.title;selN=pg==="table"?tablesOf(c0.d,c0.k,c0.t,c0.ts).length:(src?gItems(c0,src).length:0);}
   if(cur==="src"){const qn=s0=>MQ?Object.values(MQ).filter(q=>s0.sets.includes(q.s)).length:0;
-    body=`<div class="subjpick">${SRCS.map(x=>`<button class="sp8 ${x.id===MSRC?"on":""}" data-src="${esc(x.id)}"><span class="dl">📘</span><b>${esc(x.name)}</b><small>${qn(x)}문항</small></button>`).join("")}<button class="sp8 off" disabled><span class="dl">⏳</span><b>2027 버전</b><small>준비 중</small></button></div>`;}
+    body=`<div class="subjpick">${SRCS.map(x=>`<button class="sp8 ${x.id===MSRC?"on":""}" data-src="${esc(x.id)}"><span class="dl">📘</span><b>${esc(x.name)}</b><small>${qn(x)}문항</small></button>`).join("")}${SRCS.some(x=>x.id==="h27")?"":`<button class="sp8 off" disabled><span class="dl">⏳</span><b>2027 버전</b><small>준비 중</small></button>`}</div>`;}
   else if(cur==="set")body=`<div class="bigpick"><button class="bp ${MPS<0?"on":""}" data-ms="-1"><b>전체 단원</b><small>${MQS?allItems(MQS).length:0}물음</small></button>${SETS_.map(([k,t],i)=>`<button class="bp ${i===MPS?"on":""}" data-ms="${i}"><b><span class="no8">${i+1}</span>${esc(t)}</b><small>${setCnt(k)}물음</small></button>`).join("")}</div>`;
   else if(cur==="d")body=`<div class="subjpick ${pg!=="table"?"n4":""}">${pg!=="table"?`<button class="sp8 ${sa?"on":""}" data-sd="all"><span class="dl">全</span><b>전체</b><small>${cf("all").toLocaleString()}${unit}</small></button>`:""}${DOCS.map((x,i)=>`<button class="sp8 ${!sa&&d===i?"on":""}" data-sd="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}"><span class="dl">${DLET[i]}</span><b>${esc(x)}</b><small>${cf(i,null,null).toLocaleString()}${unit}</small></button>`).join("")}</div>`;
   else if(cur==="k")body=`<div class="bigpick"><button class="bp ${SC.k==null?"on":""}" data-k=""><b>${esc(DOCS[d])} 전체</b><small>${cf(d,null,null)}${unit}</small></button>${CH[d].map((ch,k)=>`<button class="bp ${SC.k===k?"on":""}" data-k="${k}"><b><span class="no8">${k+1}</span>${esc(ch.name)}</b><small>${cf(d,k,null)}${unit}</small></button>`).join("")}</div>`;
@@ -1822,7 +1828,7 @@ VIEW.munpul=function(m){
   if(!SRCS.some(x=>x.id===MSRC))MSRC=SRCS[0].id;
   const SRC0=SRCS.find(x=>x.id===MSRC),SETS_=MSETS.filter(x=>SRC0.sets.includes(x[0]));
   let MQS=null;if(MQ){MQS={};for(const k in MQ)if(SRC0.sets.includes(MQ[k].s))MQS[k]=MQ[k];}
-  const srcSel=`<label class="pk9 src9"><small>문제집</small><select id="msrc" aria-label="문제집">${SRCS.map(x=>`<option value="${x.id}" ${x.id===MSRC?"selected":""}>${esc(x.name)}</option>`).join("")}<option disabled>2027 버전 · 준비 중</option></select></label>`;
+  const srcSel=`<label class="pk9 src9"><small>문제집</small><select id="msrc" aria-label="문제집">${SRCS.map(x=>`<option value="${x.id}" ${x.id===MSRC?"selected":""}>${esc(x.name)}</option>`).join("")}${SRCS.some(x=>x.id==="h27")?"":"<option disabled>2027 버전 · 준비 중</option>"}</select></label>`;
   const nq=MQS?Object.keys(MQS).length:0,ns=MQS?Object.values(MQS).reduce((a,q)=>a+q.subs.length,0):0;
   const seg="";
   const head=`<header class="phd9"><div><h1>문제풀이</h1><p>${esc(SRC0.name)} 문제풀이${MQS?` ${SETS_.length}개 단원 ${nq}문항(하위 물음 ${ns}개)`:""}</p></div><div class="mph">${srcSel}${seg}</div></header>`;
@@ -2380,7 +2386,7 @@ function gichulIn(box,sc,items){
 /* ---------- 기출 자료 ---------- */
 let GQ=null,GL={},CID={},GPUB=false,MQ=null,MSETS=[],MSRCS=[],MSRC="";try{MSRC=localStorage.getItem(SBASE+":msrc")||"";}catch(e){}
 const QQ=id=>String(id)[0]==="M"?(MQ&&MQ[id]):(GQ&&GQ[id]);
-const qHead=q=>q.mp?`하쌤 문제풀이 · ${q.y}`:`${q.y.replace("추"," 추시")}학년도 · ${sessL(q)}`;
+const qHead=q=>q.mp?`${(MSRCS.find(x=>x.sets.includes(q.s))||{name:"하쌤"}).name} 문제풀이 · ${q.y}`:`${q.y.replace("추"," 추시")}학년도 · ${sessL(q)}`;
 async function loadMunpul(){
   try{const r=await fetch("munpul.bin",{cache:"no-cache"});if(!r.ok)return;
     const b=new Uint8Array(await r.arrayBuffer());
@@ -2425,52 +2431,46 @@ function hyCmp(v,t,comp){
   for(let j=0;j<n;j++)if(v[j]!==t[j]){if(j===n-1&&(comp||hPart(v[j],t[j],t[j+1])))return{st:"ing",j};return{st:"ng",j};}
   return n>t.length?{st:"ng",j:t.length}:{st:"ing",j:n};
 }
-const hyDocs=()=>NU?NU.docs:[],hyAreas=()=>hyDocs().filter(x=>x.area);
+const hyDocs=()=>NU?NU.docs:[],hyG=g=>hyDocs().filter(x=>x.group===g);
 const hyBlanks=s=>{const o=[];String(s).replace(/\{\{([\s\S]*?)\}\}/g,(m,a)=>{o.push(a);return m;});return o;};
-function hyAreaLines(list){const L=[];list.forEach(d=>{const a=d.area;L.push({h:a.name+" 영역"});L.push({sh:"목표"});L.push({n:"",t:a.goal,big:1});a.goals.forEach((g,i)=>L.push({n:(i+1)+")",t:g}));
-  L.push({sh:"내용 범주와 내용"});a.cats.forEach(c=>{L.push({n:"범주",t:c.name,cat:1});c.items.forEach(t=>L.push({n:"·",t}));});});return L;}
-/* 영역 목표·내용의 빈칸 클릭: 학습지의 '목표'·'내용' 문항이 있으면 그것, 없으면 줄마다 통째로 가리기 */
-function hyAreaSecs(d){const s=d.sections.filter(x=>/^\s*(목표|내용)\s*$/.test(x.h)).map(x=>Object.assign({},x,{h:d.area.name+" · "+x.h}));if(s.length)return s;
-  const a=d.area;return[{h:a.name+" · 목표",lines:[`{{${a.goal}}}`,...a.goals.map((g,i)=>`${i+1}) {{${g}}}`)]},{h:a.name+" · 내용",lines:a.cats.flatMap(c=>[`[{{${c.name}}}]`,...c.items.map(t=>`· {{${t}}}`)])}];}
-function hyCurDocs(){const D=hyDocs();if(HY.k==="area"){const A=hyAreas();return HY.d<0?A:A[HY.d]?[A[HY.d]]:A.slice(0,1);}return D[HY.d]?[D[HY.d]]:D.slice(0,1);}
+const hyPlain=s=>String(s).replace(/\{\{|\}\}/g,"");
+function hyCurDocs(){const D=hyG(HY.k==="area"?"영역":"총론");return HY.d<0?D:D[HY.d]?[D[HY.d]]:D.slice(0,1);}
+function hyTitle(){const ds=hyCurDocs();return HY.d<0?(HY.k==="area"?"영역별 목표 및 내용 전체":"총론 전체"):(HY.k==="area"?ds[0].title+" 목표 및 내용":ds[0].title);}
+/* 여러 자료를 이어 볼 때 같은 큰 제목(Ⅰ. 구성방향 등)은 한 번만 */
+function hyLines(ds){const L=[];let lh="";ds.forEach(d=>d.lines.forEach(x=>{if(x.h){if(x.h===lh)return;lh=x.h;}L.push(x);}));return L;}
 function hyChooser(m){
-  const A=hyAreas(),D=hyDocs(),pg="heisil";
-  const steps=["k","d","md","go"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
-  const TT={k:"무엇을 외울까요",d:HY.k==="area"?"영역":"자료",md:"방식",go:"시작"};
-  const MDS=HY.k==="area"?[["type","⌨️","100% 타이핑","한 글자라도 틀리면 바로 알려 줘요"],["click","👆","빈칸 클릭","핵심어를 눌러서 확인해요"]]
-    :[["click","👆","빈칸 클릭","가려진 핵심어를 눌러서 확인"],["type","⌨️","빈칸 타이핑","빈칸마다 직접 써요 · 틀리면 바로 표시"],["read","📖","답 보며 읽기","핵심어를 표시한 채로 읽어요"]];
-  if(!MDS.some(x=>x[0]===HY.md))HY.md=MDS[0][0];
-  const nb=d=>d.sections.reduce((a,s)=>a+hyBlanks((s.lines||[]).join("\n")+JSON.stringify(s.table||[])).length,0);
+  const pg="heisil",steps=["k","d","md","go"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
+  const D=hyG(HY.k==="area"?"영역":"총론");
+  const TT={k:"무엇을 외울까요",d:HY.k==="area"?"영역":"범위",md:"방식",go:"시작"};
+  const MDS=[["type","⌨️","100% 타이핑","한 줄씩 그대로 · 틀리면 바로 표시"],["fill","✏️","빈칸 채우기","핵심어를 직접 써요 · 틀리면 바로 표시"],["click","👆","빈칸 클릭","가려진 핵심어를 눌러서 확인"]];
+  if(!MDS.some(x=>x[0]===HY.md))HY.md="type";
+  const cnt=ds=>{const L=hyLines(ds).filter(x=>x.t!=null);return `${L.length}줄 · 빈칸 ${L.reduce((a,x)=>a+hyBlanks(x.t).length,0)}개`;};
   let body="";
-  if(cur==="k")body=`<div class="modes8"><button class="md8 ${HY.k==="area"?"on":""}" data-hk="area"><span class="mi">🎯</span><b>영역 목표 · 내용</b><small>5개 영역의 목표와 내용 범주·내용</small></button><button class="md8 ${HY.k==="doc"?"on":""}" data-hk="doc"><span class="mi">📘</span><b>해설서 빈칸</b><small>이해·성격·인간상·목적과 목표·운영·교수학습 및 평가 …</small></button></div>`;
-  else if(cur==="d")body=HY.k==="area"?`<div class="bigpick"><button class="bp ${HY.d<0?"on":""}" data-hd="-1"><b>5개 영역 전체</b><small>${A.length}개 영역</small></button>${A.map((d,i)=>`<button class="bp ${HY.d===i?"on":""}" data-hd="${i}"><b><span class="no8">${i+1}</span>${esc(d.area.name)}</b><small>내용 범주 ${d.area.cats.length}개 · 내용 ${d.area.cats.reduce((a,c)=>a+c.items.length,0)}개</small></button>`).join("")}</div>`
-    :`<div class="bigpick">${D.map((d,i)=>`<button class="bp ${HY.d===i?"on":""}" data-hd="${i}"><b><span class="no8">${i+1}</span>${esc(d.title)}</b><small>문항 ${d.sections.length}개 · 빈칸 ${nb(d)}개</small></button>`).join("")}</div>`;
-  else if(cur==="md")body=`<div class="modes8 ${MDS.length>2?"m3":""}">${MDS.map(([v,ic,l,sm])=>`<button class="md8 ${HY.md===v?"on":""}" data-hm="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`;
-  else{const ds=hyCurDocs(),t=HY.k==="area"?(HY.d<0?"5개 영역 전체":ds[0].area.name+" 영역")+" 목표 · 내용":ds[0].title;
-    body=`<div class="go8 wzgo"><div class="go8t"><small>선택한 범위</small><b>${esc(t)}</b><span class="muted small">${MDS.find(x=>x[0]===HY.md)[2]}</span></div><button class="btn pri lg gobtn" id="hgo">${ico("play",17)}시작</button></div>`;}
-  m.innerHTML=`<div class="page fc8 pgc wzp"><header class="fc8h phd9"><div><h1>해이실</h1></div></header>
+  if(cur==="k")body=`<div class="modes8"><button class="md8 ${HY.k==="area"?"on":""}" data-hk="area"><span class="mi">🎯</span><b>영역별 목표 및 내용</b><small>5개 영역의 목표 · 내용 범주 · 내용</small></button><button class="md8 ${HY.k==="doc"?"on":""}" data-hk="doc"><span class="mi">📘</span><b>성격 · 총론</b><small>성격 · 인간상 · 목적과 목표 · 구성의 중점 · 편성·운영 · 교수·학습 · 평가</small></button></div>`;
+  else if(cur==="d")body=`<div class="bigpick"><button class="bp ${HY.d<0?"on":""}" data-hd="-1"><b>${HY.k==="area"?"5개 영역 전체":"성격 · 총론 전체"}</b><small>${cnt(D)}</small></button>${D.map((d,i)=>`<button class="bp ${HY.d===i?"on":""}" data-hd="${i}"><b><span class="no8">${i+1}</span>${esc(d.title)}</b><small>${cnt([d])}</small></button>`).join("")}</div>`;
+  else if(cur==="md")body=`<div class="modes8 m3">${MDS.map(([v,ic,l,sm])=>`<button class="md8 ${HY.md===v?"on":""}" data-hm="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`;
+  else body=`<div class="go8 wzgo"><div class="go8t"><small>선택한 범위</small><b>${esc(hyTitle())}</b><span class="muted small">${MDS.find(x=>x[0]===HY.md)[2]} · ${cnt(hyCurDocs())}</span></div><button class="btn pri lg gobtn" id="hgo">${ico("play",17)}시작</button></div>`;
+  m.innerHTML=`<div class="page fc8 pgc wzp"><header class="fc8h phd9"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문</p></div></header>
     <div class="wzh">${wzBack(steps,cur)}<h2 class="st8"><span>${steps.indexOf(cur)+1}</span>${TT[cur]}</h2></div>${body}</div>`;
   const go=st=>{WZ[pg]=st;hySave();hyChooser(m);window.scrollTo({top:0});};
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   on("[data-wzb]",b=>go(b.dataset.wzb));
-  on("[data-hk]",b=>{if(HY.k!==b.dataset.hk){HY.k=b.dataset.hk;HY.d=HY.k==="area"?-1:0;HY.md=HY.k==="area"?"type":"click";}go("d");});
+  on("[data-hk]",b=>{if(HY.k!==b.dataset.hk){HY.k=b.dataset.hk;HY.d=-1;}go("d");});
   on("[data-hd]",b=>{HY.d=+b.dataset.hd;go("md");});on("[data-hm]",b=>{HY.md=b.dataset.hm;go("go");});
   const g=m.querySelector("#hgo");if(g)g.onclick=()=>{hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});};
 }
 VIEW.heisil=function(m){
-  if(!NU){m.innerHTML=`<div class="page"><div class="empty">해이실 자료를 불러오는 중이에요</div></div>`;return;}
+  if(!NU||!NU.docs||!NU.docs[0]||!NU.docs[0].lines){m.innerHTML=`<div class="page"><div class="empty">해이실 자료를 불러오는 중이에요</div></div>`;return;}
   if(!PGRUN.heisil)return hyChooser(m);
-  const ds=hyCurDocs(),area=HY.k==="area",key=HY.k+":"+HY.d+":"+HY.md;
-  if(HYT.key!==key)HYT={key,v:{},open:{}};
-  const title=area?(HY.d<0?"5개 영역 전체":ds[0].area.name+" 영역")+" 목표 · 내용":ds[0].title;
-  const mlab={type:area?"100% 타이핑":"빈칸 타이핑",click:"빈칸 클릭",read:"답 보며 읽기"}[HY.md];
-  m.innerHTML=`<div class="page hy9"><header class="phd9"><div><h1>${esc(title)}</h1><p>${mlab}</p></div></header>
+  if(!["type","fill","click"].includes(HY.md))HY.md="type";
+  const key=HY.k+":"+HY.d+":"+HY.md;if(HYT.key!==key)HYT={key,v:{},open:{}};
+  const mlab={type:"100% 타이핑",fill:"빈칸 채우기",click:"빈칸 클릭"}[HY.md];
+  m.innerHTML=`<div class="page hy9"><header class="phd9"><div><h1>${esc(hyTitle())}</h1><p>${mlab}</p></div></header>
     <div class="hybar"><span class="hyprog" id="hyprog"></span><span class="hyact"></span></div><section id="hybody"></section></div>`;
   addChg(m,"heisil");
-  const B=m.querySelector("#hybody"),act=m.querySelector(".hyact"),prog=m.querySelector("#hyprog");
-  if(area&&HY.md==="type")return hyTypeLines(B,act,prog,hyAreaLines(ds));
-  const secs=area?ds.flatMap(hyAreaSecs):ds[0].sections;
-  hyCloze(B,act,prog,secs,HY.md);
+  const B=m.querySelector("#hybody"),act=m.querySelector(".hyact"),prog=m.querySelector("#hyprog"),L=hyLines(hyCurDocs());
+  if(HY.md==="type")return hyTypeLines(B,act,prog,L.map(x=>x.t!=null?Object.assign({},x,{t:hyPlain(x.t)}):x));
+  hyCloze(B,act,prog,L,HY.md);
 };
 /* 줄 전체를 100% 똑같이 쓰기 */
 function hyTypeLines(B,act,prog,L){
@@ -2499,15 +2499,14 @@ function hyTypeLines(B,act,prog,L){
   upd();
 }
 /* 빈칸 클릭 · 빈칸 타이핑 · 답 보며 읽기 */
-function hyCloze(B,act,prog,secs,md){
+function hyCloze(B,act,prog,secs,md){   // secs = 줄 목록 (h·sh·{n,t})
   let bi=0;const ANS=[];
   const fill=s=>esc(s).replace(/\{\{([\s\S]*?)\}\}/g,(m,a)=>{const k=bi++;const ans=a.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'");ANS.push(ans);
     if(md==="read")return `<mark class="hyk">${a}</mark>`;
     if(md==="click")return `<button class="hyb ${HYT.open[k]?"on":""}" data-b="${k}"><span>${a}</span></button>`;
     return `<span class="hybw"><input class="hybi" data-b="${k}" size="${Math.max(2,[...ans].length+1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></span>`;}).replace(/\n/g,"<br>");
-  B.innerHTML=secs.map((s,si)=>`<section class="hysec"><h3 class="hyq"><span class="no8">${si+1}</span><span>${fill(s.h||"")}</span></h3>
-    ${(s.lines||[]).map(l=>`<p class="hyp">${fill(l)}</p>`).join("")}
-    ${s.table&&s.table.length?`<div class="hytw"><table class="hyt">${s.table.map((r,ri)=>`<tr>${r.map(c=>ri===0?`<th>${fill(c)}</th>`:`<td>${fill(c)}</td>`).join("")}</tr>`).join("")}</table></div>`:""}</section>`).join("");
+  B.innerHTML=secs.map(x=>x.h?`<h2 class="hyh">${esc(x.h)}</h2>`:x.sh?`<h3 class="hysh">${esc(x.sh)}</h3>`
+    :`<div class="hyl2 ${x.cat?"cat":""} ${x.big?"big":""}"><span class="hyn">${esc(x.n||"")}</span><p class="hyp">${fill(x.t)}</p></div>`).join("");
   const N=ANS.length;
   if(md==="read"){prog.innerHTML=`핵심어 <b class="num">${N}</b>개`;act.innerHTML="";return;}
   if(md==="click"){
