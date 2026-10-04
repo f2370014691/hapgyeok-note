@@ -1708,6 +1708,16 @@ body.glock.grun main>.page{padding-top:12px}
 @media (min-width:700px){body.glock main>.page.wide3{padding-top:14px}}
 .ph1 .phx .picker{flex-wrap:nowrap!important;flex:none}
 .ph1 .pnav{display:inline-flex;gap:2px;flex:none}
+/* v52: 제목줄 크게 (위 여백을 써서 문제 영역은 그대로) */
+.phd9.ph1.big{padding:10px 14px;gap:10px 14px;border-radius:14px}
+.ph1.big>div:first-child h1{font-size:21px}
+.ph1.big .pk9{padding:6px 8px 6px 12px;border-radius:11px}
+.ph1.big .pk9 small{font-size:12px}
+.ph1.big .pk9 select,.ph1.big .picker select,.ph1.big .dd9,.ph1.big .ddb{font-size:15px}
+.ph1.big .scnt{font-size:14px}
+.ph1.big .qfbar .seg2 button{padding:7px 12px;font-size:14px}
+.ph1.big .qfbar .btn,.ph1.big .chg9{padding:7px 13px;font-size:14px}
+.ph1.big .iconbtn.sm{width:32px;height:32px}
 </style>
 </head>
 <body>
@@ -1950,7 +1960,21 @@ function compactHead(m){
   if(sc){[...sc.childNodes].forEach(n=>x.appendChild(n));sc.remove();}
   if(qf)x.appendChild(qf);
   ph.insertBefore(x,ph.querySelector(".chg9"));
+  setTimeout(()=>phGrow(m),80);   // 드롭다운이 바뀐 뒤에 재기
 }
+/* 제목줄을 키우되, 늘어난 높이만큼 위 여백을 줄여 문제 영역의 위치·크기는 그대로 */
+function phGrow(m){
+  const ph=m.querySelector(".phd9.ph1"),pg=ph&&ph.closest(".page");if(!pg)return;
+  ph.classList.remove("big");pg.style.paddingTop="";pg.style.marginTop="";
+  if(!matchMedia("(min-width:700px)").matches)return;
+  const gb=m.querySelector("#gbody"),top=()=>gb?gb.getBoundingClientRect().top:ph.getBoundingClientRect().bottom;
+  const t0=top(),h0=ph.getBoundingClientRect().height;ph.classList.add("big");
+  const h1=ph.getBoundingClientRect().height,pad=parseFloat(getComputedStyle(pg).paddingTop)||0,off=pad-(h1-h0);
+  if(off<-30){ph.classList.remove("big");return;}   // 너무 커지면(여러 줄로 넘침) 원래 크기 유지
+  pg.style.paddingTop=Math.max(0,off)+"px";let mt=off<0?off:0;pg.style.marginTop=mt+"px";
+  const d=t0-top();if(Math.abs(d)>.5)pg.style.marginTop=(mt+d)+"px";   // 문제 영역 시작 위치를 원래와 똑같이
+}
+window.addEventListener("resize",()=>{const m=document.getElementById("main");if(m&&m.querySelector(".phd9.ph1"))phGrow(m);});
 function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+"범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
 /* 고르기 화면: 한 단계씩 (고르면 다음 단계, 앞 단계는 '뒤로'로) */
 let WZ={};const WZ0={fc:"ver",table:"d",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
