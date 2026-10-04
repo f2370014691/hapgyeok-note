@@ -2008,6 +2008,16 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
   .ph1.t3 .pk9 .ddb,.ph1.t3 .pk9 select{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ph1.t3 .phx .picker,.ph1.t3 .phx{flex-shrink:1;min-width:0}
 }
+
+/* v67: 관리자 확인 코드 · 계정 삭제 */
+.admcode{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);border-radius:16px;box-shadow:var(--sh);padding:12px 16px;margin:0 0 12px}
+.admcode>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:220px}
+.admcode small{color:var(--ink-3);font-size:12px}
+.admcode form{display:flex;gap:6px;flex-wrap:wrap}
+.admcode .field{width:150px;padding:7px 10px;font-size:14px}
+.admdel{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
+.admdel small{color:var(--ink-3);font-size:12px}
+.btn.dangerline{color:#DC2626;border-color:color-mix(in srgb,#EF4444 40%,transparent)}
 </style>
 </head>
 <body>
@@ -2520,6 +2530,22 @@ VIEW.mock=function(m){
 /* ---------- 관리자: 가입한 아이디와 학습 진행 (관리자 계정만, 읽기 전용) ---------- */
 const ADMIN_UID="xR7TPxRvHDWI7FYMnw45ObJaApW2";
 const isAdminMe=()=>!!(ME&&ME.uid===ADMIN_UID);
+async function admDelete(u){
+  if(u.uid===ADMIN_UID){toast("관리자 계정은 지울 수 없어요");return false;}
+  const t=prompt(`'${u.id}' 계정을 삭제할까요?\n학습 기록·접속 기록이 모두 지워지고, 이 아이디로는 더 이상 로그인할 수 없어요. 되돌릴 수 없어요.\n\n확인하려면 아이디 '${u.id}'를 그대로 입력해 주세요.`);
+  if(t==null)return false;if(t.trim()!==u.id){toast("아이디가 달라서 삭제하지 않았어요");return false;}
+  const fb=await loadFB();
+  try{await fb.setDoc(fb.doc(fb.db,"config","banned"),{uids:fb.arrayUnion(u.uid),updatedAt:Date.now()},{merge:true});}
+  catch(e){toast("삭제하지 못했어요 ("+(e.code||e)+")");return false;}
+  for(const d of ["flash","access","progress","essays"])try{await fb.deleteDoc(fb.doc(fb.db,"users",u.uid,"data",d));}catch(e){}
+  try{await fb.deleteDoc(fb.doc(fb.db,"users",u.uid));}catch(e){}
+  toast(`'${u.id}' 계정을 삭제했어요`);return true;}
+async function admSetCode(c1){
+  if(!RAWKEY)throw new Error("열쇠 없음");
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const w=await pbk("code\n"+c1,salt,["encrypt"]),ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},w,RAWKEY);
+  const fb=await loadFB();await fb.setDoc(fb.doc(fb.db,"config","code"),{salt:b64e(salt),iv:b64e(iv),ct:b64e(ct),updatedAt:Date.now()});
+  CODESLOT=null;}
 /* 접속 기록: 로그인(자동 로그인 포함)할 때 기기·IP를 자기 계정 문서에 남김. 관리자만 모아서 봄 */
 function devId(){const k="hapgyeok-dev-id";try{let v=localStorage.getItem(k);if(!v){v=Math.random().toString(36).slice(2,10);localStorage.setItem(k,v);}return v;}catch(e){return "";}}
 function devInfo(){const u=navigator.userAgent||"",ipad=/iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1);
@@ -2562,6 +2588,8 @@ VIEW.admin=function(m){
   const qcell=x=>x[0]?`${x[1]}/${x[0]} <small>(${pc(x[1],x[0])})</small>`:"—";
   const sel=ADM.find(u=>u.uid===ADMSEL);
   m.innerHTML=`<div class="page adm9"><header class="phd9"><div><h1>관리자</h1><p>가입한 아이디 ${ADM.length}개 · 학습 진행 (읽기 전용)</p></div><button class="btn sm" id="admre">${ico("undo",14)}새로 불러오기</button></header>
+    <section class="admcode"><div><b>🔑 확인 코드 바꾸기</b><small>새로 가입하거나 학습 자료가 갱신됐을 때 묻는 코드예요. 바꾸면 이전 코드는 바로 쓸 수 없어요.</small></div>
+      <form id="admcf" autocomplete="off"><input type="password" id="admc1" class="field" placeholder="새 확인 코드" autocomplete="new-password" minlength="4" required><input type="password" id="admc2" class="field" placeholder="한 번 더" autocomplete="new-password" minlength="4" required><button class="btn pri sm" type="submit">바꾸기</button></form></section>
     <div class="admnote">🔒 비밀번호는 Firebase가 되돌릴 수 없는 형태로만 보관해서 관리자도 볼 수 없어요. 잊은 비밀번호는 새로 정해 주세요(컴퓨터의 reset_admin_pw.py에서 아이디를 바꿔 실행).</div>
     <div class="admtw"><table class="admt"><thead><tr><th>아이디</th><th>가입</th><th>마지막 학습</th><th>최근 접속<br><small>기기 · IP</small></th><th>레벨</th><th>민쌤 카드<br><small>외움/학습/전체</small></th><th>하쌤 카드<br><small>외움/학습/전체</small></th><th>기출 정답</th><th>문제풀이 정답</th><th>모의고사 정답</th><th>최근 14일</th></tr></thead><tbody>
     ${ADM.map(u=>{const s=u.s,mx=Math.max(1,...s.days.map(d=>d[1]));return `<tr class="${u.uid===ADMSEL?"on":""}" data-u="${u.uid}"><td><b>${esc(u.id)}</b>${u.uid===ADMIN_UID?` <span class="admme">관리자</span>`:""}</td><td>${dt(u.t)}</td><td>${dt(s.upd)}</td><td>${(()=>{const a=(u.acc||[])[0];if(!a)return "—";const nd=new Set(u.acc.map(x=>x.dv)).size;return `${dt(a.t)}<br><small>${esc(a.os)} · ${esc(a.br)}${a.ip?" · "+esc(a.ip):""}${nd>1?` <span class="admdv">기기 ${nd}대</span>`:""}</small>`;})()}</td><td>Lv.${s.lv}<br><small>${s.xp.toLocaleString()} XP</small></td>
@@ -2579,11 +2607,17 @@ VIEW.admin=function(m){
         <div><small>모의고사</small><b>${pc(s.q.k[1],s.q.k[0])}</b><em>${s.q.k[0]}물음 채점</em></div>
         <div><small>시험일</small><b>${esc(s.exam||"—")}</b><em>가입 ${dt(sel.t)}</em></div>
       </div>
+      ${sel.uid!==ADMIN_UID?`<div class="admdel"><button class="btn sm dangerline" id="admdel">🗑 이 계정 삭제</button><small>학습·접속 기록을 지우고 로그인을 막아요</small></div>`:""}
       <h3>접속 기록 <small class="muted">최근 ${(sel.acc||[]).length}번 · 기기 ${new Set((sel.acc||[]).map(x=>x.dv)).size}대 · IP ${new Set((sel.acc||[]).map(x=>x.ip).filter(Boolean)).size}개</small></h3>
       ${(sel.acc||[]).length?`<div class="admtw"><table class="admt adma"><thead><tr><th>접속 시각</th><th>기기</th><th>브라우저</th><th>화면</th><th>IP</th><th>기기 번호</th></tr></thead><tbody>${sel.acc.map(a=>`<tr title="${esc(a.ua||"")}"><td>${dt(a.t)}${a.n>1?` <small>(${a.n}번)</small>`:""}</td><td>${esc(a.os)}${a.pwa?" <small>앱</small>":""}</td><td>${esc(a.br)}</td><td class="num">${esc(a.scr||"")}</td><td class="num">${esc(a.ip||"—")}</td><td class="num"><span class="admdid" style="--h:${parseInt((a.dv||"0").slice(0,4),36)%360}">${esc((a.dv||"").slice(0,6))}</span></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted small">아직 접속 기록이 없어요. 이 기능이 생긴 뒤에 로그인하면 쌓여요.</p>`}
       <h3>최근 14일 카드 학습</h3><div class="admbars">${s.days.map(d=>`<div><i style="height:${Math.round(d[1]/Math.max(1,...s.days.map(x=>x[1]))*100)}%"></i><b>${d[1]||""}</b><small>${d[0].slice(5)}</small></div>`).join("")}</div></section>`;})():`<p class="muted small">행을 누르면 그 아이디의 학습 상세가 보여요.</p>`}
   </div>`;
   m.querySelector("#admre").onclick=()=>{ADM=null;VIEW.admin(m);};
+  {const b=m.querySelector("#admdel");if(b&&sel)b.onclick=async()=>{b.disabled=true;if(await admDelete(sel)){ADM=ADM.filter(u=>u.uid!==sel.uid);ADMSEL=null;VIEW.admin(m);}else b.disabled=false;};}
+  {const f=m.querySelector("#admcf");if(f)f.onsubmit=async e=>{e.preventDefault();const a=f.querySelector("#admc1").value,b=f.querySelector("#admc2").value;
+    if(a.length<4){toast("4자 이상으로 정해 주세요");return;}if(a!==b){toast("두 번 입력한 코드가 달라요");return;}
+    if(!confirm("확인 코드를 바꿀까요? 이전 코드는 바로 쓸 수 없게 돼요."))return;
+    const bt=f.querySelector("button");bt.disabled=true;try{await admSetCode(a);f.reset();toast("확인 코드를 바꿨어요");}catch(err){toast("바꾸지 못했어요 ("+(err.code||err.message||err)+")");}bt.disabled=false;};}
   m.querySelectorAll("[data-u]").forEach(r=>r.onclick=()=>{ADMSEL=ADMSEL===r.dataset.u?null:r.dataset.u;VIEW.admin(m);});
 };
 /* 찾기 */
@@ -3709,6 +3743,7 @@ async function openBlob(key){
 }
 async function adminRaw(id,pw){const k=await pbk(id+"\n"+pw,new Uint8Array(BLOB).slice(0,16),["decrypt"]);await openBlob(k);return new Uint8Array(await crypto.subtle.exportKey("raw",k));}
 async function codeRaw(code){
+  if(!CODESLOT){try{const fb=await loadFB(),p=await fb.getDoc(fb.doc(fb.db,"config","code"));if(p.exists()&&p.data().ct)CODESLOT=p.data();}catch(e){}}
   if(!CODESLOT){const r=await fetch("code.json",{cache:"no-cache"});if(!r.ok)throw 0;CODESLOT=await r.json();}
   const w=await pbk("code\n"+code,b64d(CODESLOT.salt),["decrypt"]);
   const raw=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(CODESLOT.iv)},w,b64d(CODESLOT.ct)));
@@ -3723,9 +3758,14 @@ async function logout(){try{await cloudFlush();if(FB)await FB.signOut(FB.auth);}
 let GEXAM=null;
 async function loadGlobal(){
   try{const p=await FB.getDoc(FB.doc(FB.db,"config","global"));GEXAM=p.exists()?(p.data().exam||null):null;}catch(e){}
+  /* 관리자가 예전에 정해 둔 시험일이 아직 공통 설정에 없으면 올려 둠 → 모든 계정(새 계정 포함)에 적용 */
+  if(!GEXAM&&isAdminMe()&&S.exam){try{await FB.setDoc(FB.doc(FB.db,"config","global"),{exam:S.exam,updatedAt:Date.now()},{merge:true});GEXAM=S.exam;}catch(e){}}
   if(GEXAM&&S.exam!==GEXAM){S.exam=GEXAM;save();}
 }
+async function isBanned(uid){try{const p=await FB.getDoc(FB.doc(FB.db,"config","banned"));return p.exists()&&(p.data().uids||[]).includes(uid);}catch(e){return false;}}
 async function enterFB(uid,info,raw,keep){
+  if(await isBanned(uid)){try{await FB.signOut(FB.auth);}catch(e){}try{localStorage.removeItem(BASE+":auto");localStorage.removeItem(SBASE+"@fb:"+uid);}catch(e){}
+    ME=null;showLock("login");const er=document.getElementById("err");if(er)er.textContent="관리자가 삭제한 계정이에요.";return;}
   ME={uid,id:info.id};KEY=SBASE+"@fb:"+uid;RAWKEY=raw;persistDevice(keep);
   let local=null;try{local=JSON.parse(localStorage.getItem(KEY)||"null");}catch(e){}
   let cloud=null;
@@ -3747,6 +3787,7 @@ async function doLogin(id,pw,keep,code){
   let cred=null;
   try{cred=await fb.signInWithEmailAndPassword(fb.auth,email,pw);}
   catch(e){const c=e.code||"";if(!/invalid-credential|user-not-found|wrong-password|invalid-login|invalid-email/.test(c))throw new Error(netMsg(e));}
+  if(cred&&await isBanned(cred.user.uid)){try{await fb.signOut(fb.auth);}catch(e){}throw new Error("관리자가 삭제한 계정이에요.");}
   if(cred){
     const ref=fb.doc(fb.db,"users",cred.user.uid),snap=await fb.getDoc(ref);let info=snap.exists()?snap.data():null,raw;
     if(info&&info.wrap){try{raw=await unwrapKey(info.wrap,id,pw);}catch(e){raw=null;}}
