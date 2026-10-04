@@ -1274,6 +1274,47 @@ html.ipad .grade button{min-height:72px}
 .g9.off small{font-size:12px}
 .md8{align-items:center}.md8 .mi{grid-row:auto}
 .op9{padding:10px 0}
+/* 질문 속 핵심어 가리기 */
+.qmask{display:inline-block;position:relative;border-radius:6px;background:var(--pri-s);cursor:pointer;vertical-align:baseline;padding:0 3px;margin:0 1px}
+.qmask>span{visibility:hidden}
+.qmask::after{content:"?";position:absolute;inset:0;display:grid;place-items:center;font-size:.7em;font-weight:900;color:color-mix(in srgb,var(--pri) 60%,transparent)}
+.qmask.on{background:none;padding:0}.qmask.on>span{visibility:visible}.qmask.on::after{content:none}
+
+/* ===== v27: 기출·문제풀이 페이지는 화면에 고정, 사진·물음 칸만 스크롤 ===== */
+body.glock{overflow:hidden;overscroll-behavior:none}
+body.glock .shell{height:100dvh;min-height:0}
+body.glock main{height:100dvh;overflow:hidden;display:flex;flex-direction:column;padding-bottom:18px}
+body.glock main>.page{flex:1;min-height:0;display:flex;flex-direction:column;width:100%}
+body.glock .phd9,body.glock .scope9{flex:none}
+body.glock #gbody{flex:1;min-height:0;display:flex;flex-direction:column}
+body.glock .qv{flex:1;min-height:0!important;height:auto!important}
+body.glock #gbody>.empty{flex:none}
+@media (max-width:699px){
+  body.glock{position:fixed;inset:0;width:100%}
+  body.glock main{height:calc(100dvh - var(--tbh,60px));padding:0 0 8px}
+  body.glock main>.page{padding:12px 12px 0}
+  body.glock .phd9{margin-bottom:8px}body.glock .phd9 h1{font-size:21px}
+  body.glock .scope9{margin-bottom:8px;padding:5px}
+  body.glock .qs2{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1.05fr)}
+  body.glock .qip{height:auto!important;min-height:0}
+  body.glock .qrp{overflow:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+}
+/* 설정: 채점 간격 */
+.rv9{display:flex;flex-direction:column;gap:2px;padding:4px 0 10px}
+.rvr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--line)}
+.rvr:first-child{border-top:0}
+.rvl{display:inline-flex;align-items:center;gap:8px;min-width:92px}.rvl b{font-size:15px}
+.rvc{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px;color:var(--ink-2)}
+.rvc em{font-style:normal;color:var(--ink-3)}
+.numin.sm{width:58px;padding:5px 8px;text-align:center}
+.rvb{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:8px}
+.rvb small{display:inline!important;font-size:12px;color:var(--ink-3)}
+.quick8{align-items:center}
+.quick8 .rst8{margin:0 0 0 auto;flex:0 1 auto;justify-content:flex-end}
+.quick8 .rst8>span{margin-right:0;width:100%;text-align:right}
+.quick8{flex-wrap:nowrap}
+.quick8:has(.rst8>span){flex-wrap:wrap}
+@media (max-width:699px){.quick8{gap:6px}.quick8 .qk{padding:8px 10px;font-size:13.5px;gap:6px}.quick8 .qk .ic{display:none}.quick8 .hm{display:none}.quick8 #rsO{padding:6px 9px;font-size:12.5px;white-space:nowrap}}
 </style>
 </head>
 <body>
@@ -1326,14 +1367,20 @@ const isNew=i=>!ss(i);
 const isDue=i=>{const x=ss(i);return !!x&&x[1]<=dn();};
 const isMastered=i=>{const x=ss(i);return !!x&&x[0]>=4;};
 const isWrong=i=>{const x=ss(i);return !!x&&x[2]>0;};
+/* 채점 간격 (설정에서 바꿀 수 있음) */
+const RV=()=>{const r=S.iv||{};return{again:Math.max(1,Math.min(50,+r.again||5)),againDay:Math.max(0,+r.againDay||0),hard:r.hard==null?1:Math.max(0,+r.hard),good:(Array.isArray(r.good)&&r.good.length?r.good:[1,3,7,14,30]).map(n=>Math.max(1,+n||1))};};
+const goodDays=b=>{const g=RV().good;return g[Math.min(g.length-1,Math.max(0,b-2))];};
+const BMAX=()=>RV().good.length+1;
+const dayL=n=>n===0?"오늘":n===1?"내일":n+"일 뒤";
 function grade(i,g){
   const id=C[i][0],x=S.srs[id],t=dn();
   let b=x?x[0]:0,l=x?x[2]:0;
   if(!x){S.nl=S.nl||{};const d0=today();S.nl[d0]=(S.nl[d0]||0)+1;}
+  const R=RV();
   if(g===0){b=1;l++;}
   else if(g===1){b=Math.max(1,Math.min(b,3));}
-  else b=Math.min(6,Math.max(2,b+1));
-  S.srs[id]=[b,t+(g===0?0:g===1?1:IV[b]),l];
+  else b=Math.min(BMAX(),Math.max(2,b+1));
+  S.srs[id]=[b,t+(g===0?R.againDay:g===1?R.hard:goodDays(b)),l];
   const k=today();S.log[k]=(S.log[k]||0)+1;
 }
 function counts(idx){let k=0,l=0,n=0,due=0;const t=dn();for(const i of idx){const x=ss(i);if(!x)n++;else{if(x[0]>=4)k++;else l++;if(x[1]<=t)due++;}}return{k,l,n,due,all:idx.length};}
@@ -1453,7 +1500,7 @@ function nextTopic(){if(SC.sp||SC.k==null)return null;const tps=CH[SC.d][SC.k].t
   if(SC.k<CH[SC.d].length-1)return ()=>{SC.k++;SC.t=SC.t==null?null:0;saveSC();SES=null;renderRoute();};return null;}
 function renderRoute(){
   loadSC();const pv=route.v;route=parseHash();if(route.v==="fc"&&pv!=="fc"&&!FCKEEP)FCRUN=false;FCKEEP=false;buildIdx();renderSide();
-  const m=document.getElementById("main");document.body.classList.remove("fclock");(VIEW[route.v]||VIEW.fc)(m);window.scrollTo({top:0});
+  const m=document.getElementById("main");document.body.classList.remove("fclock");document.body.classList.toggle("glock",route.v==="gichul"||route.v==="munpul");{const tb=document.getElementById("tabbar");document.documentElement.style.setProperty("--tbh",((tb&&tb.offsetHeight)||0)+"px");}(VIEW[route.v]||VIEW.fc)(m);window.scrollTo({top:0});
 }
 function setSync(st){cloudState=st;document.querySelectorAll(".sync").forEach(el=>{
   el.className="sync "+st;el.title=st==="ok"?"서버에 저장됨":st==="err"?"저장 실패 · 다시 시도 중":st==="big"?"기록이 너무 커요":"저장 중…";
@@ -1632,6 +1679,13 @@ function endHTML(s){
       ${s.seenG&&s.seenG.size?`<div class="gnote end"><span class="gi">📝</span><div><b>이번 카드와 연결된 기출 ${s.seenG.size}문항</b><small>방금 외운 내용이 실제로 어떻게 나왔는지 확인해 보세요</small></div><a class="btn sm" href="#/gichul">기출 풀기</a></div>`:""}
       <div class="row center"><button class="btn" id="back1" ${s.ended?"disabled":""}>${ico("left",16)}마지막 카드</button><button class="btn" id="again">다시 하기</button>${nextTopic()?`<button class="btn pri" id="nxt">다음 주제 ${ico("chev",16)}</button>`:""}</div></div>`;
 }
+/* 질문 속에 답의 핵심어(**굵은 말**)가 그대로 나오면 가려 두고, 누르면 보이게 */
+function qMask(q,a){
+  const ks=[...new Set([...String(a||"").matchAll(/\*\*(.+?)\*\*/g)].map(x=>plainA(x[1]).trim()).filter(k=>k.length>=2&&String(q).includes(k)))].sort((x,y)=>y.length-x.length);
+  let h=fmt(q);if(!ks.length)return h;
+  const re=new RegExp("("+ks.map(k=>esc(k).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","g");
+  return h.split(/(<[^>]+>)/).map(t=>t.startsWith("<")?t:t.replace(re,'<span class="qmask" title="눌러서 보기"><span>$1</span></span>')).join("");
+}
 function drawCard(){
   const s=SES,box=PBOX;if(!box||!box.isConnected)return;
   const o=FCO(),mode=fmode();
@@ -1676,7 +1730,7 @@ function drawCard(){
       <div class="cmeta"><span class="cpath">${esc(c[4])}</span>${!x?`<span class="tag new">NEW</span>`:x[2]?`<span class="tag lapse">틀림 ${x[2]}</span>`:x[0]>=4?`<span class="tag ok">외움</span>`:""}
         ${gq.length?`<button class="tag gtag" id="gq" title="이 카드가 나온 기출">기출 ${gq.length}</button>`:""}<span class="pg">${c[2]}쪽</span></div>
       ${pr?`<div class="pq">이 설명에 맞는 질문은?</div><div class="cscroll" id="cscr"><div class="a pa">${its.map(t=>`<div class="ait on">${fmt(t)}</div>`).join("")}</div>`
-        :`<div class="q">${fmt(c[5])}</div><div class="cscroll" id="cscr"><div class="a">${aBody}</div>`}
+        :`<div class="q">${sh?fmt(c[5]):qMask(c[5],c[6])}</div><div class="cscroll" id="cscr"><div class="a">${aBody}</div>`}
       ${tr?(()=>{const L=tr.length,p=L?Math.round(tok/L*100):0,cl=tok>=L*.8?"good":tok>=L*.5?"mid":"bad";
         return `<div class="ty9res ${cl}"><div class="ty9rh"><span class="ty9ring" style="--p:${p}"><b class="num">${tok}<small>/${L}</small></b></span>
           <div><b>${tok===L&&L?"완벽해요!":cl==="good"?"거의 다 맞았어요":cl==="mid"?"절반쯤 맞았어요":"다시 확인해 봐요"}</b><small>핵심어 ${tok}개 맞음${s.hintUsed?" · 💡 힌트 사용":""}</small></div></div>
@@ -1691,9 +1745,9 @@ function drawCard(){
     <div class="ctl">${pr?`<div class="pair9">${pr.opts.map((j,k)=>`<button class="po ${pr.pick!=null?(k===right?"ok":k===pr.pick?"ng":"dim"):""}" data-po="${k}" ${pr.pick!=null?"disabled":""}><span class="pk">${"AB"[k]}</span><span>${fmt(C[j][5])}</span></button>`).join("")}</div>
         ${pr.pick!=null?`<div class="reveal"><button class="showbtn" id="pnx">${pr.pick===right?"맞았어요 · 다음":"다음 (곧 다시 나와요)"} ${ico("chev",16)}</button></div>`:""}`
       :full?`<div class="grade ${tr?"sug"+(tok>=tr.length*.8?2:tok>=tr.length*.5?1:0):""}">
-        <button class="g0" data-g="0"><em>😵</em><b>몰랐어요</b><small>+0 · 곧 다시</small></button>
-        <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+5 · 내일</small></button>
-        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,s.combo)} · ${IV[Math.min(6,Math.max(2,(x?x[0]:0)+1))]}일 뒤</small></button></div>`
+        <button class="g0" data-g="0"><em>😵</em><b>몰랐어요</b><small>+0 · ${RV().again}장 뒤</small></button>
+        <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+5 · ${dayL(RV().hard)}</small></button>
+        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,s.combo)} · ${dayL(goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
       :typing&&!sh?`<div class="ty9">
           <div class="ty9box ${multi?"multi":""}">${multi?`<p class="ty9cap">답이 <b>${its.length}개</b>예요 · 순서는 상관없어요</p>${its.map((t,k)=>`<label class="ty9row"><span class="ty9n">${k+1}</span><textarea class="tyai" data-k="${k}" rows="1" placeholder="${k+1}번째 답" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}`
             :`<textarea id="tya" rows="3" placeholder="떠오르는 답을 써 보세요" spellcheck="false">${esc(s.draft||"")}</textarea>`}
@@ -1704,7 +1758,7 @@ function drawCard(){
       <p class="keys"><kbd>Space</kbd> 답 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기 · 휴대폰: ← 알아요 · ↓ 몰랐어요 · ↑ 헷갈려요 · → 직전 카드</p></div></div>`;
   const $=q=>box.querySelector(q),on=(q,f)=>{const b=$(q);if(b)b.onclick=f;};
   const cd=$("#card");
-  cd.onclick=e=>{if(cd._sw){cd._sw=false;return;}if(e.target.closest("button"))return;if(!pr)flipCard();};
+  cd.onclick=e=>{if(cd._sw){cd._sw=false;return;}const qm=e.target.closest(".qmask");if(qm){qm.classList.toggle("on");return;}if(e.target.closest("button"))return;if(!pr)flipCard();};
   on("#show",flipCard);on("#showall",showAll);on("#undo",undo);
   on("#prev",()=>step(-1));on("#next",()=>step(1));
   on("#gq",()=>openQ(gq[0],gOf(i).filter(y=>y[0]===gq[0]).map(y=>y[1]),gq));
@@ -1763,7 +1817,7 @@ function answer(g){
   const pts=ptsOf(g,s.combo);
   s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score+=pts;s.xp+=pts;S.xp=(S.xp||0)+pts;
   s.flash={g,pts,combo:s.combo};
-  if(g===0&&(s.again[i]||0)<3){s.again[i]=(s.again[i]||0)+1;s.q.splice(Math.min(s.q.length,s.pos+5),0,i);}
+  if(g===0&&(s.again[i]||0)<3){s.again[i]=(s.again[i]||0)+1;s.q.splice(Math.min(s.q.length,s.pos+RV().again),0,i);}
   s.pos++;s.shown=0;s.typed=null;save();drawCard();
   sfx(g===2?([5,10,20,30,50].includes(s.combo)?"combo":"good"):g===1?"mid":"bad");
   if(g===2&&[5,10,20,30,50].includes(s.combo))burst(PBOX&&PBOX.querySelector("#card"),s.combo>=10?40:26);
@@ -1908,8 +1962,8 @@ function fcChooser(m){
   </div>`;
   {const rb=document.createElement("div");rb.className="rst8";
     rb.innerHTML=FCRST?`<span>학습 기록을 지울까요? 되돌릴 수 없어요</span><button class="btn sm danger" id="rsS">선택한 범위만 (${sc.idx.length.toLocaleString()}장)</button><button class="btn sm danger" id="rsA">전체</button><button class="btn sm" id="rsN">취소</button>`
-      :`<button class="btn sm dangerline" id="rsO">${ico("undo",14)} 학습 초기화</button>`;
-    m.querySelector(".page").appendChild(rb);}
+      :`<button class="btn sm dangerline" id="rsO">${ico("undo",14)}<span class="hm">학습 </span>초기화</button>`;
+    (m.querySelector(".quick8")||m.querySelector(".page")).appendChild(rb);}
   const re=()=>{saveSC();fcChooser(m);};
   {const o=(id,f)=>{const b=m.querySelector(id);if(b)b.onclick=f;};
     o("#rsO",()=>{FCRST=true;re();});o("#rsN",()=>{FCRST=false;re();});
@@ -2264,7 +2318,12 @@ VIEW.set=function(m){
       <label class="item"><span><b>화면 모드</b></span><select id="th"><option value="" ${!theme?"selected":""}>기기 설정 따라</option><option value="light" ${theme==="light"?"selected":""}>밝게</option><option value="dark" ${theme==="dark"?"selected":""}>어둡게</option></select></label>
     </section>
     <section class="group"><h3>채점 규칙</h3>
-      <div class="rules"><div><i class="dot g0"></i><b>몰랐어요</b><span>5장 뒤 다시 · 상자 1로</span></div><div><i class="dot g1"></i><b>헷갈려요</b><span>내일 다시</span></div><div><i class="dot g2"></i><b>알아요</b><span>1·3·7·14·30일 뒤 복습 · 상자 4부터 '외움'</span></div></div>
+      ${(()=>{const R=RV(),n=(id,v,mn,mx)=>`<input type="number" class="numin sm" id="${id}" value="${v}" min="${mn}" max="${mx}" inputmode="numeric">`;
+        return `<div class="rv9">
+        <div class="rvr"><span class="rvl"><i class="dot g0"></i><b>몰랐어요</b></span><span class="rvc">같은 학습에서 ${n("rv-a",R.again,1,50)}장 뒤 다시 · 다음 복습 ${n("rv-ad",R.againDay,0,30)}일 뒤</span></div>
+        <div class="rvr"><span class="rvl"><i class="dot g1"></i><b>헷갈려요</b></span><span class="rvc">${n("rv-h",R.hard,0,60)}일 뒤 다시</span></div>
+        <div class="rvr"><span class="rvl"><i class="dot g2"></i><b>알아요</b></span><span class="rvc">연속으로 알 때마다 ${R.good.map((v,k)=>n("rv-g"+k,v,1,365)).join("<em>→</em>")}일 뒤</span></div>
+        <div class="rvb"><small>0일 = 오늘 · 알아요를 3번 연속하면 '외움'</small><button class="btn sm" id="rv-reset">기본값으로</button></div></div>`;})()}
     </section>
     <section class="group"><h3>계정</h3>
       <div class="item"><span><b>${esc(ME.id)}</b><small>기록은 서버에 자동 저장돼요</small></span><button class="btn sm" id="lo">로그아웃</button></div>
@@ -2277,6 +2336,10 @@ VIEW.set=function(m){
   const $=s=>m.querySelector(s),set=(k,v)=>{S.fc=Object.assign(FCO(),{[k]:v});save();SES=null;};
   $("#o-rv").onchange=e=>set("reveal",e.target.value);$("#o-ty").onchange=e=>{set("typing",e.target.checked);set("mode",e.target.checked?"type":"click");};$("#o-sh").onchange=e=>set("order",e.target.checked?"shuf":"seq");
   $("#ex").onchange=e=>{S.exam=e.target.value;save();renderToc();};
+  {const rvSave=()=>{const g=k=>+(m.querySelector(k)||{}).value;const R=RV();
+      S.iv={again:Math.max(1,Math.min(50,g("#rv-a")||R.again)),againDay:Math.max(0,Math.min(30,g("#rv-ad")||0)),hard:Math.max(0,Math.min(60,isNaN(g("#rv-h"))?R.hard:g("#rv-h"))),good:R.good.map((v,k)=>Math.max(1,Math.min(365,g("#rv-g"+k)||v)))};save();SES=null;toast("채점 간격을 저장했어요");};
+    m.querySelectorAll(".rv9 input").forEach(x=>x.onchange=rvSave);
+    const rr=m.querySelector("#rv-reset");if(rr)rr.onclick=()=>{delete S.iv;save();SES=null;VIEW.set(m);toast("기본값으로 되돌렸어요");};}
   $("#o-md").onchange=e=>{set("mode",e.target.value);set("typing",e.target.value==="type");};
   $("#o-gt").onchange=e=>set("gtrace",e.target.checked);$("#o-sn").onchange=e=>{set("sound",e.target.checked);if(e.target.checked)sfx("good");};
   $("#o-goal").onchange=e=>{S.goal=Math.max(10,Math.min(1000,+e.target.value||50));save();};
