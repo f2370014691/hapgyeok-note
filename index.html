@@ -1838,7 +1838,7 @@ function learnQueue(idx){const q=idx.filter(isDue).concat(idx.filter(isNew));ret
 
 /* ---------- 페이지: #/fc 플래시카드 · #/table 표 · #/gichul 기출 · #/search 찾기 · #/set 설정 ---------- */
 let route={v:"home"},FCKEEP=false;
-const PAGES=[["home","홈","home"],["fc","플래시카드","cards"],["table","표","grid"],["gichul","기출","file"],["munpul","문제풀이","pen"],["heisil","해이실","book"],["search","찾기","search"]];
+const PAGES=[["home","홈","home"],["fc","플래시카드","cards"],["table","표","grid"],["gichul","기출","file"],["munpul","문제풀이","pen"],["mock","모의고사","target"],["heisil","해이실","book"],["search","찾기","search"]];
 function go(h){if(location.hash===h)renderRoute();else location.hash=h;}
 function parseHash(){const p=location.hash.replace(/^#\/?/,"").split("/").map(decodeURIComponent);
   if(PAGES.some(x=>x[0]===p[0])||p[0]==="set")return{v:p[0],q:p[1]||""};return{v:"home"};}
@@ -1898,7 +1898,7 @@ function renderSide(){
   const side=document.getElementById("side"),tab=document.getElementById("tabbar");
   if(!ME){if(side)side.innerHTML="";if(tab)tab.innerHTML="";return;}
   const dd=ddays(),cur=route.v;
-  const PG=PAGES.filter(p=>(p[0]!=="munpul"||MQ)&&(p[0]!=="heisil"||NU));
+  const PG=PAGES.filter(p=>(p[0]!=="munpul"||MQ)&&(p[0]!=="heisil"||NU)&&(p[0]!=="mock"||KQ));
   const items=PG.map(([v,l,ic])=>`<a href="#/${v}" class="nv ${cur===v?"on":""}">${ico(ic,19)}<span>${l}</span></a>`).join("");
   if(side)side.innerHTML=`<div class="sbrand"><span class="logo">합</span><b>합격노트</b></div>
     <nav class="snav">${items}</nav>
@@ -1913,10 +1913,10 @@ const pageHead=(title,withSp,sub,cnt,withAll,cf)=>`<header class="phd9"><div><h1
 
 /* 표 */
 /* ---------- 표·기출·문제풀이: 플래시카드처럼 먼저 범위 고르기 ---------- */
-let PGRUN={table:false,gichul:false,munpul:false,heisil:false},PGKEEP=false;
+let PGRUN={table:false,gichul:false,munpul:false,heisil:false,mock:false},PGKEEP=false;
 function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+"범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
 /* 고르기 화면: 한 단계씩 (고르면 다음 단계, 앞 단계는 '뒤로'로) */
-let WZ={};const WZ0={fc:"ver",table:"d",gichul:"d",munpul:"src",heisil:"k"};
+let WZ={};const WZ0={fc:"ver",table:"d",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
 const wzBack=(steps,cur)=>{const i=steps.indexOf(cur);return i>0?`<button class="btn sm wzback" data-wzb="${steps[i-1]}">${ico("left",14)}뒤로</button>`:"";};
 const wzNo=(steps,cur)=>`<span class="wzno">${steps.indexOf(cur)+1} / ${steps.length}</span>`;
 function pgChooser(m,pg){
@@ -2001,7 +2001,7 @@ function qAnalysis(src,pg){
   const bar=(w,a)=>`<span class="anb"><i style="width:${a?w/a*100:0}%"></i></span><span class="anr num">${w}/${a} <small>(${a?Math.round(w/a*100):0}%)</small></span>`;
   const bigs=Object.entries(big).sort((x,y)=>y[1].w-x[1].w||y[1].w/y[1].a-x[1].w/x[1].a);
   closeQ();const el=document.createElement("div");el.className="sheetbg";el.id="qsheet";
-  el.innerHTML=`<div class="sheet ana" role="dialog" aria-modal="true" aria-label="오답 분석"><div class="shd"><div><span class="ytag">${pg==="munpul"?"문제풀이":"기출"}</span><h2>📊 오답 분석</h2></div><button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
+  el.innerHTML=`<div class="sheet ana" role="dialog" aria-modal="true" aria-label="오답 분석"><div class="shd"><div><span class="ytag">${pg==="munpul"?"문제풀이":pg==="mock"?"모의고사":"기출"}</span><h2>📊 오답 분석</h2></div><button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
     <div class="sbd">${att?`<div class="ansum"><div><b class="num">${att}</b><small>푼 물음</small></div><div class="ok"><b class="num">${ok}</b><small>맞힘</small></div><div class="ng"><b class="num">${att-ok}</b><small>틀림</small></div><div><b class="num">${Math.round(ok/att*100)}%</b><small>정답률</small></div></div>
       <p class="anh">많이 틀린 순서예요. 소주제를 누르면 그 소주제의 오답만 모아서 풀 수 있어요.</p>
       ${bigs.map(([bn,B])=>`<div class="anbig"><div class="anrow big"><b>${esc(bn)}</b>${bar(B.w,B.a)}</div>
@@ -2066,6 +2066,61 @@ VIEW.munpul=function(m){
   const b=m.querySelector("#gbody");
   if(!MQS)b.innerHTML=`<div class="empty">문제풀이를 불러오는 중이에요</div>`;
   else if(!items.length)b.innerHTML=`<div class="empty">${qf==="wrong"?"이 범위에 틀린 물음이 없어요":qf==="new"?"이 범위의 물음을 모두 풀었어요":"이 범위에 해당하는 문제가 없어요"}</div>`;
+  else gichulIn(b,sc,items);
+};
+/* ---------- 모의고사 (민쌤·하쌤) — 기출과 같은 화면 ---------- */
+let KQ=null,KSETS=[],KW="민쌤",KR=1,KS="all";try{const o=JSON.parse(localStorage.getItem(SBASE+":mock")||"{}");KW=o.w||KW;KR=o.r||KR;KS=o.s||KS;}catch(e){}
+const kSave=()=>{try{localStorage.setItem(SBASE+":mock",JSON.stringify({w:KW,r:KR,s:KS}));}catch(e){}};
+const KSL={N:"1교시 유아교직논술",A:"2교시 교육과정 A",B:"3교시 교육과정 B"},KSO={N:0,A:1,B:2};
+async function loadMock(){
+  try{const r=await fetch("mock.bin",{cache:"no-cache"});if(!r.ok)return;
+    const b=new Uint8Array(await r.arrayBuffer());
+    const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b.slice(0,12)},await keyFromRaw(RAWKEY),b.slice(12));
+    const d=await new Response(new Blob([pt]).stream().pipeThrough(new DecompressionStream("gzip"))).json();
+    KSETS=d.sets||[];for(const qid in d.q)d.q[qid].links=(d.l||{})[qid]||{};KQ=d.q;
+    if(!Object.keys(CID).length)C.forEach((c,i)=>CID[c[0]]=i);
+    if(route.v==="mock"&&C.length&&!(SES&&inPlayer()))renderRoute();else if(ME)renderSide();
+  }catch(e){}
+}
+const kSets=()=>KSETS.filter(s=>s.who===KW&&s.r===KR&&(KS==="all"||s.ss===KS)).sort((a,b)=>KSO[a.ss]-KSO[b.ss]);
+function mockChooser(m){
+  const pg="mock",steps=["w","r","s"];let cur=WZ[pg]||"w";if(!steps.includes(cur))cur="w";
+  const TT={w:"강사",r:"회차",s:"교시"};
+  const WHO=[...new Set(KSETS.map(s=>s.who))],RS=[...new Set(KSETS.filter(s=>s.who===KW).map(s=>s.r))].sort((a,b)=>a-b);
+  const qn=f=>KQ?Object.values(KQ).filter(q=>f(KSETS.find(s=>s.k===q.s)||{})).length:0;
+  let body="";
+  if(cur==="w")body=`<div class="subjpick">${WHO.map(w=>`<button class="sp8 ${KW===w?"on":""}" data-kw="${esc(w)}"><span class="dl">${w[0]}</span><b>${esc(w)} 모의고사</b><small>${[...new Set(KSETS.filter(s=>s.who===w).map(s=>s.r))].length}회 · ${qn(s=>s.who===w)}문항</small></button>`).join("")}</div>`;
+  else if(cur==="r")body=`<div class="bigpick">${RS.map(r=>`<button class="bp ${KR===r?"on":""}" data-kr="${r}"><b><span class="no8">${r}</span>${r}회차</b><small>${qn(s=>s.who===KW&&s.r===r)}문항</small></button>`).join("")}</div>`;
+  else{const ss=KSETS.filter(s=>s.who===KW&&s.r===KR).sort((a,b)=>KSO[a.ss]-KSO[b.ss]);
+    body=`<div class="bigpick"><button class="bp ${KS==="all"?"on":""}" data-ks="all"><b>전체 (1~3교시)</b><small>${qn(s=>s.who===KW&&s.r===KR)}문항</small></button>${ss.map(s=>`<button class="bp ${KS===s.ss?"on":""}" data-ks="${s.ss}"><b>${KSL[s.ss]}</b><small>${qn(x=>x.k===s.k)}문항</small></button>`).join("")}</div>`;}
+  m.innerHTML=`<div class="page fc8 pgc wzp"><header class="fc8h phd9"><div><h1>모의고사</h1><p>민쌤 · 하쌤 2027 대비 모의고사</p></div></header>
+    <div class="wzh">${wzBack(steps,cur)}<h2 class="st8"><span>${steps.indexOf(cur)+1}</span>${TT[cur]}</h2></div>${body}</div>`;
+  const go=st=>{WZ[pg]=st;kSave();mockChooser(m);window.scrollTo({top:0});};
+  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
+  on("[data-wzb]",b=>go(b.dataset.wzb));
+  on("[data-kw]",b=>{KW=b.dataset.kw;const rs=[...new Set(KSETS.filter(s=>s.who===KW).map(s=>s.r))];if(!rs.includes(KR))KR=rs[0];go("r");});
+  on("[data-kr]",b=>{KR=+b.dataset.kr;go("s");});
+  on("[data-ks]",b=>{KS=b.dataset.ks;kSave();PGRUN.mock=true;VIEW.mock(m);window.scrollTo({top:0});});
+}
+VIEW.mock=function(m){
+  {const r=!!PGRUN.mock,mob=matchMedia("(max-width:699px)").matches;document.body.classList.toggle("glock",r&&!mob);document.body.classList.toggle("grun",r);}
+  if(!KQ){m.innerHTML=`<div class="page"><div class="empty">모의고사를 불러오는 중이에요</div></div>`;return;}
+  if(!PGRUN.mock)return mockChooser(m);
+  const SS=kSets(),ks=SS.map(s=>s.k);
+  const KQS={};for(const k in KQ)if(ks.includes(KQ[k].s))KQS[k]=KQ[k];
+  let items=[];for(const s of SS)for(const qid of Object.keys(KQS).filter(x=>KQS[x].s===s.k).sort((a,b)=>KQS[a].no-KQS[b].no))for(const [n] of KQS[qid].subs)items.push([qid,n]);
+  const all=KSETS.filter(s=>s.who===KW&&s.r===KR).sort((a,b)=>KSO[a.ss]-KSO[b.ss]);
+  const head=`<header class="phd9"><div><h1>모의고사</h1><p>${esc(KW)} ${KR}회차 · ${KS==="all"?"1~3교시 전체":KSL[KS]}</p></div></header>`;
+  let bar=`<div class="scope9"><div class="picker"><label class="pk9"><small>교시</small><select id="kss" aria-label="교시"><option value="all" ${KS==="all"?"selected":""}>전체 (1~3교시)</option>${all.map(s=>`<option value="${s.ss}" ${KS===s.ss?"selected":""}>${KSL[s.ss]}</option>`).join("")}</select></label></div>
+    <span class="scnt"></span></div>`;
+  const qf=qfGet("mock"),items0=items;items=qfApply(items0,qf);
+  const sc={key:`mk:${KW}:${KR}:${KS}:${qf}`};
+  bar=bar.replace('<span class="scnt"></span>',`<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span>`);
+  m.innerHTML=`<div class="page wide3">${head}${bar}${qfBar("mock",items0)}<section id="gbody"></section></div>`;
+  bindQf(m,"mock",KQS,items0);addChg(m,"mock");
+  const s=m.querySelector("#kss");if(s)s.onchange=()=>{KS=s.value;kSave();VIEW.mock(m);};
+  const b=m.querySelector("#gbody");
+  if(!items.length)b.innerHTML=`<div class="empty">${qf==="wrong"?"틀린 물음이 없어요":qf==="new"?"모두 풀었어요":"문제가 없어요"}</div>`;
   else gichulIn(b,sc,items);
 };
 /* 찾기 */
@@ -2429,7 +2484,7 @@ VIEW.home=function(m){
       <a class="g9 c3" href="#/table"><span class="g9i">${ico("grid",22)}</span><span class="g9t"><b>표</b><small>${nt?nt+"개 · ":""}가리고 맞히기</small></span>${ico("arrow",18)}</a>
       <a class="g9 c2" href="#/gichul"><span class="g9i">${ico("file",22)}</span><span class="g9t"><b>기출</b><small>${nq?nq+"문항 · ":""}2009~2026</small></span>${ico("arrow",18)}</a>
       <a class="g9 c4" href="#/munpul"><span class="g9i">${ico("pen",22)}</span><span class="g9t"><b>문제풀이</b><small>${MQ?Object.keys(MQ).length+"문항 · ":""}강사별 문제집</small></span>${ico("arrow",18)}</a>
-      <span class="g9 c5 off" aria-disabled="true"><span class="g9i">${ico("target",22)}</span><span class="g9t"><b>모의고사</b><small>준비 중이에요</small></span></span>
+      ${KQ?`<a class="g9 c5" href="#/mock"><span class="g9i">${ico("target",22)}</span><span class="g9t"><b>모의고사</b><small>민쌤 · 하쌤</small></span></a>`:`<span class="g9 c5 off" aria-disabled="true"><span class="g9i">${ico("target",22)}</span><span class="g9t"><b>모의고사</b><small>준비 중이에요</small></span></span>`}
     </section>
     <div class="h9sec"><h2>과목별 진도</h2><span class="muted small num">전체 ${pct(all)}% 외움 · ${all.k.toLocaleString()} / ${all.all.toLocaleString()}장</span></div>
     <section class="h9subj">${DOCS.map((d,i)=>{const c=counts(docIdx(i));return `<a class="s9" href="#/fc" data-d="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}">
@@ -2596,8 +2651,8 @@ function gichulIn(box,sc,items){
 
 /* ---------- 기출 자료 ---------- */
 let GQ=null,GL={},CID={},GPUB=false,MQ=null,MSETS=[],MSRCS=[],MSRC="";try{MSRC=localStorage.getItem(SBASE+":msrc")||"";}catch(e){}
-const QQ=id=>String(id)[0]==="M"?(MQ&&MQ[id]):(GQ&&GQ[id]);
-const qHead=q=>q.mp?`${(MSRCS.find(x=>x.sets.includes(q.s))||{name:"하쌤"}).name} 문제풀이 · ${q.y}`:`${q.y.replace("추"," 추시")}학년도 · ${sessL(q)}`;
+const QQ=id=>{id=String(id);return id.startsWith("MK")?(KQ&&KQ[id]):id[0]==="M"?(MQ&&MQ[id]):(GQ&&GQ[id]);};
+const qHead=q=>q.mk?`${q.who} 모의고사 ${q.r}회 · ${KSL[q.ss]}`:q.mp?`${(MSRCS.find(x=>x.sets.includes(q.s))||{name:"하쌤"}).name} 문제풀이 · ${q.y}`:`${q.y.replace("추"," 추시")}학년도 · ${sessL(q)}`;
 async function loadMunpul(){
   try{const r=await fetch("munpul.bin",{cache:"no-cache"});if(!r.ok)return;
     const b=new Uint8Array(await r.arrayBuffer());
@@ -2821,12 +2876,12 @@ async function loadGichul(){
 const gOf=i=>(GQ&&GL[C[i][0]])||[];
 const isG=i=>!!(GQ&&GL[C[i][0]]);
 const sessL=q=>/^[AB]$/.test(q.s)?"교육과정 "+q.s:q.s;
-const ansL=q=>q.mp?"하쌤 답안":q.mc?"정답":q.ref?"참고 답안":"민쌤 답안";
+const ansL=q=>q.mk?q.who+" 답안":q.mp?"하쌤 답안":q.mc?"정답":q.ref?"참고 답안":"민쌤 답안";
 const mcRight=a=>{const m=String(a||"").match(/[①②③④⑤]/);return m?m[0]:"";};
 function mcHTML(q,ans,pick,open){const r=mcRight(ans);
   return `<div class="mcq" role="group" aria-label="답 고르기">${[..."①②③④⑤"].map(c=>`<button type="button" class="mcb ${pick===c?"on":""} ${open&&c===r?"ok":""} ${open&&pick===c&&c!==r?"ng":""}" data-c="${c}" aria-pressed="${pick===c}">${c}</button>`).join("")}</div>
     ${open?`<div class="qans8 ${pick?pick===r?"good":"bad":""}"><span class="ql">${pick?pick===r?"맞았어요 · 정답":"아쉬워요 · 정답":"정답"}</span><p>${esc(ans||"(정답 없음)")}</p></div>`:""}`;}
-const qLabel=qid=>{const q=QQ(qid);return q.mp?`${q.y} ${q.no}번`:`${q.y.replace("추"," 추시")} ${q.s}-${q.no}`;};
+const qLabel=qid=>{const q=QQ(qid);return q.mk?`${q.who} ${q.r}회 ${q.ss==="N"?"논술":q.ss}-${q.no}`:q.mp?`${q.y} ${q.no}번`:`${q.y.replace("추"," 추시")} ${q.s}-${q.no}`;};
 const IMGS={};
 async function gImg(key){
   if(IMGS[key])return IMGS[key];
@@ -3181,7 +3236,7 @@ async function enterFB(uid,info,raw,keep){
   else if(local){adopt(local);cloudDirty=true;}
   try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
   if(!C.length)indexData(await openBlob(await keyFromRaw(raw)));
-  renderRoute();loadGichul();loadMunpul();loadNuri();loadTables();setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
+  renderRoute();loadGichul();loadMunpul();loadNuri();loadMock();loadTables();setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
   toast(`${ME.id}님, 반가워요!`);
 }
 let needCodeLogin=false;
