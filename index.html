@@ -1612,6 +1612,13 @@ html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-se
 .gst td .gl,.gst td .gl2{justify-content:flex-start;border:0}
 .gst th .gl{justify-content:center}
 .gl2.k-big .hyp,.gl2.k-cat .hyp{font-weight:800}
+/* v46: 플래시카드 옵션 톱니바퀴 */
+.fchr{display:flex;align-items:center;gap:8px}
+.gear9{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface,#fff);color:var(--ink-2)}
+.gear9.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.optpop9{border:1px solid var(--line);border-radius:16px;background:var(--surface,#fff);box-shadow:0 10px 28px rgba(0,0,0,.08);padding:12px 14px;margin:0 0 14px}
+.optph{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.optph b{font-size:15px}
+.optpop9 .opts9{display:block;margin:0}
 </style>
 </head>
 <body>
@@ -2400,8 +2407,8 @@ function fcChooser(m){
   if(SC.sp)SC.sp="";
   const d=SC.d,sc=curScope(false),L=lvOf(S.xp||0);
   const hasH=!!(BUNDLE&&(BUNDLE.cards2||[]).length);
-  const steps=[...(hasH?["ver"]:[]),"d","k",...(SC.k!=null?["t"]:[]),"md","go"];let cur=WZ.fc||steps[0];if(!steps.includes(cur))cur=steps[0];
-  const T={ver:"버전",d:"과목",k:"대주제",t:"소주제",md:"방식",go:"시작"};
+  const steps=[...(hasH?["ver"]:[]),"d","k",...(SC.k!=null?["t"]:[]),"md"];let cur=WZ.fc||steps[0];if(!steps.includes(cur))cur=steps[0];
+  const T={ver:"버전",d:"과목",k:"대주제",t:"소주제",md:"방식"};
   const sec={
     ver:`<div class="subjpick">${DECKS.map(([v,n,sm])=>{const nn=C.filter(c=>deckOf(c)===v).length;return `<button class="sp8 ${DECK===v?"on":""}" data-ver="${v}"><span class="dl">${v==="m27"?"민":"하"}</span><b>${n}</b><small>${sm} · ${nn.toLocaleString()}장</small></button>`;}).join("")}</div>`,
     d:`<div class="subjpick">${DOCS.map((x,i)=>{const c=counts(docIdx(i));return `<button class="sp8 ${d===i?"on":""}" data-d="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}"><span class="dl">${DLET[i]}</span><b>${esc(x)}</b><small>${c.all.toLocaleString()}장 · 외움 ${pct(c)}%</small><span class="bar"><i class="k" style="width:${pct(c)}%;background:var(--dc)"></i></span></button>`;}).join("")}</div>`,
@@ -2410,15 +2417,16 @@ function fcChooser(m){
     t:SC.k!=null?`<p class="wzhint">여러 개를 골라도 돼요</p><div class="chips8"><button class="c8 ${SC.t==null&&!MT()?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>{if(!tp.idx.length)return "";const c=counts(tp.idx);return `<button class="c8 ${tOn(t)?"on":""}" data-t="${t}">${S.badges&&S.badges[`t:${d}:${SC.k}:${t}`]?`<i class="bdg" title="배지">🏅</i>`:""}${esc(tp.name)}<span class="num">${tp.idx.length}</span>${c.k===c.all?`<i class="okd" title="다 외움"></i>`:""}</button>`;}).join("")}</div>
       <div class="wznext"><button class="btn pri lg" id="wzn">다음 ${ico("chev",15)}</button></div>`:"",
     md:`<div class="modes8 m4">${MODES.map(([v,ic,l,sm])=>`<button class="md8 ${fmode()===v?"on":""}" data-md="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`,
-    go:`<button class="optbtn ${OPTOPEN?"open":""}" id="optt" aria-expanded="${OPTOPEN}"><span class="ob1">옵션</span><span class="ob2">${[FCO().gtrace?"기출 역추적":"",+FCO().timer?`${FCO().timer/60}분 제한`:"",FCO().sound?"효과음":""].filter(Boolean).join(" · ")||"기출 역추적 · 시간 제한 · 효과음"}</span><span class="obc">${ico("chev",16)}</span></button>
-    <div class="opts9" ${OPTOPEN?"":"hidden"}>
+  };
+  const OPTS=`<div class="opts9" >
       <label class="op9"><span class="oi">📝</span><span class="ot"><b>기출 역추적</b><small>답을 본 뒤 이 내용이 나온 기출 물음을 한 줄로 보여 줘요</small></span><span class="switch"><input type="checkbox" id="ogt" ${FCO().gtrace?"checked":""}><i></i></span></label>
       <div class="op9"><span class="oi">⏱</span><span class="ot"><b>시간 제한</b><small>정해진 시간 안에 몇 장 맞히는지 기록을 세워요</small></span><span class="seg2">${[[0,"없음"],[60,"1분"],[180,"3분"],[300,"5분"]].map(([v,l])=>`<button data-tl="${v}" aria-pressed="${(+FCO().timer||0)===v}">${l}</button>`).join("")}</span></div>
       <label class="op9"><span class="oi">🔊</span><span class="ot"><b>효과음</b><small>맞히거나 연속으로 맞힐 때 소리가 나요</small></span><span class="switch"><input type="checkbox" id="osn" ${FCO().sound?"checked":""}><i></i></span></label>
-    </div>
-    <div class="go8 wzgo"><div class="go8t"><small>선택한 범위</small><b>${esc(sc.title)}</b><span class="muted small num">${sc.idx.length.toLocaleString()}장 · ${MODES.find(z=>z[0]===fmode())[2]}${+FCO().timer?` · ${FCO().timer/60}분 제한`:""}</span></div><button class="btn pri lg gobtn" id="start">${ico("play",17)}학습 시작</button></div>`};
+    </div>`;
+
   m.innerHTML=`<div class="page fc8 wzp" style="--dc:${DC[d]};--ds:${DCS[d]}">
-    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>범위와 방식을 고르고 학습을 시작하세요</p></div><span class="lvb big">Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</span></header>
+    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>범위와 방식을 고르면 바로 시작해요</p></div><span class="fchr"><span class="lvb big">Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</span><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
+    ${OPTOPEN?`<div class="optpop9"><div class="optph"><b>옵션</b><button class="iconbtn sm" id="optx" aria-label="닫기">✕</button></div>${OPTS}</div>`:""}
     <div class="quick8">
       <button class="qk" data-q="due">${ico("today",18)}<b>오늘 복습</b><span class="num">${due}</span></button>
       <button class="qk" data-q="wrong">${ico("undo",18)}<b>틀린 카드</b><span class="num">${wr}</span></button></div>
@@ -2442,9 +2450,9 @@ function fcChooser(m){
   m.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;SC.ts=[];go("k");});
   m.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];go(SC.k==null?"md":"t");});
   m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tsToggle(b.dataset.t);if(b.dataset.t==="")go("md");else re();});
-  m.querySelectorAll("[data-md]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();go("go");});
+  m.querySelectorAll("[data-md]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});});
   m.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{timer:+b.dataset.tl});save();re();});
-  {const o=m.querySelector("#optt");if(o)o.onclick=()=>{OPTOPEN=!OPTOPEN;re();};}
+  {const o=m.querySelector("#optt");if(o)o.onclick=()=>{OPTOPEN=!OPTOPEN;re();};const x=m.querySelector("#optx");if(x)x.onclick=()=>{OPTOPEN=false;re();};}
   {const o=m.querySelector("#ogt");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{gtrace:e.target.checked});save();};}
   {const o=m.querySelector("#osn");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{sound:e.target.checked});save();if(e.target.checked)sfx("good");};}
   {const o=m.querySelector("#start");if(o)o.onclick=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};}
