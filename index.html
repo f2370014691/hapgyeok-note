@@ -1494,6 +1494,17 @@ html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-se
 /* v42: 손글씨 칸 — 획 사이 지연 없이 */
 .pen9,.pen9 canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 .pen9 canvas{touch-action:none}
+/* v43: 해이실 보며 타이핑 */
+.hyref{font-size:16px;line-height:1.7;padding:6px 11px 4px;margin-bottom:4px;border-radius:10px;background:var(--bg-2,#f4f4f8);color:var(--ink-3);word-break:keep-all;letter-spacing:.01em}
+.hyl.big .hyref,.hyl.cat .hyref{font-weight:700}
+.hyref i{font-style:normal;border-radius:3px;transition:color .08s,background .08s}
+.hyref i.g{color:var(--good)}
+.hyref i.b{color:#fff;background:var(--bad,#e5484d)}
+.hyref i.c{color:var(--ink);background:color-mix(in srgb,var(--pri) 18%,transparent)}
+.hyref i.cur{box-shadow:inset 0 -2px 0 var(--pri);color:var(--ink)}
+.hyl.ok .hyref{background:color-mix(in srgb,var(--good) 9%,transparent)}
+.pgc .modes8.m4h{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:699px){.pgc .modes8.m4h{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -2461,13 +2472,13 @@ function hyChooser(m){
   const pg="heisil",steps=["k","d","md","go"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
   const D=hyG(HY.k==="area"?"영역":"총론");
   const TT={k:"무엇을 외울까요",d:HY.k==="area"?"영역":"범위",md:"방식",go:"시작"};
-  const MDS=[["type","⌨️","100% 타이핑","한 줄씩 그대로 · 틀리면 바로 표시"],["fill","✏️","빈칸 채우기","핵심어를 직접 써요 · 틀리면 바로 표시"],["click","👆","빈칸 클릭","가려진 핵심어를 눌러서 확인"]];
-  if(!MDS.some(x=>x[0]===HY.md))HY.md="type";
+  const MDS=[["see","👀","보며 타이핑","글자를 보면서 그대로 따라 쳐요"],["type","⌨️","100% 타이핑","한 줄씩 그대로 · 틀리면 바로 표시"],["fill","✏️","빈칸 채우기","핵심어를 직접 써요 · 틀리면 바로 표시"],["click","👆","빈칸 클릭","가려진 핵심어를 눌러서 확인"]];
+  if(!MDS.some(x=>x[0]===HY.md))HY.md="see";
   const cnt=ds=>{const L=hyLines(ds).filter(x=>x.t!=null);return `${L.length}줄 · 빈칸 ${L.reduce((a,x)=>a+hyBlanks(x.t).length,0)}개`;};
   let body="";
   if(cur==="k")body=`<div class="modes8"><button class="md8 ${HY.k==="area"?"on":""}" data-hk="area"><span class="mi">🎯</span><b>영역별 목표 및 내용</b><small>5개 영역의 목표 · 내용 범주 · 내용</small></button><button class="md8 ${HY.k==="doc"?"on":""}" data-hk="doc"><span class="mi">📘</span><b>성격 · 총론</b><small>성격 · 인간상 · 목적과 목표 · 구성의 중점 · 편성·운영 · 교수·학습 · 평가</small></button></div>`;
   else if(cur==="d")body=`<div class="bigpick"><button class="bp ${HY.d<0?"on":""}" data-hd="-1"><b>${HY.k==="area"?"5개 영역 전체":"성격 · 총론 전체"}</b><small>${cnt(D)}</small></button>${D.map((d,i)=>`<button class="bp ${HY.d===i?"on":""}" data-hd="${i}"><b><span class="no8">${i+1}</span>${esc(d.title)}</b><small>${cnt([d])}</small></button>`).join("")}</div>`;
-  else if(cur==="md")body=`<div class="modes8 m3">${MDS.map(([v,ic,l,sm])=>`<button class="md8 ${HY.md===v?"on":""}" data-hm="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`;
+  else if(cur==="md")body=`<div class="modes8 m4h">${MDS.map(([v,ic,l,sm])=>`<button class="md8 ${HY.md===v?"on":""}" data-hm="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`;
   else body=`<div class="go8 wzgo"><div class="go8t"><small>선택한 범위</small><b>${esc(hyTitle())}</b><span class="muted small">${MDS.find(x=>x[0]===HY.md)[2]} · ${cnt(hyCurDocs())}</span></div><button class="btn pri lg gobtn" id="hgo">${ico("play",17)}시작</button></div>`;
   m.innerHTML=`<div class="page fc8 pgc wzp"><header class="fc8h phd9"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문</p></div></header>
     <div class="wzh">${wzBack(steps,cur)}<h2 class="st8"><span>${steps.indexOf(cur)+1}</span>${TT[cur]}</h2></div>${body}</div>`;
@@ -2481,27 +2492,28 @@ function hyChooser(m){
 VIEW.heisil=function(m){
   if(!NU||!NU.docs||!NU.docs[0]||!NU.docs[0].lines){m.innerHTML=`<div class="page"><div class="empty">해이실 자료를 불러오는 중이에요</div></div>`;return;}
   if(!PGRUN.heisil)return hyChooser(m);
-  if(!["type","fill","click"].includes(HY.md))HY.md="type";
+  if(!["see","type","fill","click"].includes(HY.md))HY.md="see";
   const key=HY.k+":"+HY.d+":"+HY.md;if(HYT.key!==key)HYT={key,v:{},open:{}};
-  const mlab={type:"100% 타이핑",fill:"빈칸 채우기",click:"빈칸 클릭"}[HY.md];
+  const mlab={see:"보며 타이핑",type:"100% 타이핑",fill:"빈칸 채우기",click:"빈칸 클릭"}[HY.md];
   m.innerHTML=`<div class="page hy9"><header class="phd9"><div><h1>${esc(hyTitle())}</h1><p>${mlab}</p></div></header>
     <div class="hybar"><span class="hyprog" id="hyprog"></span><span class="hyact"></span></div><section id="hybody"></section></div>`;
   addChg(m,"heisil");
   const B=m.querySelector("#hybody"),act=m.querySelector(".hyact"),prog=m.querySelector("#hyprog"),L=hyLines(hyCurDocs());
-  if(HY.md==="type")return hyTypeLines(B,act,prog,L.map(x=>x.t!=null?Object.assign({},x,{t:hyPlain(x.t)}):x));
+  if(HY.md==="type"||HY.md==="see")return hyTypeLines(B,act,prog,L.map(x=>x.t!=null?Object.assign({},x,{t:hyPlain(x.t)}):x),HY.md==="see");
   hyCloze(B,act,prog,L,HY.md);
 };
 /* 줄 전체를 100% 똑같이 쓰기 */
-function hyTypeLines(B,act,prog,L){
+function hyTypeLines(B,act,prog,L,see){   // see: 보며 타이핑 (문장을 띄워 두고 따라 치기)
   const T=L.filter(x=>x.t!=null),V=HYT.v;
   let i=0;B.innerHTML=L.map(x=>{if(x.h)return `<h2 class="hyh">${esc(x.h)}</h2>`;if(x.sh)return `<h3 class="hysh">${esc(x.sh)}</h3>`;const k=i++;
-    return `<div class="hyl ${x.cat?"cat":""} ${x.big?"big":""}" data-i="${k}"><span class="hyn">${esc(x.n)}</span><div class="hyw"><textarea class="hyi" rows="1" data-i="${k}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${x.cat?"내용 범주":"그대로 써 보세요"}"></textarea><div class="hyfb"></div></div><button class="iconbtn sm hyhint" data-i="${k}" title="다음 글자 힌트">💡</button></div>`;}).join("");
-  act.innerHTML=`<button class="btn sm" id="hypeek">${ico("eye",14)}정답 보기</button><button class="btn sm dangerline" id="hyrst">${ico("undo",14)}다시 하기</button>`;
+    return `<div class="hyl ${x.cat?"cat":""} ${x.big?"big":""}" data-i="${k}"><span class="hyn">${esc(x.n)}</span><div class="hyw">${see?`<div class="hyref">${[...x.t].map(c=>`<i>${esc(c)}</i>`).join("")}</div>`:""}<textarea class="hyi" rows="1" data-i="${k}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${see?"위 글자를 따라 쳐 보세요":x.cat?"내용 범주":"그대로 써 보세요"}"></textarea><div class="hyfb"></div></div>${see?"":`<button class="iconbtn sm hyhint" data-i="${k}" title="다음 글자 힌트">💡</button>`}</div>`;}).join("");
+  act.innerHTML=`${see?"":`<button class="btn sm" id="hypeek">${ico("eye",14)}정답 보기</button>`}<button class="btn sm dangerline" id="hyrst">${ico("undo",14)}다시 하기</button>`;
   const tas=[...B.querySelectorAll(".hyi")];
   const grow=t=>{t.style.height="auto";t.style.height=t.scrollHeight+"px";};
   const upd=()=>{const n=tas.filter(t=>t.closest(".hyl").classList.contains("ok")).length;prog.innerHTML=`<b class="num">${n}</b> / ${tas.length}줄 완성${n===tas.length?" 🎉":""}`;};
   const check=(ta,comp)=>{const k=+ta.dataset.i,t=T[k].t,row=ta.closest(".hyl"),fb=row.querySelector(".hyfb");V[k]=ta.value;
     const r=hyCmp(ta.value,t,comp);row.classList.remove("ok","ng","ing");row.classList.add(r.st);
+    if(see){const v=hyNorm(ta.value),tt=hyNorm(t);row.querySelectorAll(".hyref i").forEach((el,j)=>{el.className=j<v.length?(v[j]===tt[j]?"g":(j===v.length-1&&r.st==="ing"?"c":"b")):(j===v.length?"cur":"");});}
     if(r.st==="ng"){const v=ta.value;fb.innerHTML=`<span class="hyx">✕ 틀렸어요</span><span class="hyv"><i>${esc(v.slice(0,r.j))}</i><s>${esc(v.slice(r.j))||"&nbsp;"}</s></span>`;}
     else if(r.st==="ok"){fb.innerHTML=`<span class="hyo">✓ 맞았어요</span>`;ta.readOnly=true;}
     else fb.innerHTML="";
@@ -2513,7 +2525,7 @@ function hyTypeLines(B,act,prog,L){
     ta.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const st=check(ta,false);if(st!=="ok"){ta.closest(".hyl").classList.add("shake9");sfx("bad");setTimeout(()=>ta.closest(".hyl").classList.remove("shake9"),400);}}};});
   B.querySelectorAll(".hyhint").forEach(b=>b.onclick=()=>{const k=+b.dataset.i,ta=tas[k],t=hyNorm(T[k].t);if(ta.readOnly)return;
     const v=hyNorm(ta.value);let j=0;while(j<v.length&&v[j]===t[j])j++;ta.value=t.slice(0,j+1);check(ta,false);ta.focus();});
-  act.querySelector("#hypeek").onclick=()=>{const on=B.classList.toggle("peek");B.querySelectorAll(".hyl").forEach(r=>{let p=r.querySelector(".hypk");if(on&&!p){p=document.createElement("div");p.className="hypk";p.textContent=T[+r.dataset.i].t;r.querySelector(".hyw").appendChild(p);}if(!on&&p)p.remove();});};
+  if(!see)act.querySelector("#hypeek").onclick=()=>{const on=B.classList.toggle("peek");B.querySelectorAll(".hyl").forEach(r=>{let p=r.querySelector(".hypk");if(on&&!p){p=document.createElement("div");p.className="hypk";p.textContent=T[+r.dataset.i].t;r.querySelector(".hyw").appendChild(p);}if(!on&&p)p.remove();});};
   act.querySelector("#hyrst").onclick=()=>{HYT.v={};VIEW.heisil(document.getElementById("main"));};
   upd();
 }
