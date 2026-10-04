@@ -1360,6 +1360,49 @@ body.fclock .ty9box.cmp{max-height:38dvh;overflow-y:auto;overscroll-behavior:con
 .h9go .g9 .g9t{flex:1;min-width:max-content}
 .h9go .g9.off small{white-space:nowrap!important}
 @media (max-width:699px){.h9go.g5 .g9{padding:12px 10px;gap:8px}.h9go.g5 .g9 b{font-size:14.5px;letter-spacing:-.03em}}
+
+/* ===== v31: 기출·문제풀이 채점 기록·오답 모아보기·분석 / 버튼 한 줄 / 정답 칸 모양 / 힌트는 칸 안에 ===== */
+.qfbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 12px}
+body.glock .qfbar{flex:none}
+.qf button{padding:6px 12px;font-size:13px}
+.qfbar #qana{margin-left:auto}
+.qst{font-size:12.5px;font-weight:800;border-radius:99px;padding:2px 10px}
+.qst.ok{background:var(--good-s);color:var(--good)}.qst.ng{background:var(--bad-s);color:var(--bad)}
+.qgr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sunk);border-radius:14px;padding:8px 10px}
+.qgr>span{font-size:13px;font-weight:800;color:var(--ink-3);margin-right:auto}
+.qgb{border:1.5px solid var(--line-2);background:var(--surface);border-radius:12px;padding:8px 14px;font-weight:800;font-size:14px;cursor:pointer}
+.qgb.ok.on{background:var(--good-s);border-color:var(--good);color:var(--good)}
+.qgb.ng.on{background:var(--bad-s);border-color:var(--bad);color:var(--bad)}
+.qgb.sug{box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 25%,transparent)}
+.qbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qbtns .morebtn{margin-right:auto}
+.qbtns .qbr{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;justify-content:flex-end}
+/* 정답 칸 = 답 칸과 같은 모양 */
+.qans8.same{background:none!important;border:0!important;padding:0!important;display:flex;flex-direction:column;gap:6px}
+.qans8.same .ql{display:flex;align-items:center;gap:2px;font-size:13px;font-weight:700;color:var(--good)}
+.qans8.same>p{margin:0;border:1px solid color-mix(in srgb,var(--good) 40%,var(--line-2));border-radius:14px;padding:10px 12px;font-size:15px;line-height:1.65;background:color-mix(in srgb,var(--good-s) 60%,var(--surface));min-height:52px;white-space:pre-wrap}
+.qans8.same .tyk{margin-top:2px}
+/* 오답 분석 창 */
+.sheet.ana{max-width:720px}
+.ansum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.ansum>div{background:var(--sunk);border-radius:14px;padding:10px;text-align:center;display:flex;flex-direction:column}
+.ansum b{font-size:22px;font-weight:850}.ansum small{font-size:12px;color:var(--ink-3)}
+.ansum .ok b{color:var(--good)}.ansum .ng b{color:var(--bad)}
+.anh{font-size:13px;color:var(--ink-3);margin:0 2px 10px}
+.anbig{border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:10px}
+.anrow{display:grid;grid-template-columns:minmax(0,1fr) 110px 82px;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:6px 4px;border-radius:9px;font:inherit;color:var(--ink)}
+.anrow.big b{font-size:15px;font-weight:850}
+.anrow.sm{cursor:pointer;font-size:14px}.anrow.sm:hover{background:var(--hover)}.anrow.sm.zero{opacity:.6}
+.anrow.sm>span:first-child{padding-left:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anb{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}.anb i{display:block;height:100%;background:var(--bad);border-radius:99px}
+.anr{font-size:13px;font-weight:800;text-align:right}.anr small{font-weight:600;color:var(--ink-3)}
+/* 힌트: 칸 안 안내 글자로 */
+.ty9box.hinton textarea::placeholder{color:color-mix(in srgb,var(--mid) 80%,var(--ink));opacity:1;font-weight:800;letter-spacing:.1em}
+.qbtns{flex-wrap:nowrap;gap:6px}
+.qbtns .qbr{flex-wrap:nowrap;gap:6px}
+.qbtns .btn{padding:7px 10px;font-size:13.5px;white-space:nowrap;border-radius:10px}
+.qbtns .morebtn{white-space:nowrap;font-size:12.5px;padding:6px 10px;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.qgr #qpnx{margin-left:4px}
 </style>
 </head>
 <body>
@@ -1580,14 +1623,52 @@ VIEW.table=function(m){
 };
 /* 기출 */
 const allItems=src=>{const o=[];for(const q in src)for(const [n] of src[q].subs)o.push([q,n]);return o.sort((a,b)=>qSort(a[0],b[0])||parseInt(a[1])-parseInt(b[1])||a[1].localeCompare(b[1]));};
+/* 기출·문제풀이 정답/오답 기록: S.qres["문항|하위물음"]={r:1맞음/0틀림,d:날짜} */
+const QR=tk=>(S.qres||{})[tk];
+function setQR(tk,r){S.qres=S.qres||{};S.qres[tk]={r,d:today()};save();setTimeout(qfRefresh,0);}
+const qfGet=pg=>{try{return localStorage.getItem(SBASE+":qf:"+pg)||"all";}catch(e){return "all";}};
+const qfSet=(pg,v)=>{try{localStorage.setItem(SBASE+":qf:"+pg,v);}catch(e){}};
+const qfApply=(items,f)=>f==="wrong"?items.filter(([q,n])=>{const r=QR(q+"|"+n);return r&&r.r===0;}):f==="new"?items.filter(([q,n])=>!QR(q+"|"+n)):items;
+function qfBar(pg,items){
+  const f=qfGet(pg),w=items.filter(([q,n])=>{const r=QR(q+"|"+n);return r&&r.r===0;}).length,nw=items.filter(([q,n])=>!QR(q+"|"+n)).length;
+  return `<div class="qfbar"><span class="seg2 qf">${[["all","전체 "+items.length],["wrong","❌ 오답 "+w],["new","안 푼 것 "+nw]].map(([v,l])=>`<button data-qf="${v}" aria-pressed="${f===v}">${l}</button>`).join("")}</span><button class="btn sm" id="qana">📊 오답 분석</button></div>`;
+}
+let QFCTX=null;   // 채점하면 위쪽 '오답 N' 숫자를 바로 고치려고
+function qfRefresh(){if(!QFCTX||!QFCTX.m.isConnected)return;const o=QFCTX.m.querySelector(".qfbar");if(!o)return;const t=document.createElement("div");t.innerHTML=qfBar(QFCTX.pg,QFCTX.items0);o.replaceWith(t.firstElementChild);bindQf(QFCTX.m,QFCTX.pg,QFCTX.src,QFCTX.items0);}
+function bindQf(m,pg,src,items0){if(items0)QFCTX={m,pg,src,items0};
+  m.querySelectorAll("[data-qf]").forEach(b=>b.onclick=()=>{qfSet(pg,b.dataset.qf);renderRoute();});
+  const a=m.querySelector("#qana");if(a)a.onclick=()=>qAnalysis(src,pg);
+}
+/* 오답 분석: 푼 물음을 대주제·소주제별로 모아 틀린 비율 계산 */
+function qAnalysis(src,pg){
+  const big={};let att=0,ok=0;
+  for(const tk in S.qres||{}){const i=tk.lastIndexOf("|"),qid=tk.slice(0,i),n=tk.slice(i+1),q=src[qid];if(!q)continue;
+    const r=S.qres[tk].r;att++;if(r)ok++;
+    const cl=(q.cls&&q.cls[n]&&q.cls[n][0])||"기타|기타",[bn,sn]=cl.split("|");
+    const B=big[bn]||(big[bn]={a:0,w:0,sm:{}});B.a++;if(!r)B.w++;
+    const Sm=B.sm[sn]||(B.sm[sn]={a:0,w:0,t:cl});Sm.a++;if(!r)Sm.w++;}
+  const bar=(w,a)=>`<span class="anb"><i style="width:${a?w/a*100:0}%"></i></span><span class="anr num">${w}/${a} <small>(${a?Math.round(w/a*100):0}%)</small></span>`;
+  const bigs=Object.entries(big).sort((x,y)=>y[1].w-x[1].w||y[1].w/y[1].a-x[1].w/x[1].a);
+  closeQ();const el=document.createElement("div");el.className="sheetbg";el.id="qsheet";
+  el.innerHTML=`<div class="sheet ana" role="dialog" aria-modal="true" aria-label="오답 분석"><div class="shd"><div><span class="ytag">${pg==="munpul"?"문제풀이":"기출"}</span><h2>📊 오답 분석</h2></div><button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
+    <div class="sbd">${att?`<div class="ansum"><div><b class="num">${att}</b><small>푼 물음</small></div><div class="ok"><b class="num">${ok}</b><small>맞힘</small></div><div class="ng"><b class="num">${att-ok}</b><small>틀림</small></div><div><b class="num">${Math.round(ok/att*100)}%</b><small>정답률</small></div></div>
+      <p class="anh">많이 틀린 순서예요. 소주제를 누르면 그 소주제의 오답만 모아서 풀 수 있어요.</p>
+      ${bigs.map(([bn,B])=>`<div class="anbig"><div class="anrow big"><b>${esc(bn)}</b>${bar(B.w,B.a)}</div>
+        ${Object.entries(B.sm).sort((x,y)=>y[1].w-x[1].w||y[1].a-x[1].a).map(([sn,Sm])=>`<button class="anrow sm ${Sm.w?"":"zero"}" data-ant="${esc(Sm.t)}"><span>${esc(sn)}</span>${bar(Sm.w,Sm.a)}</button>`).join("")}</div>`).join("")}`
+      :`<div class="empty">아직 채점한 물음이 없어요. 답을 열고 ⭕ 맞았어요 / ❌ 틀렸어요를 눌러 기록해 보세요.</div>`}</div></div>`;
+  document.body.appendChild(el);document.body.classList.add("noscroll");
+  el.onclick=e=>{if(e.target===el)closeQ();};el.querySelector("#qclose").onclick=closeQ;
+  el.querySelectorAll("[data-ant]").forEach(b=>b.onclick=()=>{const t=tpos(b.dataset.ant);closeQ();if(t){loadSC();SC.sp="";SC.sa=false;SC.d=t[0];SC.k=t[1];SC.t=t[2];saveSC();}
+    if(pg==="munpul"){MPV="topic";try{localStorage.setItem(SBASE+":mpv2","topic");}catch(e){}}qfSet(pg,"wrong");renderRoute();});
+}
 VIEW.gichul=function(m){
-  const sc0=curScope(false),items=!GQ?[]:SC.sa?allItems(GQ):gItems(sc0),sc=SC.sa?Object.assign({},sc0,{key:"all"}):sc0;
+  const sc0=curScope(false),items0=!GQ?[]:SC.sa?allItems(GQ):gItems(sc0),qf=qfGet("gichul"),items=qfApply(items0,qf),sc=Object.assign({},sc0,{key:(SC.sa?"all":sc0.key)+":"+qf});
   m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출",false,`2009~2026학년도 평가원 공개 기출${GQ?` ${Object.keys(GQ).length}문항(하위 물음 ${Object.values(GQ).reduce((a,q)=>a+q.subs.length,0)}개)`:""}을 모두 소주제로 나눴어요. 두 소주제에 걸친 물음은 양쪽에 다 나와요`,`<b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개`,true,(d,k,t)=>!GQ?0:d==="all"?allItems(GQ).length:gItems({d,k,t,idx:idxOf(d,k,t)}).length)}
-    <section id="gbody"></section></div>`;
-  bindPicker(m);
+    ${GQ?qfBar("gichul",items0):""}<section id="gbody"></section></div>`;
+  bindPicker(m);bindQf(m,"gichul",GQ||{},items0);
   const b=m.querySelector("#gbody");
   if(!GQ)b.innerHTML=`<div class="empty">기출을 불러오는 중이에요</div>`;
-  else if(!items.length)b.innerHTML=`<div class="empty">이 범위와 연결된 기출이 없어요</div>`;
+  else if(!items.length)b.innerHTML=`<div class="empty">${qf==="wrong"?"이 범위에 틀린 물음이 없어요":qf==="new"?"이 범위의 물음을 모두 풀었어요":"이 범위와 연결된 기출이 없어요"}</div>`;
   else gichulIn(b,sc,items);
 };
 /* 문제풀이 (하쌤 2026 대비) — 기출 페이지와 같은 화면 */
@@ -1614,7 +1695,10 @@ VIEW.munpul=function(m){
     const sc0=curScope(false);items=!MQS?[]:SC.sa?allItems(MQS):gItems(sc0,MQS);sc=Object.assign({},sc0,{key:"mp:"+(SC.sa?"all":sc0.key)});dc=DC[sc0.d];ds=DCS[sc0.d];
     bar=`<div class="scope9">${picker(false,true,(d,k,t)=>!MQS?0:d==="all"?allItems(MQS).length:gItems({d,k,t,idx:idxOf(d,k,t)},MQS).length)}<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
   }
-  m.innerHTML=`<div class="page wide3" style="--dc:${dc};--ds:${ds}">${head}${bar}<section id="gbody"></section></div>`;
+  const qf=qfGet("munpul"),items0=items;items=qfApply(items0,qf);sc=Object.assign({},sc,{key:sc.key+":"+qf});
+  bar=bar.replace(/<span class="scnt">[\s\S]*?<\/span><\/div>$/,`<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`);
+  m.innerHTML=`<div class="page wide3" style="--dc:${dc};--ds:${ds}">${head}${bar}${MQS?qfBar("munpul",items0):""}<section id="gbody"></section></div>`;
+  bindQf(m,"munpul",MQS||{},items0);
   if(MPV==="topic")bindPicker(m);
   const sv=()=>{try{localStorage.setItem(SBASE+":mpv2",MPV);localStorage.setItem(SBASE+":mps",MPS);}catch(e){}};
   m.querySelectorAll("[data-mpv]").forEach(b=>b.onclick=()=>{MPV=b.dataset.mpv;sv();VIEW.munpul(m);});
@@ -1624,7 +1708,7 @@ VIEW.munpul=function(m){
   const mn=m.querySelector("#mpn");if(mn)mn.onclick=()=>{MPS++;sv();VIEW.munpul(m);};
   const b=m.querySelector("#gbody");
   if(!MQS)b.innerHTML=`<div class="empty">문제풀이를 불러오는 중이에요</div>`;
-  else if(!items.length)b.innerHTML=`<div class="empty">이 범위에 해당하는 문제가 없어요</div>`;
+  else if(!items.length)b.innerHTML=`<div class="empty">${qf==="wrong"?"이 범위에 틀린 물음이 없어요":qf==="new"?"이 범위의 물음을 모두 풀었어요":"이 범위에 해당하는 문제가 없어요"}</div>`;
   else gichulIn(b,sc,items);
 };
 /* 찾기 */
@@ -1846,12 +1930,12 @@ function drawCard(){
         <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+5 · ${rvLab(RV().hardN,RV().hard)}</small></button>
         <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,s.combo)} · ${rvLab(RV().goodN,goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
       :typing&&!sh?`<div class="ty9">
-          <div class="ty9box ${multi?"multi":""} ${tcells?"cmp":""}">${tcells?(vs?`<div class="tyv n${tcells.length}">${tcells.map((cl,k)=>`${k?`<span class="vsb">VS</span>`:""}<label class="tyvc"><b>${esc(cl.lab)}</b><textarea class="tyai" data-k="${k}" rows="2" placeholder="${esc(cl.lab)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}</div>`
-              :`<div class="tyvh"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>${(()=>{let o="";for(let k=0;k<tcells.length;k+=2){const cl=tcells[k];o+=`<div class="tyvr">${cl.lab?`<div class="vlab">${esc(cl.lab)}</div>`:""}<textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(vr.A)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea><textarea class="tyai" data-k="${k+1}" rows="1" placeholder="${esc(vr.B)}" spellcheck="false">${esc((s.draftA||[])[k+1]||"")}</textarea></div>`;}return o;})()}`)
-            :multi?`<p class="ty9cap">답이 <b>${its.length}개</b>예요 · 순서는 상관없어요</p>${its.map((t,k)=>`<label class="ty9row"><span class="ty9n">${k+1}</span><textarea class="tyai" data-k="${k}" rows="1" placeholder="${k+1}번째 답" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}`
-            :`<textarea id="tya" rows="3" placeholder="떠오르는 답을 써 보세요" spellcheck="false">${esc(s.draft||"")}</textarea>`}
+          <div class="ty9box ${multi?"multi":""} ${tcells?"cmp":""} ${s.hint?"hinton":""}">${tcells?(vs?`<div class="tyv n${tcells.length}">${tcells.map((cl,k)=>`${k?`<span class="vsb">VS</span>`:""}<label class="tyvc"><b>${esc(cl.lab)}</b><textarea class="tyai" data-k="${k}" rows="2" placeholder="${esc(s.hint?ansKeys(cl.key).map(hintTxt).join(" · "):cl.lab)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}</div>`
+              :`<div class="tyvh"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>${(()=>{let o="";for(let k=0;k<tcells.length;k+=2){const cl=tcells[k];o+=`<div class="tyvr">${cl.lab?`<div class="vlab">${esc(cl.lab)}</div>`:""}<textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k].key).map(hintTxt).join(" · "):vr.A)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea><textarea class="tyai" data-k="${k+1}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k+1].key).map(hintTxt).join(" · "):vr.B)}" spellcheck="false">${esc((s.draftA||[])[k+1]||"")}</textarea></div>`;}return o;})()}`)
+            :multi?`<p class="ty9cap">답이 <b>${its.length}개</b>예요 · 순서는 상관없어요</p>${its.map((t,k)=>`<label class="ty9row"><span class="ty9n">${k+1}</span><textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(s.hint?ansKeys(t).map(hintTxt).join(" · "):`${k+1}번째 답`)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}`
+            :`<textarea id="tya" rows="3" placeholder="${esc(s.hint?kws.map(hintTxt).join(" · "):"떠오르는 답을 써 보세요")}" spellcheck="false">${esc(s.draft||"")}</textarea>`}
             <div class="ty9bar"><button class="ty9hint ${s.hint?"on":""}" id="tyhint" type="button">💡 첫 글자 힌트${kws.length?`<span class="num">${kws.length}</span>`:""}</button><span class="ty9k"><kbd>Enter</kbd> ${multi?"다음 칸":"확인"} · <kbd>Shift</kbd>+<kbd>Enter</kbd> 줄바꿈</span></div></div>
-          ${s.hint?`<div class="ty9hints">${tcells?tcells.map((cl,j)=>`<span><em>${esc(cellLab(cl))}</em>${ansKeys(cl.key).map(hintOf).join(" · ")}</span>`).join(""):multi?its.map((t,j)=>`<span><em>${j+1}</em>${ansKeys(t).map(hintOf).join(" · ")}</span>`).join(""):kws.map((k,j)=>`<span><em>${j+1}</em>${hintOf(k)}</span>`).join("")}</div>`:""}
+          ${false?`<div class="ty9hints">${tcells?tcells.map((cl,j)=>`<span><em>${esc(cellLab(cl))}</em>${ansKeys(cl.key).map(hintOf).join(" · ")}</span>`).join(""):multi?its.map((t,j)=>`<span><em>${j+1}</em>${ansKeys(t).map(hintOf).join(" · ")}</span>`).join(""):kws.map((k,j)=>`<span><em>${j+1}</em>${hintOf(k)}</span>`).join("")}</div>`:""}
           <div class="ty9act"><button class="btn ty9skip" id="tyskip">모르겠어요</button><button class="showbtn" id="tyok">확인</button></div></div>`
       :`<div class="reveal"><button class="showbtn" id="show">${cz?"빈칸 열기":!sh?"답 보기":"다음 답"}${n>1?` <span class="num">${sh}/${n}</span>`:""}</button>${n>1?`<button class="btn allbtn" id="showall">전체</button>`:""}</div>`}
       <p class="keys"><kbd>Space</kbd> 답 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기 · 휴대폰: ← 알아요 · ↓ 몰랐어요 · ↑ 헷갈려요 · → 직전 카드</p></div></div>`;
@@ -2117,14 +2201,16 @@ function gichulIn(box,sc,items){
       <div class="qip"><div class="qis" id="qpi"><div class="qph"></div></div>
         <button class="qarr l" id="qal" aria-label="이전 문제" ${s.pos?"":"disabled"}>${ico("left",20)}</button><button class="qarr r" id="qar" aria-label="다음 문제" ${s.pos<items.length-1?"":"disabled"}>${ico("chev",20)}</button></div>
       <div class="qrp">
-        <div class="qhd9"><div class="qh9t"><span class="qy9">${esc(qHead(q))}</span><b>${q.no}번${n?` <i>${esc(n)}</i>`:""}</b>${q.pts?`<span class="qp9">${q.pts}점</span>`:""}</div>
+        <div class="qhd9"><div class="qh9t"><span class="qy9">${esc(qHead(q))}</span><b>${q.no}번${n?` <i>${esc(n)}</i>`:""}</b>${q.pts?`<span class="qp9">${q.pts}점</span>`:""}${QR(tk)?`<span class="qst ${QR(tk).r?"ok":"ng"}">${QR(tk).r?"⭕ 맞춤":"❌ 틀림"}</span>`:""}</div>
           ${q.cls&&q.cls[n]?`<div class="qc9">${q.cls[n].slice(0,3).map(t=>`<span>${esc(t.split("|")[1])}</span>`).join("")}</div>`:""}</div>
         ${(()=>{const inS=new Set(items.filter(x=>x[0]===qid).map(x=>x[1])),out=q.subs.filter(x=>!inS.has(x[0]));return out.length?`<p class="qoth">이 문항의 다른 물음 ${out.length}개(${out.slice(0,4).map(x=>esc(x[0])).join(" ")}${out.length>4?" …":""})는 다른 소주제에 있어요 <button class="linkbtn" id="qothb">문항 전체 보기</button></p>`:"";})()}
         <div class="qask">${esc(sub[1])}</div>
         ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.free?" · 순서는 상관없어요":""}</p>`:""}
         ${q.mc?mcHTML(q,sub[2],s.pick[tk],s.open):(()=>{const ev=s.open?evalSlots(ap,my):null;return penTg()+ap.slots.map((mk,k)=>slotHTML(ap,mk,k,my[k],s.open,ev,AL,"data-k",ap.slots.length>1?2:4,tk)).join("");})()}
-        <div class="qbtns">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button><button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 문제 ${ico("chev",15)}</button>`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진 보기":"📖 해설 보기"}</button>`:""}</div>
-        ${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 ${cards.length}개 더보기`} ${ico("chev",14)}</button>
+        ${s.open&&!q.mc?(()=>{const ev=evalSlots(ap,my);let tt=0,oo=0;ev.forEach(e=>{if(e.tr){tt+=e.tr.length;oo+=e.tr.filter(y=>y.ok).length;}});const sug=tt?(oo/tt>=.8?1:0):null,cur=QR(tk);
+          return `<div class="qgr"><span>채점</span><button class="qgb ok ${cur&&cur.r===1?"on":""} ${!cur&&sug===1?"sug":""}" data-qr="1">⭕ 맞았어요</button><button class="qgb ng ${cur&&cur.r===0?"on":""} ${!cur&&sug===0?"sug":""}" data-qr="0">❌ 틀렸어요</button><button class="btn pri sm" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button></div>`;})():""}
+        <div class="qbtns">${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 ${cards.length}개 더보기`}</button>`:""}<span class="qbr">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button>${q.mc?`<button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button>`:""}`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진":"📖 해설"}</button>`:""}</span></div>
+        ${cards.length?`
           ${s.more?cards.map(i=>`<div class="qpcard"><b>${fmt(C[i][5])}</b><div>${fmt(C[i][6])}</div></div>`).join(""):""}`:""}
       </div>
     </div></div>`;
@@ -2142,7 +2228,8 @@ function gichulIn(box,sc,items){
   on("#qpnx",()=>{s.pos++;s.open=false;s.more=false;re();});on("#qpall",()=>openQ(qid,[n]));on("#qothb",()=>openQ(qid,[n]));
   const exT=v=>{keep();s.ex=v?tk:null;re();};on("#qex",()=>exT(!exOn));box.querySelectorAll("[data-qt]").forEach(b=>b.onclick=()=>exT(b.dataset.qt==="e"));
   on("#qmore",()=>{keep();s.more=!s.more;re();});
-  box.querySelectorAll(".mcb").forEach(b=>b.onclick=()=>{s.pick[tk]=b.dataset.c;s.open=true;re();});
+  box.querySelectorAll(".mcb").forEach(b=>b.onclick=()=>{s.pick[tk]=b.dataset.c;s.open=true;setQR(tk,b.dataset.c===mcRight(sub[2])?1:0);re();});
+  box.querySelectorAll("[data-qr]").forEach(b=>b.onclick=()=>{keep();setQR(tk,+b.dataset.qr);re();});
   box.querySelector("#qsel").onchange=e=>{s.pos=+e.target.value;s.open=false;s.more=false;re();};
   const z=box.querySelector("#qz");z.oninput=()=>{QZ=+z.value;box.querySelector("#qzv").textContent=QZ+"%";box.querySelectorAll("#qpi img").forEach(im=>im.style.width=QZ+"%");try{localStorage.setItem(SBASE+":qz",QZ);}catch(e){}};
   if(window.matchMedia&&matchMedia("(min-width:700px)").matches){const v=box.querySelector(".qv");if(v){const y=v.getBoundingClientRect().top+window.scrollY-8;window.scrollTo({top:y});}}
@@ -2310,7 +2397,7 @@ function slotHTML(ap,mk,k,val,open,ev,AL,attr,rows,pid){
   const e=open?ev[k]:null,tr=e&&e.tr,ok=tr?tr.filter(y=>y.ok).length:0,showA=open&&(e.part||!ap.whole||k===0);
   const PW=PENM&&PENOK&&pid,LT=PW?"div":"label";
   return `<div class="slot"><${LT} class="qmy"><span>${mk?`<b class="mk8">${mk}</b>`:""}${ap.num?"번째 ":""}내 답안</span>${PW?penHTML(pid+"#"+k,rows):`<textarea ${attr}="${k}" rows="${rows}" placeholder="${slotLab(ap,mk)}을 써 보세요">${esc(val||"")}</textarea>`}</${LT}>
-    ${showA?`<div class="qans8"><span class="ql">${AL}${ap.free?" · 순서 상관없이 채점":""}</span><p>${esc(e.part||(ap.whole&&k===0?ap.parts[0]:"")||"(답안 없음)")}</p>${tr?`<div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}<span class="sc8 ${ok>=tr.length*.8?"good":ok>=tr.length*.5?"mid":"bad"}">${ok}/${tr.length}</span></div>`:""}</div>`:""}</div>`;
+    ${showA?`<div class="qans8 same"><span class="ql">${mk?`<b class="mk8">${esc(mk)}</b>`:""}${ap.num?"번째 ":""}${AL}${ap.free?" · 순서 상관없이 채점":""}</span><p>${esc(e.part||(ap.whole&&k===0?ap.parts[0]:"")||"(답안 없음)")}</p>${tr?`<div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}<span class="sc8 ${ok>=tr.length*.8?"good":ok>=tr.length*.5?"mid":"bad"}">${ok}/${tr.length}</span></div>`:""}</div>`:""}</div>`;
 }
 function ansBox(ask,ans){
   const {slots,parts}=ansParts(ask,ans);
@@ -2416,6 +2503,7 @@ function ansKeys(a){
   if(b.length)return [...new Set(b)];
   return [...new Set(ansItems(a).map(t=>plainA(t).replace(BUL,"").split(/[:：]/)[0].trim().split(/\s+/).slice(0,3).join(" ")).filter(x=>x.length>=2))].slice(0,8);
 }
+const hintTxt=k=>{const ch=[...plainA(k)];return (ch[0]||"")+ch.slice(1).map(c=>/\s/.test(c)?" ":/[·,()\-/]/.test(c)?c:"○").join("");};
 const hintOf=k=>{const ch=[...plainA(k)];return `<b>${esc(ch[0]||"")}</b>`+ch.slice(1).map(c=>/\s/.test(c)?" ":/[·,()\-/]/.test(c)?esc(c):"○").join("");};
 function multiScore(arr,a){
   const its=ansItems(a),K=its.map(t=>ansKeys(t)),N=arr.length,pr=[];
