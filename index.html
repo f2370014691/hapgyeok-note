@@ -2532,11 +2532,13 @@ const ADMIN_UID="xR7TPxRvHDWI7FYMnw45ObJaApW2";
 const isAdminMe=()=>!!(ME&&ME.uid===ADMIN_UID);
 async function admDelete(u){
   if(u.uid===ADMIN_UID){toast("관리자 계정은 지울 수 없어요");return false;}
-  const t=prompt(`'${u.id}' 계정을 삭제할까요?\n학습 기록·접속 기록이 모두 지워지고, 이 아이디로는 더 이상 로그인할 수 없어요. 되돌릴 수 없어요.\n\n확인하려면 아이디 '${u.id}'를 그대로 입력해 주세요.`);
+  const t=prompt(`'${u.id}' 계정을 삭제할까요?\n학습 기록·접속 기록이 모두 지워지고 지금 계정으로는 로그인할 수 없어요. 같은 아이디로 새로 가입할 수는 있어요. 되돌릴 수 없어요.\n\n확인하려면 아이디 '${u.id}'를 그대로 입력해 주세요.`);
   if(t==null)return false;if(t.trim()!==u.id){toast("아이디가 달라서 삭제하지 않았어요");return false;}
   const fb=await loadFB();
   try{await fb.setDoc(fb.doc(fb.db,"config","banned"),{uids:fb.arrayUnion(u.uid),updatedAt:Date.now()},{merge:true});}
   catch(e){toast("삭제하지 못했어요 ("+(e.code||e)+")");return false;}
+  try{const h=await idHash(u.id),g=await idGen(h);await fb.setDoc(fb.doc(fb.db,"config","idgen"),{[h]:g+1},{merge:true});}
+  catch(e){toast("아이디를 비우지 못했어요 ("+(e.code||e)+")");}
   for(const d of ["flash","access","progress","essays"])try{await fb.deleteDoc(fb.doc(fb.db,"users",u.uid,"data",d));}catch(e){}
   try{await fb.deleteDoc(fb.doc(fb.db,"users",u.uid));}catch(e){}
   toast(`'${u.id}' 계정을 삭제했어요`);return true;}
@@ -2607,7 +2609,7 @@ VIEW.admin=function(m){
         <div><small>모의고사</small><b>${pc(s.q.k[1],s.q.k[0])}</b><em>${s.q.k[0]}물음 채점</em></div>
         <div><small>시험일</small><b>${esc(s.exam||"—")}</b><em>가입 ${dt(sel.t)}</em></div>
       </div>
-      ${sel.uid!==ADMIN_UID?`<div class="admdel"><button class="btn sm dangerline" id="admdel">🗑 이 계정 삭제</button><small>학습·접속 기록을 지우고 로그인을 막아요</small></div>`:""}
+      ${sel.uid!==ADMIN_UID?`<div class="admdel"><button class="btn sm dangerline" id="admdel">🗑 이 계정 삭제</button><small>학습·접속 기록을 지우고, 같은 아이디로 새로 가입할 수 있게 비워요</small></div>`:""}
       <h3>접속 기록 <small class="muted">최근 ${(sel.acc||[]).length}번 · 기기 ${new Set((sel.acc||[]).map(x=>x.dv)).size}대 · IP ${new Set((sel.acc||[]).map(x=>x.ip).filter(Boolean)).size}개</small></h3>
       ${(sel.acc||[]).length?`<div class="admtw"><table class="admt adma"><thead><tr><th>접속 시각</th><th>기기</th><th>브라우저</th><th>화면</th><th>IP</th><th>기기 번호</th></tr></thead><tbody>${sel.acc.map(a=>`<tr title="${esc(a.ua||"")}"><td>${dt(a.t)}${a.n>1?` <small>(${a.n}번)</small>`:""}</td><td>${esc(a.os)}${a.pwa?" <small>앱</small>":""}</td><td>${esc(a.br)}</td><td class="num">${esc(a.scr||"")}</td><td class="num">${esc(a.ip||"—")}</td><td class="num"><span class="admdid" style="--h:${parseInt((a.dv||"0").slice(0,4),36)%360}">${esc((a.dv||"").slice(0,6))}</span></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted small">아직 접속 기록이 없어요. 이 기능이 생긴 뒤에 로그인하면 쌓여요.</p>`}
       <h3>최근 14일 카드 학습</h3><div class="admbars">${s.days.map(d=>`<div><i style="height:${Math.round(d[1]/Math.max(1,...s.days.map(x=>x[1]))*100)}%"></i><b>${d[1]||""}</b><small>${d[0].slice(5)}</small></div>`).join("")}</div></section>`;})():`<p class="muted small">행을 누르면 그 아이디의 학습 상세가 보여요.</p>`}
@@ -3731,7 +3733,10 @@ async function loadFB(){
   FB=Object.assign({},auth,fs,{auth:auth.getAuth(a),db:fs.getFirestore(a)});
   return FB;
 }
-async function emailOf(id){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("hapgyeok:"+id)));return "u"+[...h.slice(0,12)].map(b=>b.toString(16).padStart(2,"0")).join("")+"@hapgyeok-note.app";}
+/* 로그인 주소 = 아이디 해시. 관리자가 계정을 삭제하면 그 아이디의 세대 번호(config/idgen)를 올려 새 주소로 다시 가입할 수 있게 함 */
+async function idHash(id){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("hapgyeok:"+id)));return [...h.slice(0,12)].map(b=>b.toString(16).padStart(2,"0")).join("");}
+async function idGen(h){try{const fb=await loadFB(),p=await fb.getDoc(fb.doc(fb.db,"config","idgen"));return p.exists()?(+p.data()[h]||0):0;}catch(e){return 0;}}
+async function emailOf(id){const h=await idHash(id),g=await idGen(h);return "u"+h+(g?"-"+g:"")+"@hapgyeok-note.app";}
 async function pbk(secret,salt,usage){
   const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),"PBKDF2",false,["deriveKey"]);
   return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},true,usage);
