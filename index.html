@@ -1718,6 +1718,30 @@ body.glock.grun main>.page{padding-top:12px}
 .ph1.big .qfbar .seg2 button{padding:7px 12px;font-size:14px}
 .ph1.big .qfbar .btn,.ph1.big .chg9{padding:7px 13px;font-size:14px}
 .ph1.big .iconbtn.sm{width:32px;height:32px}
+/* v53: 관리자 페이지 */
+.adm9{max-width:1200px}
+.adm9 .phd9{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.admnote{font-size:13px;color:var(--ink-3);background:var(--bg-2,#f4f5f8);border-radius:10px;padding:8px 12px;margin:0 0 12px}
+.admtw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface,#fff)}
+.admt{width:100%;border-collapse:collapse;font-size:13.5px;white-space:nowrap}
+.admt th{background:var(--bg-2,#f4f5f8);font-size:12.5px;color:var(--ink-2);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:bottom}
+.admt td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.admt tbody tr{cursor:pointer}.admt tbody tr:hover{background:color-mix(in srgb,var(--pri) 4%,transparent)}
+.admt tbody tr.on{background:color-mix(in srgb,var(--pri) 9%,transparent)}
+.admt small{color:var(--ink-3)}
+.admme{font-size:11px;padding:1px 6px;border-radius:999px;background:var(--pri);color:#fff}
+.admspark{display:inline-flex;align-items:flex-end;gap:2px;height:26px}.admspark i{width:5px;min-height:2px;background:var(--pri);border-radius:2px;opacity:.8}
+.admd{margin-top:16px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.admd h2{margin:0 0 12px;font-size:19px}.admd h2 small{color:var(--ink-3);font-size:13px;font-weight:600}
+.admd h3{font-size:14px;margin:16px 0 8px;color:var(--ink-2)}
+.admk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.admk>div{background:var(--bg-2,#f4f5f8);border-radius:12px;padding:10px 12px}
+.admk small{display:block;font-size:12px;color:var(--ink-3)}.admk b{display:block;font-size:22px;font-weight:900}.admk em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.admbars{display:flex;align-items:flex-end;gap:6px;height:120px;padding-top:14px}
+.admbars>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.admbars i{width:100%;max-width:28px;min-height:2px;background:var(--pri);border-radius:5px 5px 2px 2px}
+.admbars b{font-size:11px}.admbars small{font-size:10.5px;color:var(--ink-3)}
+@media (max-width:699px){.admk{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -1876,7 +1900,7 @@ function learnQueue(idx){const q=idx.filter(isDue).concat(idx.filter(isNew));ret
 
 /* ---------- 페이지: #/fc 플래시카드 · #/table 표 · #/gichul 기출 · #/search 찾기 · #/set 설정 ---------- */
 let route={v:"home"},FCKEEP=false;
-const PAGES=[["home","홈","home"],["fc","플래시카드","cards"],["table","표","grid"],["gichul","기출","file"],["munpul","문제풀이","pen"],["mock","모의고사","target"],["heisil","해이실","book"],["search","찾기","search"]];
+const PAGES=[["home","홈","home"],["fc","플래시카드","cards"],["table","표","grid"],["gichul","기출","file"],["munpul","문제풀이","pen"],["mock","모의고사","target"],["heisil","해이실","book"],["search","찾기","search"],["admin","관리자","gear"]];
 function go(h){if(location.hash===h)renderRoute();else location.hash=h;}
 function parseHash(){const p=location.hash.replace(/^#\/?/,"").split("/").map(decodeURIComponent);
   if(PAGES.some(x=>x[0]===p[0])||p[0]==="set")return{v:p[0],q:p[1]||""};return{v:"home"};}
@@ -1936,7 +1960,7 @@ function renderSide(){
   const side=document.getElementById("side"),tab=document.getElementById("tabbar");
   if(!ME){if(side)side.innerHTML="";if(tab)tab.innerHTML="";return;}
   const dd=ddays(),cur=route.v;
-  const PG=PAGES.filter(p=>(p[0]!=="munpul"||MQ)&&(p[0]!=="heisil"||NU)&&(p[0]!=="mock"||KQ));
+  const PG=PAGES.filter(p=>(p[0]!=="munpul"||MQ)&&(p[0]!=="heisil"||NU)&&(p[0]!=="mock"||KQ)&&(p[0]!=="admin"||isAdminMe()));
   const items=PG.map(([v,l,ic])=>`<a href="#/${v}" class="nv ${cur===v?"on":""}">${ico(ic,19)}<span>${l}</span></a>`).join("");
   if(side)side.innerHTML=`<div class="sbrand"><span class="logo">합</span><b>합격노트</b></div>
     <nav class="snav">${items}</nav>
@@ -2183,6 +2207,58 @@ VIEW.mock=function(m){
   const b=m.querySelector("#gbody");
   if(!items.length)b.innerHTML=`<div class="empty">${qf==="wrong"?"틀린 물음이 없어요":qf==="new"?"모두 풀었어요":"문제가 없어요"}</div>`;
   else gichulIn(b,sc,items);
+};
+/* ---------- 관리자: 가입한 아이디와 학습 진행 (관리자 계정만, 읽기 전용) ---------- */
+const ADMIN_UID="xR7TPxRvHDWI7FYMnw45ObJaApW2";
+const isAdminMe=()=>!!(ME&&ME.uid===ADMIN_UID);
+let ADM=null,ADMSEL=null;
+function admStats(st){
+  const S0=S;S=Object.assign(blank(),st||{});
+  try{
+    const dk=v=>C.map((c,i)=>deckOf(c)===v?i:-1).filter(i=>i>=0);
+    const deck=v=>{const ix=dk(v),c=counts(ix);return{all:ix.length,k:c.k,l:c.l,due:c.due,wr:ix.filter(isWrong).length};};
+    const qr=S.qres||{},grp={g:[0,0],m:[0,0],k:[0,0]};
+    for(const t in qr){const id=t.split("|")[0],g=id.startsWith("MK")?"k":id[0]==="M"?"m":"g";if(qr[t]&&qr[t].r!=null){grp[g][0]++;if(qr[t].r===1)grp[g][1]++;}}
+    const log=S.log||{},days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=today(d);days.push([k,log[k]||0]);}
+    return{m27:deck("m27"),h26:deck("h26"),xp:S.xp||0,lv:lvOf(S.xp||0).lv,q:grp,days,total:Object.values(log).reduce((a,b)=>a+(+b||0),0),act:Object.keys(log).filter(k=>log[k]>0).length,exam:S.exam||"",upd:S.updatedAt||0};
+  }finally{S=S0;}
+}
+async function admLoad(){
+  const fb=await loadFB();const snap=await fb.getDocs(fb.collection(fb.db,"users"));const out=[];
+  for(const d of snap.docs){const info=d.data()||{};let st=null;
+    try{const p=await fb.getDoc(fb.doc(fb.db,"users",d.id,"data","flash"));if(p.exists())st=await unpackDoc(p.data());}catch(e){}
+    out.push({uid:d.id,id:info.id||"(아이디 없음)",t:info.t||0,st,s:admStats(st)});}
+  out.sort((a,b)=>(b.s.upd||0)-(a.s.upd||0));ADM=out;
+}
+VIEW.admin=function(m){
+  if(!isAdminMe()){m.innerHTML=`<div class="page"><div class="empty">관리자만 볼 수 있어요</div></div>`;return;}
+  if(!ADM){m.innerHTML=`<div class="page"><div class="empty">가입한 계정과 학습 기록을 불러오는 중이에요</div></div>`;admLoad().then(()=>{if(route.v==="admin")VIEW.admin(m);}).catch(e=>{m.innerHTML=`<div class="page"><div class="empty">불러오지 못했어요 (${esc(String(e&&e.code||e))})</div></div>`;});return;}
+  const dt=t=>t?new Date(t).toLocaleString("ko-KR",{year:"2-digit",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+  const pc=(a,b)=>b?Math.round(a/b*100)+"%":"—";
+  const qcell=x=>x[0]?`${x[1]}/${x[0]} <small>(${pc(x[1],x[0])})</small>`:"—";
+  const sel=ADM.find(u=>u.uid===ADMSEL);
+  m.innerHTML=`<div class="page adm9"><header class="phd9"><div><h1>관리자</h1><p>가입한 아이디 ${ADM.length}개 · 학습 진행 (읽기 전용)</p></div><button class="btn sm" id="admre">${ico("undo",14)}새로 불러오기</button></header>
+    <div class="admnote">🔒 비밀번호는 Firebase가 되돌릴 수 없는 형태로만 보관해서 관리자도 볼 수 없어요. 잊은 비밀번호는 새로 정해 주세요(컴퓨터의 reset_admin_pw.py에서 아이디를 바꿔 실행).</div>
+    <div class="admtw"><table class="admt"><thead><tr><th>아이디</th><th>가입</th><th>마지막 학습</th><th>레벨</th><th>민쌤 카드<br><small>외움/학습/전체</small></th><th>하쌤 카드<br><small>외움/학습/전체</small></th><th>기출 정답</th><th>문제풀이 정답</th><th>모의고사 정답</th><th>최근 14일</th></tr></thead><tbody>
+    ${ADM.map(u=>{const s=u.s,mx=Math.max(1,...s.days.map(d=>d[1]));return `<tr class="${u.uid===ADMSEL?"on":""}" data-u="${u.uid}"><td><b>${esc(u.id)}</b>${u.uid===ADMIN_UID?` <span class="admme">관리자</span>`:""}</td><td>${dt(u.t)}</td><td>${dt(s.upd)}</td><td>Lv.${s.lv}<br><small>${s.xp.toLocaleString()} XP</small></td>
+      <td class="num">${s.m27.k}/${s.m27.k+s.m27.l}/${s.m27.all.toLocaleString()}</td><td class="num">${s.h26.k}/${s.h26.k+s.h26.l}/${s.h26.all.toLocaleString()}</td>
+      <td>${qcell(s.q.g)}</td><td>${qcell(s.q.m)}</td><td>${qcell(s.q.k)}</td>
+      <td><span class="admspark">${s.days.map(d=>`<i style="height:${Math.round(d[1]/mx*100)}%" title="${d[0]} · ${d[1]}장"></i>`).join("")}</span></td></tr>`;}).join("")}</tbody></table></div>
+    ${sel?(()=>{const s=sel.s;return `<section class="admd"><h2>${esc(sel.id)} <small>학습 상세</small></h2>
+      <div class="admk">
+        <div><small>레벨 · XP</small><b>Lv.${s.lv}</b><em>${s.xp.toLocaleString()} XP</em></div>
+        <div><small>공부한 날</small><b>${s.act}일</b><em>카드 ${s.total.toLocaleString()}장 채점</em></div>
+        <div><small>민쌤 카드</small><b>${pc(s.m27.k,s.m27.all)}</b><em>외움 ${s.m27.k} · 복습 ${s.m27.due} · 틀림 ${s.m27.wr}</em></div>
+        <div><small>하쌤 카드</small><b>${pc(s.h26.k,s.h26.all)}</b><em>외움 ${s.h26.k} · 복습 ${s.h26.due} · 틀림 ${s.h26.wr}</em></div>
+        <div><small>기출</small><b>${pc(s.q.g[1],s.q.g[0])}</b><em>${s.q.g[0]}물음 채점</em></div>
+        <div><small>문제풀이</small><b>${pc(s.q.m[1],s.q.m[0])}</b><em>${s.q.m[0]}물음 채점</em></div>
+        <div><small>모의고사</small><b>${pc(s.q.k[1],s.q.k[0])}</b><em>${s.q.k[0]}물음 채점</em></div>
+        <div><small>시험일</small><b>${esc(s.exam||"—")}</b><em>가입 ${dt(sel.t)}</em></div>
+      </div>
+      <h3>최근 14일 카드 학습</h3><div class="admbars">${s.days.map(d=>`<div><i style="height:${Math.round(d[1]/Math.max(1,...s.days.map(x=>x[1]))*100)}%"></i><b>${d[1]||""}</b><small>${d[0].slice(5)}</small></div>`).join("")}</div></section>`;})():`<p class="muted small">행을 누르면 그 아이디의 학습 상세가 보여요.</p>`}
+  </div>`;
+  m.querySelector("#admre").onclick=()=>{ADM=null;VIEW.admin(m);};
+  m.querySelectorAll("[data-u]").forEach(r=>r.onclick=()=>{ADMSEL=ADMSEL===r.dataset.u?null:r.dataset.u;VIEW.admin(m);});
 };
 /* 찾기 */
 VIEW.search=function(m){
