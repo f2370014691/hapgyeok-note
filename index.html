@@ -354,12 +354,14 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 .player.wide{max-width:1280px}
 .qsplit{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
 .qsplit .qimg,.qsplit .qpages{position:sticky;top:0;text-align:center}
-.qsplit .qimg img,.qsplit .qpage{max-width:100%;max-height:calc(100dvh - 190px);width:auto;height:auto;margin:0 auto;display:block}
-.qsplit .qph{aspect-ratio:3/4;max-width:100%;max-height:calc(100dvh - 190px)}
+.qsplit .qimg img,.qsplit .qpage{max-width:100%;max-height:calc(100dvh - 96px);width:auto;height:auto;margin:0 auto;display:block}
+.qsplit .qph{aspect-ratio:3/4;max-width:100%;max-height:calc(100dvh - 96px)}
 .qsplit .qright{min-width:0}
 .qsplit .qright .qsub:first-child{margin-top:0}
 .sheet.wide{max-width:1280px}
-.sheet.wide .qsplit .qpage{max-height:calc(100dvh - 150px)}
+.sheet.wide .qsplit .qpage{max-height:calc(92vh - 110px)}
+.qpa .ashow{display:none}
+.qsplit .qimg,.qsplit .qpages{top:12px}
 .qpc.card{min-height:0}
 @media (max-width:899px){.qsplit{grid-template-columns:minmax(0,1fr)}.qsplit .qimg,.qsplit .qpages{position:static}.qsplit .qimg img,.qsplit .qpage{max-height:none}}
 </style>
@@ -750,6 +752,8 @@ function gichulIn(box,sc,items){
     <div class="ctl"><div class="reveal">${s.open?`<button class="showbtn" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 문제</button><button class="btn allbtn" id="qpall">문항 전체</button>`:`<button class="showbtn" id="qpo">답 보기</button><button class="btn allbtn" id="qpall">문항 전체</button>`}</div></div></div>`;
   const key=(q.img&&q.img.subs&&q.img.subs[n])||(q.img&&q.img.full)||q.pages[0];
   if(key)gImg(key).then(u=>{const b=box.querySelector("#qpi");if(b)b.innerHTML=`<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="${esc(qLabel(qid))} ${esc(n)}"></a>`;}).catch(()=>{const b=box.querySelector("#qpi");if(b)b.remove();});
+  // 넓은 화면: 사진이 화면 높이에 꽉 차게 문제 카드를 화면 위로
+  if(window.matchMedia&&matchMedia("(min-width:900px)").matches){const cd=box.querySelector(".qpc");if(cd){const y=cd.getBoundingClientRect().top+window.scrollY-8;window.scrollTo({top:y});}}
   const on=(id,f)=>{const b=box.querySelector(id);if(b)b.onclick=f;};
   const re=()=>gichulIn(box,sc,items);
   on("#qpp",()=>{s.pos--;s.open=false;re();});on("#qpn",()=>{s.pos++;s.open=false;re();});
