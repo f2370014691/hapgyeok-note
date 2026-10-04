@@ -2090,7 +2090,7 @@ function evalSlots(ap,my){
 const slotLab=(ap,mk)=>ap.num?`${mk}번째 답`:mk?`${mk}의 답`:"답안";
 /* ---------- 손글씨 (아이패드·애플 펜슬) ---------- */
 const IPAD=/iPad/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-const PENOK=IPAD||!!(window.matchMedia&&matchMedia("(pointer:coarse)").matches);
+const PENOK=IPAD;   // 손글씨는 아이패드에서만
 if(IPAD)document.documentElement.classList.add("ipad");
 let PENM=IPAD,PENONLY=true;try{const v=localStorage.getItem(SBASE+":pen");if(v!=null)PENM=v==="1";PENONLY=localStorage.getItem(SBASE+":penonly")!=="0";}catch(e){}
 const PENS={};
@@ -2118,8 +2118,8 @@ function bindPens(root,rerender){
 const penHTML=(id,rows)=>`<div class="pen9"><canvas data-pen="${esc(id)}" style="height:${rows>2?170:120}px"></canvas><div class="penbar"><span>✍️ 여기에 써 보세요</span><button type="button" data-pu="1">되돌리기</button><button type="button" data-pc="1">지우기</button></div></div>`;
 function slotHTML(ap,mk,k,val,open,ev,AL,attr,rows,pid){
   const e=open?ev[k]:null,tr=e&&e.tr,ok=tr?tr.filter(y=>y.ok).length:0,showA=open&&(e.part||!ap.whole||k===0);
-  const LT=PENM&&pid?"div":"label";
-  return `<div class="slot"><${LT} class="qmy"><span>${mk?`<b class="mk8">${mk}</b>`:""}${ap.num?"번째 ":""}내 답안</span>${PENM&&pid?penHTML(pid+"#"+k,rows):`<textarea ${attr}="${k}" rows="${rows}" placeholder="${slotLab(ap,mk)}을 써 보세요">${esc(val||"")}</textarea>`}</${LT}>
+  const PW=PENM&&PENOK&&pid,LT=PW?"div":"label";
+  return `<div class="slot"><${LT} class="qmy"><span>${mk?`<b class="mk8">${mk}</b>`:""}${ap.num?"번째 ":""}내 답안</span>${PW?penHTML(pid+"#"+k,rows):`<textarea ${attr}="${k}" rows="${rows}" placeholder="${slotLab(ap,mk)}을 써 보세요">${esc(val||"")}</textarea>`}</${LT}>
     ${showA?`<div class="qans8"><span class="ql">${AL}${ap.free?" · 순서 상관없이 채점":""}</span><p>${esc(e.part||(ap.whole&&k===0?ap.parts[0]:"")||"(답안 없음)")}</p>${tr?`<div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}<span class="sc8 ${ok>=tr.length*.8?"good":ok>=tr.length*.5?"mid":"bad"}">${ok}/${tr.length}</span></div>`:""}</div>`:""}</div>`;
 }
 function ansBox(ask,ans){
