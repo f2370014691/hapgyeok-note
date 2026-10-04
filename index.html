@@ -1315,6 +1315,19 @@ body.glock #gbody>.empty{flex:none}
 .quick8{flex-wrap:nowrap}
 .quick8:has(.rst8>span){flex-wrap:wrap}
 @media (max-width:699px){.quick8{gap:6px}.quick8 .qk{padding:8px 10px;font-size:13.5px;gap:6px}.quick8 .qk .ic{display:none}.quick8 .hm{display:none}.quick8 #rsO{padding:6px 9px;font-size:12.5px;white-space:nowrap}}
+
+/* ===== v28: 이름표 가로 · 비교 카드 VS ===== */
+.mk8{width:auto!important;min-width:20px;height:auto!important;min-height:20px;padding:1px 7px;border-radius:99px!important;white-space:nowrap;display:inline-flex!important;align-items:center;justify-content:center;line-height:1.3}
+.qmy>span{display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.card .a .vs9{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:stretch}
+.card .a .vs9.n3{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr)}
+.vsc{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.vsc>b{font-size:15.5px;font-weight:800;color:var(--dc,var(--pri));padding-bottom:6px;border-bottom:1px dashed var(--line)}
+.vsc .vst{font-size:15.5px;line-height:1.75;white-space:pre-wrap}
+.vsc:not(.on) .vst{color:var(--ink-3);text-align:center;font-weight:800;padding:8px 0}
+.vsc.on{border-color:color-mix(in srgb,var(--dc,var(--pri)) 35%,var(--line))}
+.vsb{align-self:center;font-size:12px;font-weight:900;letter-spacing:.05em;color:#fff;background:linear-gradient(135deg,var(--c0),var(--pri));border-radius:99px;padding:5px 9px;box-shadow:var(--sh)}
+@media (max-width:699px){.card .a .vs9,.card .a .vs9.n3{grid-template-columns:minmax(0,1fr)}.vsb{justify-self:center}}
 </style>
 </head>
 <body>
@@ -1684,7 +1697,19 @@ function qMask(q,a){
   const ks=[...new Set([...String(a||"").matchAll(/\*\*(.+?)\*\*/g)].map(x=>plainA(x[1]).trim()).filter(k=>k.length>=2&&String(q).includes(k)))].sort((x,y)=>y.length-x.length);
   let h=fmt(q);if(!ks.length)return h;
   const re=new RegExp("("+ks.map(k=>esc(k).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","g");
-  return h.split(/(<[^>]+>)/).map(t=>t.startsWith("<")?t:t.replace(re,'<span class="qmask" title="눌러서 보기"><span>$1</span></span>')).join("");
+  // 괄호 ( ) 안에 들어 있는 핵심어만 가림
+  return h.replace(/\(([^()]*)\)/g,(m0,inner)=>"("+inner.split(/(<[^>]+>)/).map(t=>t.startsWith("<")?t:t.replace(re,'<span class="qmask" title="눌러서 보기"><span>$1</span></span>')).join("")+")");
+}
+/* 비교 카드: 답이 '이름: 설명' 2~3개이고 그 이름들이 질문에 나오면 나란히 + VS */
+function vsInfo(q,a){
+  const its=ansItems(a);if(its.length<2||its.length>3)return null;
+  const qq=plainA(q);if(!/차이|비교|구분|vs|VS|대비|↔|란\?|이란|정의/.test(qq))return null;
+  const L=its.map(t=>{const p=plainA(t).replace(BUL,"").trim(),i=p.search(/[:：]/);if(i<1||i>20)return null;
+    const raw=String(t),j=raw.search(/[:：]/);return{l:p.slice(0,i).trim(),body:raw.slice(j+1).trim()};});
+  if(L.some(x=>!x))return null;
+  const base=x=>x.replace(/\(.*?\)/g,"").replace(/\*\*/g,"").trim();
+  if(!L.every(x=>base(x.l).length>=1&&qq.includes(base(x.l))))return null;
+  return L;
 }
 function drawCard(){
   const s=SES,box=PBOX;if(!box||!box.isConnected)return;
@@ -1712,7 +1737,10 @@ function drawCard(){
   if(!same){s.hint=false;s.draft="";s.draftA=[];s.hintUsed=false;}
   let ga="";if(full&&gq.length&&o.gtrace){const g0=gOf(i).slice().sort((a,b)=>qSort(a[0],b[0]))[0],sub=GQ[g0[0]].subs.find(y=>y[0]===g0[1]);if(sub)ga=`<p class="gtr"><b>${esc(qLabel(g0[0]))} ${esc(g0[1])}</b> ${esc(sub[1].length>160?sub[1].slice(0,160)+"…":sub[1])}</p>`;}
   const st={k:0,n:sh,fresh:same};
-  const aBody=cz?its.map(t=>`<div class="ait on">${czHTML(t,st)}</div>`).join(""):its.map((t,k)=>`<div class="ait ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${fmt(t)}</div>`).join("");
+  const vs=!cz&&!pr?vsInfo(c[5],c[6]):null;
+  const aBody=cz?its.map(t=>`<div class="ait on">${czHTML(t,st)}</div>`).join("")
+    :vs?`<div class="vs9 n${vs.length}">${vs.map((x,k)=>`${k?`<span class="vsb">VS</span>`:""}<div class="vsc ${k<sh?"on":""} ${k===sh-1&&same?"new":""}"><b>${fmt(x.l)}</b><div class="vst">${k<sh?fmt(x.body):"?"}</div></div>`).join("")}</div>`
+    :its.map((t,k)=>`<div class="ait ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${fmt(t)}</div>`).join("");
   const right=pr?pr.opts.indexOf(i):-1;
   box.innerHTML=`<div class="player game m-${mode}">
     <div class="hud">
