@@ -1482,6 +1482,9 @@ body.glock .qfbar{flex:none}
   .hysec{padding:12px}
   .hybar{top:0}
 }
+/* v40: 아이패드 기출·문제풀이: 펜으로 쓸 때 주변 글자가 선택(드래그)되지 않게 */
+html.ipad body.grun main,html.ipad body.grun main *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-select:text;user-select:text}
 </style>
 </head>
 <body>
@@ -2648,6 +2651,7 @@ const slotLab=(ap,mk)=>ap.num?`${mk}번째 답`:mk?`${mk}의 답`:"답안";
 const IPAD=/iPad/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const PENOK=IPAD;   // 손글씨는 아이패드에서만
 if(IPAD)document.documentElement.classList.add("ipad");
+if(IPAD)document.addEventListener("selectstart",e=>{if(document.body.classList.contains("grun")&&!(e.target.closest&&e.target.closest("input,textarea"))&&!(e.target.parentElement&&e.target.parentElement.closest("input,textarea")))e.preventDefault();},true);
 let PENM=IPAD,PENONLY=true;try{const v=localStorage.getItem(SBASE+":pen");if(v!=null)PENM=v==="1";PENONLY=localStorage.getItem(SBASE+":penonly")!=="0";}catch(e){}
 const PENS={};
 const penTg=id=>PENOK?`<div class="pentgw"><button type="button" class="pentg ${PENM?"on":""}" data-pentg="1">✍️ ${PENM?"손글씨 쓰는 중":"손글씨로 쓰기"}</button>${PENM?`<label class="penonly"><input type="checkbox" ${PENONLY?"checked":""} data-penonly="1">펜으로만 쓰기</label>`:""}</div>`:"";
