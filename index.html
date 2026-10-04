@@ -2147,7 +2147,7 @@ function phGrow(m){
 window.addEventListener("resize",()=>{const m=document.getElementById("main");if(m&&m.querySelector(".phd9.ph1"))phGrow(m);});
 function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+"범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
 /* 고르기 화면: 한 단계씩 (고르면 다음 단계, 앞 단계는 '뒤로'로) */
-let WZ={};const WZ0={fc:"ver",table:"d",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
+let WZ={};const WZ0={fc:"ver",table:"ver",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
 const wzBack=(steps,cur)=>{const i=steps.indexOf(cur);return i>0?`<button class="btn sm wzback" data-wzb="${steps[i-1]}">${ico("left",14)}뒤로</button>`:"";};
 const wzNo=(steps,cur)=>`<span class="wzno">${steps.indexOf(cur)+1} / ${steps.length}</span>`;
 function pgChooser(m,pg){
@@ -2162,9 +2162,9 @@ function pgChooser(m,pg){
   const src=pg==="gichul"?GQ:MQS;
   const cf=pg==="table"?(d,k,t)=>tablesOf(d,k,t).length:(d,k,t)=>!src?0:d==="all"?allItems(src).length:gItems({d,k,t,idx:idxOf(d,k,t)},src).length;
   const sa=pg!=="table"&&!!SC.sa,d=SC.d;
-  const NOGO=pg!=="table",steps=pg==="munpul"?["src","grp","set",...(NOGO?[]:["go"])]:["d",...(sa?[]:["k"]),...(!sa&&SC.k!=null?["t"]:[]),...(NOGO?[]:["go"])];
+  const tH=pg==="table"&&TB.some(x=>x.deck==="h26"),NOGO=pg!=="table",steps=pg==="munpul"?["src","grp","set",...(NOGO?[]:["go"])]:[...(tH?["ver"]:[]),"d",...(sa?[]:["k"]),...(!sa&&SC.k!=null?["t"]:[]),...(NOGO?[]:["go"])];
   let cur=WZ[pg]||WZ0[pg];if(!steps.includes(cur))cur=steps[0];
-  const TT={src:"연도 · 강사",grp:"개론 · 각론",set:"단원",d:"과목",k:"대주제",t:"소주제",go:"시작"};
+  const TT={ver:"버전",src:"연도 · 강사",grp:"개론 · 각론",set:"단원",d:"과목",k:"대주제",t:"소주제",go:"시작"};
   let selTitle="",selN=0,body="";
   const setCnt=k=>MQS?Object.values(MQS).filter(q=>q.s===k).reduce((a,q)=>a+q.subs.length,0):0;
   if(pg==="munpul"){
@@ -2174,6 +2174,7 @@ function pgChooser(m,pg){
   else{const c0=curScope(false);selTitle=c0.title;selN=pg==="table"?tablesOf(c0.d,c0.k,c0.t,c0.ts).length:(src?gItems(c0,src).length:0);}
   if(cur==="src"){const qn=s0=>MQ?Object.values(MQ).filter(q=>s0.sets.includes(q.s)).length:0;
     body=`<div class="subjpick">${SRCS.map(x=>`<button class="sp8 ${x.id===MSRC?"on":""}" data-src="${esc(x.id)}"><span class="dl">📘</span><b>${esc(x.name)}</b><small>${qn(x)}문항</small></button>`).join("")}${SRCS.some(x=>x.id==="h27")?"":`<button class="sp8 off" disabled><span class="dl">⏳</span><b>2027 버전</b><small>준비 중</small></button>`}</div>`;}
+  else if(cur==="ver")body=`<div class="subjpick">${TDKS.map(([v,n,sm])=>`<button class="sp8 ${TDK===v?"on":""}" data-tv="${v}"><span class="dl">${v==="m27"?"민":"하"}</span><b>${n}</b><small>${sm} · 표 ${TB.filter(x=>(x.deck||"m27")===v).length}개</small></button>`).join("")}</div>`;
   else if(cur==="grp"){const sq=f=>MQ?Object.values(MQ).filter(q=>SRC0.sets.includes(q.s)&&f((MSETS.find(x=>x[0]===q.s)||[])[1]||"")).length:0;
     body=`<div class="subjpick">${[["g","개","개론",t=>!mpIsK(t)],["k","각","각론",mpIsK]].map(([v,l,n,f])=>`<button class="sp8 ${MPG===v?"on":""}" data-mg="${v}"><span class="dl">${l}</span><b>${n}</b><small>${MSETS.filter(x=>SRC0.sets.includes(x[0])&&f(x[1])).length}단원 · ${sq(f)}문항</small></button>`).join("")}</div>`;}
   else if(cur==="set")body=`<div class="bigpick"><button class="bp ${MPS<0?"on":""}" data-ms="-1"><b>${mpGL()} 전체</b><small>${MQS?allItems(MQS).length:0}물음</small></button>${SETS_.map(([k,t],i)=>`<button class="bp ${i===MPS?"on":""}" data-ms="${i}"><b><span class="no8">${i+1}</span>${esc(t)}</b><small>${setCnt(k)}물음</small></button>`).join("")}</div>`;
@@ -2189,7 +2190,7 @@ function pgChooser(m,pg){
   const go=st=>{if(st==="go"&&NOGO)return begin();WZ[pg]=st;re();};
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   on("[data-wzb]",b=>go(b.dataset.wzb));
-  on("[data-src]",b=>{MSRC=b.dataset.src;MPS=-1;go("grp");});on("[data-mg]",b=>{MPG=b.dataset.mg;MPS=-1;try{localStorage.setItem(SBASE+":mpg",MPG);}catch(e){}go("set");});on("[data-ms]",b=>{MPS=+b.dataset.ms;go("go");});
+  on("[data-tv]",b=>{TDK=b.dataset.tv;try{localStorage.setItem("hapgyeok-flash-v1:tdeck",TDK);}catch(e){}SC.k=null;SC.t=null;SC.ts=[];go("d");});on("[data-src]",b=>{MSRC=b.dataset.src;MPS=-1;go("grp");});on("[data-mg]",b=>{MPG=b.dataset.mg;MPS=-1;try{localStorage.setItem(SBASE+":mpg",MPG);}catch(e){}go("set");});on("[data-ms]",b=>{MPS=+b.dataset.ms;go("go");});
   on("[data-sd]",b=>{if(b.dataset.sd==="all"){SC.sa=true;go("go");}else{SC.sa=false;SC.d=+b.dataset.sd;SC.k=null;SC.t=null;SC.ts=[];go("k");}});
   on("[data-k]",b=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];go(SC.k==null?"go":"t");});
   on("[data-t]",b=>{tsToggle(b.dataset.t);if(b.dataset.t==="")go("go");else re();});
@@ -2199,7 +2200,7 @@ function pgChooser(m,pg){
 VIEW.table=function(m){
   if(!PGRUN.table)return pgChooser(m,"table");
   const sc=curScope(false),tbs=tablesOf(sc.d,sc.k,sc.t,sc.ts);
-  m.innerHTML=`<div class="page wide2" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("표",false,"칸을 눌러 답을 확인하거나, 타이핑으로 채워 보세요",`표 <b class="num">${tbs.length}</b>개`,false,(d,k,t)=>tablesOf(d,k,t).length)}
+  m.innerHTML=`<div class="page wide2" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("표",false,(TDKS.find(x=>x[0]===TDK)||TDKS[0])[2]+" 표 · 칸을 눌러 답을 확인하거나, 타이핑으로 채워 보세요",`표 <b class="num">${tbs.length}</b>개`,false,(d,k,t)=>tablesOf(d,k,t).length)}
     <div class="tbs">${tbs.length?tbs.map(t=>(sc.t==null?`<p class="tbsrc">${esc(t.small)}</p>`:"")+tableHTML(t)).join(""):`<div class="empty">${TB.length?"이 범위에는 표가 없어요":"표를 불러오는 중이에요"}</div>`}</div></div>`;
   bindPicker(m);bindTables(m);addChg(m,"table");
 };
@@ -3354,7 +3355,9 @@ async function loadTables(){
     if(C.length&&!(SES&&inPlayer()))renderRoute();
   }catch(e){}
 }
-const tablesOf=(d,k,t,ts)=>TB.filter(x=>x.pos&&x.pos[0]===d&&(k==null||x.pos[1]===k)&&(ts&&ts.length?ts.includes(x.pos[2]):(t==null||x.pos[2]===t)));
+let TDK="m27";try{TDK=localStorage.getItem("hapgyeok-flash-v1:tdeck")||"m27";}catch(e){}
+const TDKS=[["m27","2027 민쌤","민쌤 시험장용 요약본 기반"],["h26","2026 하쌤","하쌤 합격 전략노트 기반"]];
+const tablesOf=(d,k,t,ts)=>TB.filter(x=>(x.deck||"m27")===TDK&&x.pos&&x.pos[0]===d&&(k==null||x.pos[1]===k)&&(ts&&ts.length?ts.includes(x.pos[2]):(t==null||x.pos[2]===t)));
 const TBM={};
 const plain=s=>String(s||"").replace(/\*\*/g,"");
 const keyOf=s=>{const m=[...String(s||"").matchAll(/\*\*(.+?)\*\*/g)].map(x=>x[1]);return m.length?m:[plain(s)];};
