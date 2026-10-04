@@ -1180,6 +1180,8 @@ button,a,.card,.cw{touch-action:manipulation}
 .exf figcaption{font-size:12.5px;font-weight:750;color:var(--mid);text-align:left;margin:0 0 6px 4px}
 .exf img{display:block;margin:0 auto;max-width:none;background:#fff;border-radius:8px;box-shadow:var(--sh)}
 .exs{margin-top:10px;text-align:center}
+.qoth{font-size:12.5px;color:var(--ink-3);background:var(--sunk);border-radius:10px;padding:6px 10px;margin:0}
+.qoth .linkbtn{font-size:12.5px;margin-left:4px}
 </style>
 </head>
 <body>
@@ -1339,7 +1341,7 @@ function picker(withSp,withAll,cf){
   const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,d=SC.d,sp=withSp&&SC.sp,sa=withAll&&SC.sa;
   const opt=(v,l,on)=>`<option value="${v}" ${on?"selected":""}>${l}</option>`;
   return `<div class="picker">
-    <label class="pk9"><small>과목</small><select id="pd" aria-label="과목">${withSp?(planInfo()?opt("plan",`오늘 계획 (${planIdx().length})`,sp==="plan"):"")+opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${withAll?opt("all",`전체 (${ALL().length.toLocaleString()})`,sa):""}${DOCS.map((x,i)=>opt(i,`${x} (${N(i,null,null)})`,!sp&&!sa&&d===i)).join("")}</select></label>
+    <label class="pk9"><small>과목</small><select id="pd" aria-label="과목">${withSp?(planInfo()?opt("plan",`오늘 계획 (${planIdx().length})`,sp==="plan"):"")+opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${withAll?opt("all",`전체 (${(cf?cf("all"):ALL().length).toLocaleString()})`,sa):""}${DOCS.map((x,i)=>opt(i,`${x} (${N(i,null,null)})`,!sp&&!sa&&d===i)).join("")}</select></label>
     ${sp||sa?"":`<label class="pk9"><small>대주제</small><select id="pk" aria-label="대주제">${opt("","대주제 전체",SC.k==null)}${CH[d].map((ch,k)=>opt(k,`${k+1}. ${esc(ch.name)} (${N(d,k,null)})`,SC.k===k)).join("")}</select></label>
     <label class="pk9 ${SC.k==null?"off":""}"><small>소주제</small><select id="pt" aria-label="소주제" ${SC.k==null?"disabled":""}>${opt("","소주제 전체",SC.t==null)}${SC.k!=null?CH[d][SC.k].topics.map((tp,t)=>opt(t,`${SC.k+1}-${t+1}. ${esc(tp.name)} (${N(d,SC.k,t)})`,SC.t===t)).join(""):""}</select></label>
     ${SC.t!=null?`<span class="pnav"><button class="iconbtn sm" id="pprev" aria-label="이전 소주제" ${SC.t>0?"":"disabled"}>${ico("left",16)}</button><button class="iconbtn sm" id="pnext" aria-label="다음 소주제" ${SC.t<CH[d][SC.k].topics.length-1?"":"disabled"}>${ico("chev",16)}</button></span>`:""}`}
@@ -1389,9 +1391,10 @@ VIEW.table=function(m){
   bindPicker(m);bindTables(m);
 };
 /* 기출 */
+const allItems=src=>{const o=[];for(const q in src)for(const [n] of src[q].subs)o.push([q,n]);return o.sort((a,b)=>qSort(a[0],b[0])||parseInt(a[1])-parseInt(b[1])||a[1].localeCompare(b[1]));};
 VIEW.gichul=function(m){
-  const sc=curScope(false),items=GQ?gItems(sc):[];
-  m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출",false,`2009~2026학년도 평가원 공개 기출${GQ?` ${Object.keys(GQ).length}문항(하위 물음 ${Object.values(GQ).reduce((a,q)=>a+q.subs.length,0)}개)`:""}을 모두 소주제로 나눴어요. 두 소주제에 걸친 물음은 양쪽에 다 나와요`,`<b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개`,false,(d,k,t)=>GQ?gItems({d,k,t,idx:idxOf(d,k,t)}).length:0)}
+  const sc0=curScope(false),items=!GQ?[]:SC.sa?allItems(GQ):gItems(sc0),sc=SC.sa?Object.assign({},sc0,{key:"all"}):sc0;
+  m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출",false,`2009~2026학년도 평가원 공개 기출${GQ?` ${Object.keys(GQ).length}문항(하위 물음 ${Object.values(GQ).reduce((a,q)=>a+q.subs.length,0)}개)`:""}을 모두 소주제로 나눴어요. 두 소주제에 걸친 물음은 양쪽에 다 나와요`,`<b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개`,true,(d,k,t)=>!GQ?0:d==="all"?allItems(GQ).length:gItems({d,k,t,idx:idxOf(d,k,t)}).length)}
     <section id="gbody"></section></div>`;
   bindPicker(m);
   const b=m.querySelector("#gbody");
@@ -1400,7 +1403,7 @@ VIEW.gichul=function(m){
   else gichulIn(b,sc,items);
 };
 /* 문제풀이 (하쌤 2026 대비) — 기출 페이지와 같은 화면 */
-let MPV="topic",MPS=0;try{MPV=localStorage.getItem(SBASE+":mpv")||"topic";MPS=+localStorage.getItem(SBASE+":mps")||0;}catch(e){}
+let MPV="set",MPS=0;try{MPV=localStorage.getItem(SBASE+":mpv2")||"set";MPS=+localStorage.getItem(SBASE+":mps")||0;}catch(e){}
 VIEW.munpul=function(m){
   const nq=MQ?Object.keys(MQ).length:0,ns=MQ?Object.values(MQ).reduce((a,q)=>a+q.subs.length,0):0;
   const seg=`<span class="seg2 mpv"><button data-mpv="topic" aria-pressed="${MPV==="topic"}">소주제별</button><button data-mpv="set" aria-pressed="${MPV==="set"}">단원별 (빠짐없이)</button></span>`;
@@ -1415,12 +1418,12 @@ VIEW.munpul=function(m){
       <span class="pnav"><button class="iconbtn sm" id="mpp" aria-label="이전 단원" ${MPS>0?"":"disabled"}>${ico("left",16)}</button><button class="iconbtn sm" id="mpn" aria-label="다음 단원" ${MPS<MSETS.length-1?"":"disabled"}>${ico("chev",16)}</button></span></div>
       <span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
   }else{
-    const sc0=curScope(false);items=MQ?gItems(sc0,MQ):[];sc=Object.assign({},sc0,{key:"mp:"+sc0.key});dc=DC[sc0.d];ds=DCS[sc0.d];
-    bar=`<div class="scope9">${picker(false,false,(d,k,t)=>MQ?gItems({d,k,t,idx:idxOf(d,k,t)},MQ).length:0)}<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
+    const sc0=curScope(false);items=!MQ?[]:SC.sa?allItems(MQ):gItems(sc0,MQ);sc=Object.assign({},sc0,{key:"mp:"+(SC.sa?"all":sc0.key)});dc=DC[sc0.d];ds=DCS[sc0.d];
+    bar=`<div class="scope9">${picker(false,true,(d,k,t)=>!MQ?0:d==="all"?allItems(MQ).length:gItems({d,k,t,idx:idxOf(d,k,t)},MQ).length)}<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
   }
   m.innerHTML=`<div class="page wide3" style="--dc:${dc};--ds:${ds}">${head}${bar}<section id="gbody"></section></div>`;
   if(MPV==="topic")bindPicker(m);
-  const sv=()=>{try{localStorage.setItem(SBASE+":mpv",MPV);localStorage.setItem(SBASE+":mps",MPS);}catch(e){}};
+  const sv=()=>{try{localStorage.setItem(SBASE+":mpv2",MPV);localStorage.setItem(SBASE+":mps",MPS);}catch(e){}};
   m.querySelectorAll("[data-mpv]").forEach(b=>b.onclick=()=>{MPV=b.dataset.mpv;sv();VIEW.munpul(m);});
   const ms=m.querySelector("#mps");if(ms)ms.onchange=()=>{MPS=+ms.value;sv();VIEW.munpul(m);};
   const mp=m.querySelector("#mpp");if(mp)mp.onclick=()=>{MPS--;sv();VIEW.munpul(m);};
@@ -1852,6 +1855,7 @@ function gichulIn(box,sc,items){
       <div class="qrp">
         <div class="qhd9"><div class="qh9t"><span class="qy9">${esc(qHead(q))}</span><b>${q.no}번${n?` <i>${esc(n)}</i>`:""}</b>${q.pts?`<span class="qp9">${q.pts}점</span>`:""}</div>
           ${q.cls&&q.cls[n]?`<div class="qc9">${q.cls[n].slice(0,3).map(t=>`<span>${esc(t.split("|")[1])}</span>`).join("")}</div>`:""}</div>
+        ${(()=>{const inS=new Set(items.filter(x=>x[0]===qid).map(x=>x[1])),out=q.subs.filter(x=>!inS.has(x[0]));return out.length?`<p class="qoth">이 문항의 다른 물음 ${out.length}개(${out.slice(0,4).map(x=>esc(x[0])).join(" ")}${out.length>4?" …":""})는 다른 소주제에 있어요 <button class="linkbtn" id="qothb">문항 전체 보기</button></p>`:"";})()}
         <div class="qask">${esc(sub[1])}</div>
         ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.num?" · 순서는 상관없어요":""}</p>`:""}
         ${q.mc?mcHTML(q,sub[2],s.pick[tk],s.open):(()=>{const ev=s.open?evalSlots(ap,my):null;return ap.slots.map((mk,k)=>slotHTML(ap,mk,k,my[k],s.open,ev,AL,"data-k",ap.slots.length>1?2:4)).join("");})()}
@@ -1870,7 +1874,7 @@ function gichulIn(box,sc,items){
   on("#qpp",()=>{s.pos--;s.open=false;s.more=false;re();});on("#qpn",()=>{s.pos++;s.open=false;s.more=false;re();});
   on("#qal",()=>{keep();s.pos--;s.open=false;s.more=false;re();});on("#qar",()=>{keep();s.pos++;s.open=false;s.more=false;re();});
   on("#qpo",()=>{keep();s.open=true;re();});on("#qhide",()=>{keep();s.open=false;re();});
-  on("#qpnx",()=>{s.pos++;s.open=false;s.more=false;re();});on("#qpall",()=>openQ(qid,[n]));
+  on("#qpnx",()=>{s.pos++;s.open=false;s.more=false;re();});on("#qpall",()=>openQ(qid,[n]));on("#qothb",()=>openQ(qid,[n]));
   const exT=v=>{keep();s.ex=v?tk:null;re();};on("#qex",()=>exT(!exOn));box.querySelectorAll("[data-qt]").forEach(b=>b.onclick=()=>exT(b.dataset.qt==="e"));
   on("#qmore",()=>{keep();s.more=!s.more;re();});
   box.querySelectorAll(".mcb").forEach(b=>b.onclick=()=>{s.pick[tk]=b.dataset.c;s.open=true;re();});
