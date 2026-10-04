@@ -1828,8 +1828,8 @@ function playerIn(box,sc){
   PBOX=box;drawCard();
 }
 let PBOX=null;
-/* 학습: 알아요 +5, 헷갈려요 +0~3 (타이핑 정답률에 따라, 잴 수 없으면 +2), 몰랐어요 -5 */
-const ptsOf=(g,rate)=>g===2?5:g===1?(rate==null?2:Math.max(0,Math.min(3,Math.round(rate*3)))):-5;
+/* 학습: 알아요 +5(연속으로 맞히면 1장마다 +1, 최대 +10), 헷갈려요 +0~3 (타이핑 정답률에 따라, 잴 수 없으면 +2), 몰랐어요 -5 */
+const ptsOf=(g,rate,combo)=>g===2?5+Math.min(combo||0,5):g===1?(rate==null?2:Math.max(0,Math.min(3,Math.round(rate*3)))):-5;
 const lvOf=xp=>{const lv=1+Math.floor(xp/300);return{lv,cur:xp%300,need:300};};
 const fmode=()=>{const o=FCO();return o.mode||(o.typing?"type":"click");};
 const MODES=[["click","👆","클릭으로","눌러서 답 보고 스스로 채점"],["type","⌨️","타이핑으로","답을 써 보고 핵심어로 채점"],["cloze","🧩","빈칸 채우기","핵심어만 빈칸 · 초성 힌트"],["pair","⚖️","헷갈리는 짝 고르기","설명을 보고 두 질문 중 고르기"]];
@@ -2018,7 +2018,7 @@ function drawCard(){
       :full?`<div class="grade ${tr?"sug"+(tok>=tr.length*.8?2:tok>=tr.length*.5?1:0):""}">
         <button class="g0" data-g="0"><em>😵</em><b>몰랐어요</b><small>−5 · ${rvLab(RV().again,RV().againDay)}</small></button>
         <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+${ptsOf(1,s.rate)} · ${rvLab(RV().hardN,RV().hard)}</small></button>
-        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2)} · ${rvLab(RV().goodN,goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
+        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,null,s.combo)} · ${rvLab(RV().goodN,goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
       :typing&&!sh?`<div class="ty9">
           <div class="ty9box ${multi?"multi":""} ${tcells?"cmp":""} ${s.hint?"hinton":""}">${tcells?(vs?`<div class="tyv n${tcells.length}">${tcells.map((cl,k)=>`${k?`<span class="vsb">VS</span>`:""}<label class="tyvc"><b>${esc(cl.lab)}</b><textarea class="tyai" data-k="${k}" rows="2" placeholder="${esc(s.hint?ansKeys(cl.key).map(hintTxt).join(" · "):cl.lab)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}</div>`
               :`<div class="tyvh"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>${(()=>{let o="";for(let k=0;k<tcells.length;k+=2){const cl=tcells[k];o+=`<div class="tyvr">${cl.lab?`<div class="vlab">${esc(cl.lab)}</div>`:""}<textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k].key).map(hintTxt).join(" · "):vr.A)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea><textarea class="tyai" data-k="${k+1}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k+1].key).map(hintTxt).join(" · "):vr.B)}" spellcheck="false">${esc((s.draftA||[])[k+1]||"")}</textarea></div>`;}return o;})()}`)
@@ -2087,7 +2087,7 @@ function answer(g){
   const before=todayN();
   grade(i,g);s.done++;s.tally[g]++;
   if(g<2){if(s.boss)s.bossFail=true;else s.wrongs.add(i);}
-  const x0=S.xp||0;S.xp=Math.max(0,x0+ptsOf(g,s.rate));const pts=S.xp-x0;
+  const x0=S.xp||0;S.xp=Math.max(0,x0+ptsOf(g,s.rate,s.combo));const pts=S.xp-x0;
   s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score+=pts;s.xp+=pts;
   s.flash={g,pts,combo:s.combo};
   {const R=RV(),nn=g===0?R.again:g===1?R.hardN:R.goodN;   // 같은 학습에서 n장 뒤 다시
