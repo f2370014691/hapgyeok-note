@@ -614,7 +614,7 @@ const pageHead=(title,withSp)=>`<header class="phd"><h1>${title}</h1>${picker(wi
 /* 플래시카드 */
 VIEW.fc=function(m){
   const sc=curScope(),c=counts(sc.idx);
-  m.innerHTML=`<div class="page">${pageHead("플래시카드",true)}
+  m.innerHTML=`<div class="page" style="${sc.d!=null?`--dc:${DC[sc.d]};--ds:${DCS[sc.d]}`:""}">${pageHead("플래시카드",true)}
     <p class="pmeta muted small">${esc(sc.title)} · ${sc.idx.length.toLocaleString()}장 · 외움 ${c.k}${c.due?` · <em>복습 ${c.due}</em>`:""}</p>
     <section id="pbody"></section></div>`;
   bindPicker(m);playerIn(m.querySelector("#pbody"),sc);
@@ -622,7 +622,7 @@ VIEW.fc=function(m){
 /* 표 */
 VIEW.table=function(m){
   const sc=curScope(false),tbs=tablesOf(sc.d,sc.k,sc.t);
-  m.innerHTML=`<div class="page wide2">${pageHead("표")}
+  m.innerHTML=`<div class="page wide2" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("표")}
     <p class="pmeta muted small">${esc(sc.title)} · 표 ${tbs.length}개 · 칸을 누르면 답이 보여요 (타이핑으로도 연습)</p>
     <div class="tbs">${tbs.length?tbs.map(t=>(sc.t==null?`<p class="tbsrc">${esc(t.small)}</p>`:"")+tableHTML(t)).join(""):`<div class="empty">${TB.length?"이 범위에는 표가 없어요":"표를 불러오는 중이에요"}</div>`}</div></div>`;
   bindPicker(m);bindTables(m);
@@ -630,7 +630,7 @@ VIEW.table=function(m){
 /* 기출 */
 VIEW.gichul=function(m){
   const sc=curScope(false),items=GQ?qpItems(sc.idx):[];
-  m.innerHTML=`<div class="page wide3">${pageHead("기출")}
+  m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출")}
     <p class="pmeta muted small">${esc(sc.title)} · 연결된 기출 ${items.length}개 (2014~2026 교육과정 A·B)</p>
     <section id="gbody"></section></div>`;
   bindPicker(m);
