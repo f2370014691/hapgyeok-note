@@ -952,8 +952,6 @@ td.ng .cw.typ .ti{border-color:var(--bad);background:var(--bad-s)}
 
 /* 카드 뒤집기 · 밀기 */
 .card{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .2s;transform-origin:50% 60%}
-.card.justflip{animation:cflip .42s cubic-bezier(.2,.8,.2,1)}
-@keyframes cflip{0%{transform:perspective(1100px) rotateX(14deg) scale(.985);opacity:.65}60%{transform:perspective(1100px) rotateX(-3deg)}100%{transform:none;opacity:1}}
 .card.drag{transition:none}
 .card[data-sw="2"]{box-shadow:0 0 0 3px var(--good),var(--sh-lg)}
 .card[data-sw="0"]{box-shadow:0 0 0 3px var(--bad),var(--sh-lg)}
@@ -963,7 +961,7 @@ td.ng .cw.typ .ti{border-color:var(--bad);background:var(--bad-s)}
 .burst{position:fixed;z-index:2000;pointer-events:none;width:0;height:0}
 .burst i{position:absolute;width:9px;height:13px;border-radius:2px;animation:bst 1.1s cubic-bezier(.15,.7,.3,1) forwards}
 @keyframes bst{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--x),calc(var(--y) + 120px)) rotate(var(--r));opacity:0}}
-@media (prefers-reduced-motion:reduce){.card.justflip,.card.pulse{animation:none}}
+@media (prefers-reduced-motion:reduce){.card.pulse{animation:none}}
 
 /* 빈칸 */
 .cz{display:inline-block;min-width:calc(var(--w) * 1em);height:1.45em;vertical-align:-.3em;border-bottom:2px solid var(--pri);background:var(--pri-s);border-radius:6px 6px 2px 2px;margin:0 2px;position:relative}
@@ -1421,7 +1419,7 @@ function drawCard(){
     </div>
     ${s.boss?`<div class="bossbar">👾 보스전 · 모두 '알아요'로 넘기면 배지!</div>`:""}
     ${fl&&fl.pts?`<div class="pop ${fl.g===2?"good":"mid"}">+${fl.pts}${fl.combo>=2&&fl.g===2?` · ${fl.combo}연속!`:""}</div>`:""}
-    <article class="card ${sh||cz||pr?"flip":""} ${same?"noanim":""} ${jf?"justflip":""} ${fl?(fl.g===0?"shake":"pulse"):""} ${cz?"czcard":""}" id="card">
+    <article class="card ${sh||cz||pr?"flip":""} ${same?"noanim":""} ${fl?(fl.g===0?"shake":"pulse"):""} ${cz?"czcard":""}" id="card">
       <div class="cmeta"><span class="cpath">${esc(c[4])}</span>${!x?`<span class="tag new">NEW</span>`:x[2]?`<span class="tag lapse">틀림 ${x[2]}</span>`:x[0]>=4?`<span class="tag ok">외움</span>`:""}
         ${gq.length?`<button class="tag gtag" id="gq" title="이 카드가 나온 기출">기출 ${gq.length}</button>`:""}<span class="pg">${c[2]}쪽</span></div>
       ${pr?`<div class="pq">이 설명에 맞는 질문은?</div><div class="a pa">${its.map(t=>`<div class="ait on">${fmt(t)}</div>`).join("")}</div>`
@@ -1454,7 +1452,6 @@ function drawCard(){
   box.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>answer(+b.dataset.g));
   box.querySelectorAll("[data-po]").forEach(b=>b.onclick=()=>{pr.pick=+b.dataset.po;const ok=pr.pick===right;sfx(ok?"good":"bad");drawCard();});
   on("#pnx",()=>answer(pr.pick===right?2:0));
-  if(jf)sfx("flip");
   const ta=$("#tya");
   if(ta){const sub=v=>{s.typed=v;s.shown=99;drawCard();};if(window.matchMedia&&matchMedia("(min-width:900px)").matches)ta.focus();
     ta.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sub(ta.value.trim());}};
