@@ -1134,6 +1134,21 @@ td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;w
 .cw.hid.on .hc9{opacity:0;transform:scale(.96);pointer-events:none}
 .cw.hid:active .hc9{transform:scale(.98)}
 @media (prefers-reduced-motion:reduce){.cw.hid .cv,.cw.hid .hc9{transition:none!important}}
+
+/* ===== v20: 타이핑 — 답 개수만큼 칸 ===== */
+.ty9cap{padding:12px 16px 2px;font-size:13px;color:var(--ink-3)}
+.ty9cap b{color:var(--pri)}
+.ty9row{display:flex;align-items:flex-start;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);cursor:text}
+.ty9row:last-of-type{border-bottom:0}
+.ty9row:focus-within{background:color-mix(in srgb,var(--pri-s) 45%,transparent)}
+.ty9n{flex:none;width:24px;height:24px;margin-top:3px;border-radius:8px;background:var(--sunk);color:var(--ink-2);display:grid;place-items:center;font-size:12.5px;font-weight:800}
+.ty9row:focus-within .ty9n{background:var(--pri);color:#fff}
+.ty9box.multi textarea{min-height:0;padding:3px 0;font-size:16px;line-height:1.6;overflow:hidden}
+.ty9my.multi{display:flex;flex-direction:column;gap:8px}
+.ty9mr{display:flex;gap:10px;align-items:flex-start;padding-top:8px;border-top:1px solid var(--line)}
+.ty9mr:first-of-type{border-top:0;padding-top:2px}
+.ty9mr>div{flex:1;min-width:0}
+.ty9mr p{margin:0 0 5px!important}
 </style>
 </head>
 <body>
@@ -1476,10 +1491,10 @@ function drawCard(){
   const its=ansItems(c[6]),n=cz?nCz:its.length,sh=pr?(pr.pick!=null?n:0):Math.min(s.shown,n),full=sh>=n,same=s.last===s.pos;
   const jf=same&&!s.lastSh&&sh>0&&!pr;s.last=s.pos;s.lastSh=sh;
   const gq=[...new Set(gOf(i).map(y=>y[0]))].sort(qSort);
-  const tr=s.typed!=null?typeScore(s.typed,c[6]):null,tok=tr?tr.filter(y=>y.ok).length:0;
+  const mres=Array.isArray(s.typed)?multiScore(s.typed,c[6]):null,tr=mres?mres.flat:s.typed!=null?typeScore(s.typed,c[6]):null,tok=tr?tr.filter(y=>y.ok).length:0;
   const fl=s.flash;s.flash=null;
-  const typing=mode==="type",kws=typing?ansKeys(c[6]):[];
-  if(!same){s.hint=false;s.draft="";s.hintUsed=false;}
+  const typing=mode==="type",kws=typing?ansKeys(c[6]):[],multi=typing&&its.length>1;
+  if(!same){s.hint=false;s.draft="";s.draftA=[];s.hintUsed=false;}
   let ga="";if(full&&gq.length&&o.gtrace){const g0=gOf(i).slice().sort((a,b)=>qSort(a[0],b[0]))[0],sub=GQ[g0[0]].subs.find(y=>y[0]===g0[1]);if(sub)ga=`<p class="gtr"><b>${esc(qLabel(g0[0]))} ${esc(g0[1])}</b> ${esc(sub[1].length>160?sub[1].slice(0,160)+"…":sub[1])}</p>`;}
   const st={k:0,n:sh,fresh:same};
   const aBody=cz?its.map(t=>`<div class="ait on">${czHTML(t,st)}</div>`).join(""):its.map((t,k)=>`<div class="ait ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${fmt(t)}</div>`).join("");
@@ -1504,8 +1519,9 @@ function drawCard(){
       ${tr?(()=>{const L=tr.length,p=L?Math.round(tok/L*100):0,cl=tok>=L*.8?"good":tok>=L*.5?"mid":"bad";
         return `<div class="ty9res ${cl}"><div class="ty9rh"><span class="ty9ring" style="--p:${p}"><b class="num">${tok}<small>/${L}</small></b></span>
           <div><b>${tok===L&&L?"완벽해요!":cl==="good"?"거의 다 맞았어요":cl==="mid"?"절반쯤 맞았어요":"다시 확인해 봐요"}</b><small>핵심어 ${tok}개 맞음${s.hintUsed?" · 💡 힌트 사용":""}</small></div></div>
-          <div class="ty9my"><small>내 답</small><p>${esc(s.typed)||"(비워 둠)"}</p></div>
-          <div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}</div></div>`;})():""}
+          ${mres?`<div class="ty9my multi"><small>내 답 (칸 순서와 상관없이 맞는 항목과 짝지어 채점)</small>${mres.rows.map((r,k)=>`<div class="ty9mr"><span class="ty9n">${k+1}</span><div><p>${esc(r.v)||"(비워 둠)"}</p><div class="tyk">${r.keys.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}</div></div></div>`).join("")}</div>`
+          :`<div class="ty9my"><small>내 답</small><p>${esc(s.typed)||"(비워 둠)"}</p></div>
+          <div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}</div>`}</div>`;})():""}
       ${full&&gq.length?`<div class="gnote"><span class="gi">📝</span><div><b>이 내용, 기출에 나왔어요</b><small>${gq.slice(0,3).map(q=>esc(qLabel(q))).join(" · ")}${gq.length>3?` 외 ${gq.length-3}`:""}</small>${ga}</div><button class="btn sm pri" id="gq2">기출 보기</button></div>`:""}
       ${full||pr||(typing&&!sh)?"":`<div class="tap">${cz?`탭하면 빈칸 하나씩 · ${sh}/${n}`:sh?`탭하면 다음 답 · ${sh}/${n}`:"탭해서 답 보기"}</div>`}
       <button class="arr l" id="prev" aria-label="이전 카드" ${s.pos?"":"disabled"}>${ico("left",18)}</button><button class="arr r" id="next" aria-label="다음 카드">${ico("chev",18)}</button>
@@ -1517,9 +1533,10 @@ function drawCard(){
         <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+5 · 내일</small></button>
         <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,s.combo)} · ${IV[Math.min(6,Math.max(2,(x?x[0]:0)+1))]}일 뒤</small></button></div>`
       :typing&&!sh?`<div class="ty9">
-          <div class="ty9box"><textarea id="tya" rows="3" placeholder="떠오르는 답을 써 보세요" spellcheck="false">${esc(s.draft||"")}</textarea>
-            <div class="ty9bar"><button class="ty9hint ${s.hint?"on":""}" id="tyhint" type="button">💡 첫 글자 힌트${kws.length?`<span class="num">${kws.length}</span>`:""}</button><span class="ty9k"><kbd>Enter</kbd> 확인 · <kbd>Shift</kbd>+<kbd>Enter</kbd> 줄바꿈</span></div></div>
-          ${s.hint?`<div class="ty9hints">${kws.map((k,j)=>`<span><em>${j+1}</em>${hintOf(k)}</span>`).join("")}</div>`:""}
+          <div class="ty9box ${multi?"multi":""}">${multi?`<p class="ty9cap">답이 <b>${its.length}개</b>예요 · 순서는 상관없어요</p>${its.map((t,k)=>`<label class="ty9row"><span class="ty9n">${k+1}</span><textarea class="tyai" data-k="${k}" rows="1" placeholder="${k+1}번째 답" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}`
+            :`<textarea id="tya" rows="3" placeholder="떠오르는 답을 써 보세요" spellcheck="false">${esc(s.draft||"")}</textarea>`}
+            <div class="ty9bar"><button class="ty9hint ${s.hint?"on":""}" id="tyhint" type="button">💡 첫 글자 힌트${kws.length?`<span class="num">${kws.length}</span>`:""}</button><span class="ty9k"><kbd>Enter</kbd> ${multi?"다음 칸":"확인"} · <kbd>Shift</kbd>+<kbd>Enter</kbd> 줄바꿈</span></div></div>
+          ${s.hint?`<div class="ty9hints">${multi?its.map((t,j)=>`<span><em>${j+1}</em>${ansKeys(t).map(hintOf).join(" · ")}</span>`).join(""):kws.map((k,j)=>`<span><em>${j+1}</em>${hintOf(k)}</span>`).join("")}</div>`:""}
           <div class="ty9act"><button class="btn ty9skip" id="tyskip">모르겠어요</button><button class="showbtn" id="tyok">확인</button></div></div>`
       :`<div class="reveal"><button class="showbtn" id="show">${cz?"빈칸 열기":!sh?"답 보기":"다음 답"}${n>1?` <span class="num">${sh}/${n}</span>`:""}</button>${n>1?`<button class="btn allbtn" id="showall">전체</button>`:""}</div>`}
       <p class="keys"><kbd>Space</kbd> 답 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기 · 휴대폰: 밀어서 채점 (→ 알아요 · ← 몰랐어요 · ↑ 헷갈려요)</p></div></div>`;
@@ -1538,7 +1555,15 @@ function drawCard(){
   box.querySelectorAll("[data-po]").forEach(b=>b.onclick=()=>{pr.pick=+b.dataset.po;const ok=pr.pick===right;sfx(ok?"good":"bad");drawCard();});
   on("#pnx",()=>answer(pr.pick===right?2:0));
   const ta=$("#tya");
-  on("#tyhint",()=>{const t=$("#tya");s.draft=t?t.value:s.draft;s.hint=!s.hint;if(s.hint)s.hintUsed=true;drawCard();const n=$("#tya");if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length);}});
+  on("#tyhint",()=>{const t=$("#tya");s.draft=t?t.value:s.draft;const fk=document.activeElement&&document.activeElement.dataset?document.activeElement.dataset.k:null;
+    if(multi)s.draftA=[...box.querySelectorAll(".tyai")].map(x=>x.value);s.hint=!s.hint;if(s.hint)s.hintUsed=true;drawCard();
+    const n=multi?(box.querySelector(`.tyai[data-k="${fk||0}"]`)):$("#tya");if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length);}});
+  if(multi){const tas=[...box.querySelectorAll(".tyai")],grow=t=>{t.style.height="auto";t.style.height=t.scrollHeight+"px";};
+    const subm=v=>{s.typed=v;s.shown=99;s.hint=false;drawCard();};
+    tas.forEach((t,k)=>{grow(t);t.oninput=()=>{s.draftA=tas.map(x=>x.value);grow(t);};
+      t.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(k<tas.length-1)tas[k+1].focus();else subm(tas.map(x=>x.value.trim()));}};});
+    if(window.matchMedia&&matchMedia("(min-width:900px)").matches&&tas[0])tas[0].focus();
+    on("#tyok",()=>subm(tas.map(x=>x.value.trim())));on("#tyskip",()=>subm(tas.map(()=>"")));}
   if(ta){ta.oninput=()=>{s.draft=ta.value;};const sub=v=>{s.typed=v;s.shown=99;s.hint=false;drawCard();};if(window.matchMedia&&matchMedia("(min-width:900px)").matches)ta.focus();
     ta.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sub(ta.value.trim());}};
     on("#tyok",()=>sub(ta.value.trim()));on("#tyskip",()=>sub(""));}
@@ -1971,6 +1996,15 @@ function ansKeys(a){
   return [...new Set(ansItems(a).map(t=>plainA(t).replace(BUL,"").split(/[:：]/)[0].trim().split(/\s+/).slice(0,3).join(" ")).filter(x=>x.length>=2))].slice(0,8);
 }
 const hintOf=k=>{const ch=[...plainA(k)];return `<b>${esc(ch[0]||"")}</b>`+ch.slice(1).map(c=>/\s/.test(c)?" ":/[·,()\-/]/.test(c)?esc(c):"○").join("");};
+function multiScore(arr,a){
+  const its=ansItems(a),K=its.map(t=>ansKeys(t)),N=arr.length,pr=[];
+  arr.forEach((v,i)=>{if(!String(v||"").trim())return;K.forEach((ks,j)=>{const m=ks.filter(k=>cellOk(v,k)).length;if(m)pr.push([m,i===j?1:0,i,j]);});});
+  pr.sort((x,y)=>y[0]-x[0]||y[1]-x[1]);const as={},used=new Set();
+  for(const [,,i,j] of pr){if(i in as||used.has(j))continue;as[i]=j;used.add(j);}
+  const free=K.map((_,j)=>j).filter(j=>!used.has(j));for(let i=0;i<N;i++)if(!(i in as))as[i]=free.shift();
+  const rows=arr.map((v,i)=>{const j=as[i],ks=j!=null?K[j]:[];return{v,j,keys:ks.map(k=>({k,ok:!!String(v||"").trim()&&cellOk(v,k)}))};});
+  return{rows,flat:rows.flatMap(r=>r.keys)};
+}
 function typeScore(input,a){return ansKeys(a).map(k=>({k,ok:cellOk(input,k)}));}
 
 /* ---------- 설정 ---------- */
