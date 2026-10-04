@@ -1539,7 +1539,7 @@ function drawCard(){
           ${s.hint?`<div class="ty9hints">${multi?its.map((t,j)=>`<span><em>${j+1}</em>${ansKeys(t).map(hintOf).join(" · ")}</span>`).join(""):kws.map((k,j)=>`<span><em>${j+1}</em>${hintOf(k)}</span>`).join("")}</div>`:""}
           <div class="ty9act"><button class="btn ty9skip" id="tyskip">모르겠어요</button><button class="showbtn" id="tyok">확인</button></div></div>`
       :`<div class="reveal"><button class="showbtn" id="show">${cz?"빈칸 열기":!sh?"답 보기":"다음 답"}${n>1?` <span class="num">${sh}/${n}</span>`:""}</button>${n>1?`<button class="btn allbtn" id="showall">전체</button>`:""}</div>`}
-      <p class="keys"><kbd>Space</kbd> 답 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기 · 휴대폰: 밀어서 채점 (→ 알아요 · ← 몰랐어요 · ↑ 헷갈려요)</p></div></div>`;
+      <p class="keys"><kbd>Space</kbd> 답 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기 · 휴대폰: 밀어서 채점 (← 알아요 · → 몰랐어요 · ↑ 헷갈려요)</p></div></div>`;
   const $=q=>box.querySelector(q),on=(q,f)=>{const b=$(q);if(b)b.onclick=f;};
   const cd=$("#card");
   cd.onclick=e=>{if(cd._sw){cd._sw=false;return;}if(e.target.closest("button"))return;if(!pr)flipCard();};
@@ -1574,10 +1574,10 @@ function drawCard(){
   cd.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"||e.target.closest("button,textarea"))return;sx=e.clientX;sy=e.clientY;drag=true;});
   cd.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
     cd.classList.add("drag");cd.style.transform=`translate(${dx}px,${canGrade?Math.min(0,dy):0}px) rotate(${dx/22}deg)`;
-    cd.dataset.sw=canGrade?(dy<-70&&-dy>Math.abs(dx)?"1":dx>70?"2":dx<-70?"0":""):"";});
+    cd.dataset.sw=canGrade?(dy<-70&&-dy>Math.abs(dx)?"1":dx>70?"0":dx<-70?"2":""):"";});
   const reset=()=>{drag=false;cd.classList.remove("drag");cd.style.transform="";delete cd.dataset.sw;};
   cd.addEventListener("pointerup",e=>{if(!drag)return;const dx=e.clientX-sx,dy=e.clientY-sy,moved=Math.abs(dx)>10||Math.abs(dy)>10;reset();if(moved)cd._sw=true;
-    if(canGrade){if(dy<-70&&-dy>Math.abs(dx))return answer(1);if(dx>70)return answer(2);if(dx<-70)return answer(0);}
+    if(canGrade){if(dy<-70&&-dy>Math.abs(dx))return answer(1);if(dx>70)return answer(0);if(dx<-70)return answer(2);}
     else if(!pr){if(dx<-70)return step(1);if(dx>70)return step(-1);}});
   cd.addEventListener("pointercancel",reset);
 }
