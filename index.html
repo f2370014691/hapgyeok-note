@@ -1564,12 +1564,17 @@ let SC=null;
 function loadSC(){if(SC)return;SC={d:0,k:null,t:null,sp:""};try{Object.assign(SC,JSON.parse(localStorage.getItem(SBASE+":scope")||"{}"));}catch(e){}
   if(!CH[SC.d])SC.d=0;if(SC.k!=null&&!CH[SC.d][SC.k])SC.k=null;if(SC.k==null)SC.t=null;else if(SC.t!=null&&!CH[SC.d][SC.k].topics[SC.t])SC.t=null;}
 const saveSC=()=>{try{localStorage.setItem(SBASE+":scope",JSON.stringify(SC));}catch(e){}};
+const MT=()=>SC&&SC.t==null&&SC.k!=null&&Array.isArray(SC.ts)&&SC.ts.length>1&&SC.tsk===SC.k&&SC.tsd===SC.d?SC.ts:null;
+function tsToggle(v){const cur=MT()||(SC.t!=null?[SC.t]:[]);let nx=v===""?[]:cur.includes(+v)?cur.filter(x=>x!==+v):[...cur,+v].sort((a,b)=>a-b);
+  if(nx.length===1){SC.t=nx[0];SC.ts=[];}else if(!nx.length){SC.t=null;SC.ts=[];}else{SC.t=null;SC.ts=nx;SC.tsk=SC.k;SC.tsd=SC.d;}}
+const tOn=t=>{const mt=MT();return mt?mt.includes(t):SC.t===t;};
 function curScope(pageSp){
   const sp=pageSp!==false?SC.sp:"";
   if(sp==="plan")return{key:"plan",title:"오늘 계획",idx:planIdx()};
   if(sp==="due")return{key:"due",title:"오늘 복습",idx:ALL().filter(isDue).sort((a,b)=>ss(a)[1]-ss(b)[1])};
   if(sp==="wrong")return{key:"wrong",title:"틀린 카드",idx:ALL().filter(isWrong)};
-  const d=SC.d,ch=SC.k!=null?CH[d][SC.k]:null,tp=ch&&SC.t!=null?ch.topics[SC.t]:null;
+  const d=SC.d,ch=SC.k!=null?CH[d][SC.k]:null,tp=ch&&SC.t!=null?ch.topics[SC.t]:null,mt=MT();
+  if(ch&&mt){const tps=mt.map(t=>ch.topics[t]).filter(Boolean);return{key:`t:${d}:${SC.k}:${mt.join(",")}`,d,k:SC.k,t:null,ts:mt,title:tps[0].name+(tps.length>1?` 외 ${tps.length-1}개`:""),idx:[...new Set(tps.flatMap(x=>x.idx))]};}
   return{key:`t:${d}:${SC.k}:${SC.t}`,d,k:SC.k,t:SC.t,title:tp?tp.name:ch?ch.name:DOCS[d],idx:tp?tp.idx:ch?ch.idx:docIdx(d)};
 }
 const scopeOf=()=>curScope();
@@ -1581,15 +1586,15 @@ function picker(withSp,withAll,cf){
   return `<div class="picker">
     <label class="pk9"><small>과목</small><select id="pd" aria-label="과목">${withSp?(planInfo()?opt("plan",`오늘 계획 (${planIdx().length})`,sp==="plan"):"")+opt("due",`오늘 복습 (${due})`,sp==="due")+opt("wrong",`틀린 카드 (${wr})`,sp==="wrong"):""}${withAll?opt("all",`전체 (${(cf?cf("all"):ALL().length).toLocaleString()})`,sa):""}${DOCS.map((x,i)=>opt(i,`${x} (${N(i,null,null)})`,!sp&&!sa&&d===i)).join("")}</select></label>
     ${sp||sa?"":`<label class="pk9"><small>대주제</small><select id="pk" aria-label="대주제">${opt("","대주제 전체",SC.k==null)}${CH[d].map((ch,k)=>opt(k,`${k+1}. ${esc(ch.name)} (${N(d,k,null)})`,SC.k===k)).join("")}</select></label>
-    <label class="pk9 ${SC.k==null?"off":""}"><small>소주제</small><select id="pt" aria-label="소주제" ${SC.k==null?"disabled":""}>${opt("","소주제 전체",SC.t==null)}${SC.k!=null?CH[d][SC.k].topics.map((tp,t)=>opt(t,`${SC.k+1}-${t+1}. ${esc(tp.name)} (${N(d,SC.k,t)})`,SC.t===t)).join(""):""}</select></label>
+    <label class="pk9 ${SC.k==null?"off":""}"><small>소주제</small><select id="pt" aria-label="소주제" ${SC.k==null?"disabled":""}>${MT()?opt("multi",`선택한 소주제 ${MT().length}개`,true):""}${opt("","소주제 전체",SC.t==null&&!MT())}${SC.k!=null?CH[d][SC.k].topics.map((tp,t)=>opt(t,`${SC.k+1}-${t+1}. ${esc(tp.name)} (${N(d,SC.k,t)})`,SC.t===t)).join(""):""}</select></label>
     ${SC.t!=null?`<span class="pnav"><button class="iconbtn sm" id="pprev" aria-label="이전 소주제" ${SC.t>0?"":"disabled"}>${ico("left",16)}</button><button class="iconbtn sm" id="pnext" aria-label="다음 소주제" ${SC.t<CH[d][SC.k].topics.length-1?"":"disabled"}>${ico("chev",16)}</button></span>`:""}`}
   </div>`;
 }
 function bindPicker(m){
   const ch=()=>{saveSC();SES=null;renderRoute();};
   const pd=m.querySelector("#pd");if(pd)pd.onchange=()=>{const v=pd.value;if(v==="all"){SC.sa=true;}else if(v==="due"||v==="wrong"||v==="plan"){SC.sp=v;}else{SC.sp="";SC.sa=false;SC.d=+v;SC.k=null;SC.t=null;}ch();};
-  const pk=m.querySelector("#pk");if(pk)pk.onchange=()=>{SC.k=pk.value===""?null:+pk.value;SC.t=null;ch();};
-  const pt=m.querySelector("#pt");if(pt)pt.onchange=()=>{SC.t=pt.value===""?null:+pt.value;ch();};
+  const pk=m.querySelector("#pk");if(pk)pk.onchange=()=>{SC.k=pk.value===""?null:+pk.value;SC.t=null;SC.ts=[];ch();};
+  const pt=m.querySelector("#pt");if(pt)pt.onchange=()=>{if(pt.value==="multi")return;SC.ts=[];SC.t=pt.value===""?null:+pt.value;ch();};
   const pp=m.querySelector("#pprev");if(pp)pp.onclick=()=>{SC.t--;ch();};
   const pn=m.querySelector("#pnext");if(pn)pn.onclick=()=>{SC.t++;ch();};
 }
@@ -1650,8 +1655,8 @@ function pgChooser(m,pg){
     h+=`<h2 class="st8"><span>${st++}</span>과목</h2><div class="subjpick ${pg!=="table"?"n4":""}">${pg!=="table"?`<button class="sp8 ${sa?"on":""}" data-sd="all"><span class="dl">全</span><b>전체</b><small>${cf("all").toLocaleString()}${unit}</small></button>`:""}${DOCS.map((x,i)=>`<button class="sp8 ${!sa&&d===i?"on":""}" data-sd="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}"><span class="dl">${DLET[i]}</span><b>${esc(x)}</b><small>${cf(i,null,null).toLocaleString()}${unit}</small></button>`).join("")}</div>`;
     if(!sa){
       h+=`<h2 class="st8"><span>${st++}</span>대주제</h2><div class="bigpick"><button class="bp ${SC.k==null?"on":""}" data-k=""><b>${esc(DOCS[d])} 전체</b><small>${cf(d,null,null)}${unit}</small></button>${CH[d].map((ch,k)=>`<button class="bp ${SC.k===k?"on":""}" data-k="${k}"><b><span class="no8">${k+1}</span>${esc(ch.name)}</b><small>${cf(d,k,null)}${unit}</small></button>`).join("")}</div>`;
-      if(SC.k!=null)h+=`<h2 class="st8"><span>${st++}</span>소주제</h2><div class="chips8"><button class="c8 ${SC.t==null?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>`<button class="c8 ${SC.t===t?"on":""}" data-t="${t}">${esc(tp.name)}<span class="num">${cf(d,SC.k,t)}</span></button>`).join("")}</div>`;
-      selTitle=SC.t!=null?CH[d][SC.k].topics[SC.t].name:SC.k!=null?CH[d][SC.k].name:DOCS[d];selN=cf(d,SC.k,SC.t);
+      if(SC.k!=null)h+=`<h2 class="st8"><span>${st++}</span>소주제</h2><div class="chips8"><button class="c8 ${SC.t==null&&!MT()?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>`<button class="c8 ${tOn(t)?"on":""}" data-t="${t}">${esc(tp.name)}<span class="num">${cf(d,SC.k,t)}</span></button>`).join("")}</div>`;
+      {const c0=curScope(false);selTitle=c0.title;selN=pg==="table"?tablesOf(c0.d,c0.k,c0.t,c0.ts).length:(src?gItems(c0,src).length:0);}
     }else{selTitle="전체";selN=cf("all");}
   }
   const dd=SC.sa&&pg!=="table"?0:SC.d;
@@ -1661,12 +1666,12 @@ function pgChooser(m,pg){
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   on("[data-src]",b=>{MSRC=b.dataset.src;MPS=0;re();});on("[data-mv]",b=>{MPV=b.dataset.mv;re();});on("[data-ms]",b=>{MPS=+b.dataset.ms;re();});
   on("[data-sd]",b=>{if(b.dataset.sd==="all"){SC.sa=true;}else{SC.sa=false;SC.d=+b.dataset.sd;SC.k=null;SC.t=null;}re();});
-  on("[data-k]",b=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;re();});on("[data-t]",b=>{SC.t=b.dataset.t===""?null:+b.dataset.t;re();});
+  on("[data-k]",b=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;re();});on("[data-t]",b=>{tsToggle(b.dataset.t);re();});
   const g=m.querySelector("#pgo");if(g)g.onclick=()=>{saveSC();PGRUN[pg]=true;VIEW[pg](m);window.scrollTo({top:0});};
 }
 VIEW.table=function(m){
   if(!PGRUN.table)return pgChooser(m,"table");
-  const sc=curScope(false),tbs=tablesOf(sc.d,sc.k,sc.t);
+  const sc=curScope(false),tbs=tablesOf(sc.d,sc.k,sc.t,sc.ts);
   m.innerHTML=`<div class="page wide2" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("표",false,"칸을 눌러 답을 확인하거나, 타이핑으로 채워 보세요",`표 <b class="num">${tbs.length}</b>개`,false,(d,k,t)=>tablesOf(d,k,t).length)}
     <div class="tbs">${tbs.length?tbs.map(t=>(sc.t==null?`<p class="tbsrc">${esc(t.small)}</p>`:"")+tableHTML(t)).join(""):`<div class="empty">${TB.length?"이 범위에는 표가 없어요":"표를 불러오는 중이에요"}</div>`}</div></div>`;
   bindPicker(m);bindTables(m);addChg(m,"table");
@@ -2160,7 +2165,7 @@ VIEW.fc=function(m){
   if(FCRUN)FCRST=false;
   if(!FCRUN)return fcChooser(m);
   const sc=curScope();
-  const crumbs=SC.sp?[esc(sc.title)]:[DOCS[SC.d],SC.k!=null?CH[SC.d][SC.k].name:null,SC.t!=null?CH[SC.d][SC.k].topics[SC.t].name:null].filter(Boolean).map(esc);
+  const crumbs=SC.sp?[esc(sc.title)]:[DOCS[SC.d],SC.k!=null?CH[SC.d][SC.k].name:null,SC.t!=null?CH[SC.d][SC.k].topics[SC.t].name:MT()?sc.title:null].filter(Boolean).map(esc);
   m.innerHTML=`<div class="page fcplay" style="${sc.d!=null?`--dc:${DC[sc.d]};--ds:${DCS[sc.d]}`:""}">
     <header class="fchd8"><button class="iconbtn" id="chg" title="범위 바꾸기" aria-label="범위 바꾸기">${ico("x",20)}</button>
       <div class="fcp8">${crumbs.map((c,j)=>`<span class="${j===crumbs.length-1?"last":""}">${c}</span>`).join(ico("chev",12))}</div>
@@ -2187,7 +2192,7 @@ function fcChooser(m){
       ${CH[d].map((ch,k)=>{const c=counts(ch.idx);return `<button class="bp ${SC.k===k?"on":""}" data-k="${k}"><b><span class="no8">${k+1}</span>${esc(ch.name)}</b><small>${ch.idx.length}장 · 외움 ${pct(c)}%</small><span class="bar"><i class="k" style="width:${pct(c)}%;background:var(--dc)"></i></span></button>`;}).join("")}
     </div>
     ${SC.k!=null?`<h2 class="st8"><span>3</span>소주제</h2>
-    <div class="chips8"><button class="c8 ${SC.t==null?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>{const c=counts(tp.idx);return `<button class="c8 ${SC.t===t?"on":""}" data-t="${t}">${S.badges&&S.badges[`t:${d}:${SC.k}:${t}`]?`<i class="bdg" title="배지">🏅</i>`:""}${esc(tp.name)}<span class="num">${tp.idx.length}</span>${c.k===c.all?`<i class="okd" title="다 외움"></i>`:""}</button>`;}).join("")}</div>`:""}
+    <div class="chips8"><button class="c8 ${SC.t==null&&!MT()?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>{const c=counts(tp.idx);return `<button class="c8 ${tOn(t)?"on":""}" data-t="${t}">${S.badges&&S.badges[`t:${d}:${SC.k}:${t}`]?`<i class="bdg" title="배지">🏅</i>`:""}${esc(tp.name)}<span class="num">${tp.idx.length}</span>${c.k===c.all?`<i class="okd" title="다 외움"></i>`:""}</button>`;}).join("")}</div>`:""}
     <h2 class="st8"><span>${SC.k!=null?4:3}</span>방식</h2>
     <div class="modes8 m4">${MODES.map(([v,ic,l,sm])=>`<button class="md8 ${fmode()===v?"on":""}" data-md="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>
     <button class="optbtn ${OPTOPEN?"open":""}" id="optt" aria-expanded="${OPTOPEN}"><span class="ob1">옵션</span><span class="ob2">${[FCO().gtrace?"기출 역추적":"",+FCO().timer?`${FCO().timer/60}분 제한`:"",FCO().sound?"효과음":""].filter(Boolean).join(" · ")||"기출 역추적 · 시간 제한 · 효과음"}</span><span class="obc">${ico("chev",16)}</span></button>
@@ -2210,7 +2215,7 @@ function fcChooser(m){
   m.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{SC.sp=b.dataset.q;saveSC();FCRUN=true;SES=null;VIEW.fc(m);});
   m.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;re();});
   m.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;re();});
-  m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{SC.t=b.dataset.t===""?null:+b.dataset.t;re();});
+  m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tsToggle(b.dataset.t);re();});
   m.querySelectorAll("[data-md]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();re();});
   m.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{timer:+b.dataset.tl});save();re();});
   m.querySelector("#optt").onclick=()=>{OPTOPEN=!OPTOPEN;re();};
@@ -2226,7 +2231,7 @@ let QZ=100;try{QZ=+localStorage.getItem(SBASE+":qz")||100;}catch(e){}
 let TNAME=null;
 function tpos(name){if(!TNAME){TNAME={};CH.forEach((chs,d)=>chs.forEach((ch,k)=>ch.topics.forEach((tp,t)=>TNAME[ch.name+"|"+tp.name]=[d,k,t])));}return TNAME[name];}
 function gItems(sc,src){src=src||GQ;
-  const inSc=p=>p&&p[0]===sc.d&&(sc.k==null||p[1]===sc.k)&&(sc.t==null||p[2]===sc.t);
+  const inSc=p=>p&&p[0]===sc.d&&(sc.k==null||p[1]===sc.k)&&(sc.ts&&sc.ts.length?sc.ts.includes(p[2]):(sc.t==null||p[2]===sc.t));
   const idxSet=new Set(sc.idx),out=[];
   for(const qid in src){const q=src[qid];for(const [n] of q.subs){
     const cl=q.cls&&q.cls[n];
@@ -2491,7 +2496,7 @@ async function loadTables(){
     if(C.length&&!(SES&&inPlayer()))renderRoute();
   }catch(e){}
 }
-const tablesOf=(d,k,t)=>TB.filter(x=>x.pos&&x.pos[0]===d&&(k==null||x.pos[1]===k)&&(t==null||x.pos[2]===t));
+const tablesOf=(d,k,t,ts)=>TB.filter(x=>x.pos&&x.pos[0]===d&&(k==null||x.pos[1]===k)&&(ts&&ts.length?ts.includes(x.pos[2]):(t==null||x.pos[2]===t)));
 const TBM={};
 const plain=s=>String(s||"").replace(/\*\*/g,"");
 const keyOf=s=>{const m=[...String(s||"").matchAll(/\*\*(.+?)\*\*/g)].map(x=>x[1]);return m.length?m:[plain(s)];};
