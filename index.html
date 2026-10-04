@@ -1430,6 +1430,7 @@ body.glock .qfbar{flex:none}
   .tabbar::-webkit-scrollbar{display:none}
   .tabbar a{flex:0 0 20%;min-width:20%;scroll-snap-align:start}
 }
+.pop.bad{color:var(--bad,#e5484d)}
 </style>
 </head>
 <body>
@@ -1827,8 +1828,8 @@ function playerIn(box,sc){
   PBOX=box;drawCard();
 }
 let PBOX=null;
-/* 학습: 알아요 +10(연속 정답 보너스 최대 +25), 헷갈려요 +5, 몰랐어요 0 */
-const ptsOf=(g,combo)=>g===2?10+5*Math.min(combo,5):g===1?5:0;
+/* 학습: 알아요 +5, 헷갈려요 +0~3 (타이핑 정답률에 따라, 잴 수 없으면 +2), 몰랐어요 -5 */
+const ptsOf=(g,rate)=>g===2?5:g===1?(rate==null?2:Math.max(0,Math.min(3,Math.round(rate*3)))):-5;
 const lvOf=xp=>{const lv=1+Math.floor(xp/300);return{lv,cur:xp%300,need:300};};
 const fmode=()=>{const o=FCO();return o.mode||(o.typing?"type":"click");};
 const MODES=[["click","👆","클릭으로","눌러서 답 보고 스스로 채점"],["type","⌨️","타이핑으로","답을 써 보고 핵심어로 채점"],["cloze","🧩","빈칸 채우기","핵심어만 빈칸 · 초성 힌트"],["pair","⚖️","헷갈리는 짝 고르기","설명을 보고 두 질문 중 고르기"]];
@@ -1894,7 +1895,7 @@ function endHTML(s){
       ${rec}${badge}
       <div class="gstats"><div><b class="num">${s.score}</b><span>점수</span></div><div><b class="num">${acc}%</b><span>정답률</span></div><div><b class="num">${s.best}</b><span>최고 연속</span></div></div>
       <div class="dbar"><i class="g2" style="width:${s.tally[2]/(s.done||1)*100}%"></i><i class="g1" style="width:${s.tally[1]/(s.done||1)*100}%"></i><i class="g0" style="width:${s.tally[0]/(s.done||1)*100}%"></i></div>
-      <p class="muted small">알아요 ${s.tally[2]} · 헷갈려요 ${s.tally[1]} · 몰랐어요 ${s.tally[0]} · 경험치 +${s.xp} · 오늘 ${todayN()}/${goalN()}장</p>
+      <p class="muted small">알아요 ${s.tally[2]} · 헷갈려요 ${s.tally[1]} · 몰랐어요 ${s.tally[0]} · 경험치 ${s.xp<0?"−":"+"}${Math.abs(s.xp)} · 오늘 ${todayN()}/${goalN()}장</p>
       ${bossN?`<div class="boss9"><span class="bi">👾</span><div><b>보스전: 틀리거나 헷갈린 카드 ${bossN}장</b><small>모두 '알아요'로 넘기면 이 범위 배지를 받아요</small></div><button class="btn sm pri" id="boss">도전</button></div>`:""}
       ${s.seenG&&s.seenG.size?`<div class="gnote end"><span class="gi">📝</span><div><b>이번 카드와 연결된 기출 ${s.seenG.size}문항</b><small>방금 외운 내용이 실제로 어떻게 나왔는지 확인해 보세요</small></div><a class="btn sm" href="#/gichul">기출 풀기</a></div>`:""}
       <div class="row center"><button class="btn" id="back1" ${s.ended?"disabled":""}>${ico("left",16)}마지막 카드</button><button class="btn" id="again">다시 하기</button>${nextTopic()?`<button class="btn pri" id="nxt">다음 주제 ${ico("chev",16)}</button>`:""}</div></div>`;
@@ -1972,6 +1973,7 @@ function drawCard(){
   const tcells=mode==="type"?(vs?vs.map(x=>({lab:plainA(x.l),key:x.body})):vr&&vr.rows?vr.rows.flatMap((r,k)=>r.c!=null?[]:[{row:k,lab:r.lab||"",side:0,key:r.l},{row:k,lab:r.lab||"",side:1,key:r.r}]):null):null;
   const cellLab=cl=>vr&&vr.rows?`${cl.side?vr.B:vr.A}${cl.lab?" · "+cl.lab:""}`:cl.lab;
   const mres=Array.isArray(s.typed)?(tcells&&s.typed.length===tcells.length?(()=>{const rows=tcells.map((cl,k)=>{const v=String(s.typed[k]||"");return{v,lab:cellLab(cl),keys:ansKeys(cl.key).map(kk=>({k:kk,ok:!!v.trim()&&cellOk(v,kk)}))};});return{rows,flat:rows.flatMap(r=>r.keys),cmp:true};})():multiScore(s.typed,c[6])):null,tr=mres?mres.flat:s.typed!=null?typeScore(s.typed,c[6]):null,tok=tr?tr.filter(y=>y.ok).length:0;
+  s.rate=tr&&tr.length?tok/tr.length:null;
   const fl=s.flash;s.flash=null;
   const typing=mode==="type",kws=typing?ansKeys(c[6]):[],multi=typing&&(!!tcells||its.length>1);
   if(!same){s.hint=false;s.draft="";s.draftA=[];s.hintUsed=false;}
@@ -1994,7 +1996,7 @@ function drawCard(){
         <button class="iconbtn sm" id="undo" title="되돌리기 (Z)" aria-label="되돌리기" ${s.hist.length?"":"disabled"}>${ico("undo",16)}</button></div>
     </div>
     ${s.boss?`<div class="bossbar">👾 보스전 · 모두 '알아요'로 넘기면 배지!</div>`:""}
-    ${fl&&fl.pts?`<div class="pop ${fl.g===2?"good":"mid"}">+${fl.pts}${fl.combo>=2&&fl.g===2?` · ${fl.combo}연속!`:""}</div>`:""}
+    ${fl&&fl.pts?`<div class="pop ${fl.g===2?"good":fl.g===1?"mid":"bad"}">${fl.pts>0?"+":"−"}${Math.abs(fl.pts)}${fl.combo>=2&&fl.g===2?` · ${fl.combo}연속!`:""}</div>`:""}
     <article class="card ${sh||cz||pr?"flip":""} ${same?"noanim":""} ${fl?(fl.g===0?"shake":"pulse"):""} ${cz?"czcard":""}" id="card">
       <div class="cmeta"><span class="cpath">${esc(c[4])}</span>${!x?`<span class="tag new">NEW</span>`:x[2]?`<span class="tag lapse">틀림 ${x[2]}</span>`:x[0]>=4?`<span class="tag ok">외움</span>`:""}
         ${gq.length?`<button class="tag gtag" id="gq" title="이 카드가 나온 기출">기출 ${gq.length}</button>`:""}<span class="pg">${c[2]}쪽</span></div>
@@ -2014,9 +2016,9 @@ function drawCard(){
     <div class="ctl">${pr?`<div class="pair9">${pr.opts.map((j,k)=>`<button class="po ${pr.pick!=null?(k===right?"ok":k===pr.pick?"ng":"dim"):""}" data-po="${k}" ${pr.pick!=null?"disabled":""}><span class="pk">${"AB"[k]}</span><span>${fmt(C[j][5])}</span></button>`).join("")}</div>
         ${pr.pick!=null?`<div class="reveal"><button class="showbtn" id="pnx">${pr.pick===right?"맞았어요 · 다음":"다음 (곧 다시 나와요)"} ${ico("chev",16)}</button></div>`:""}`
       :full?`<div class="grade ${tr?"sug"+(tok>=tr.length*.8?2:tok>=tr.length*.5?1:0):""}">
-        <button class="g0" data-g="0"><em>😵</em><b>몰랐어요</b><small>+0 · ${rvLab(RV().again,RV().againDay)}</small></button>
-        <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+5 · ${rvLab(RV().hardN,RV().hard)}</small></button>
-        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,s.combo)} · ${rvLab(RV().goodN,goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
+        <button class="g0" data-g="0"><em>😵</em><b>몰랐어요</b><small>−5 · ${rvLab(RV().again,RV().againDay)}</small></button>
+        <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+${ptsOf(1,s.rate)} · ${rvLab(RV().hardN,RV().hard)}</small></button>
+        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2)} · ${rvLab(RV().goodN,goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
       :typing&&!sh?`<div class="ty9">
           <div class="ty9box ${multi?"multi":""} ${tcells?"cmp":""} ${s.hint?"hinton":""}">${tcells?(vs?`<div class="tyv n${tcells.length}">${tcells.map((cl,k)=>`${k?`<span class="vsb">VS</span>`:""}<label class="tyvc"><b>${esc(cl.lab)}</b><textarea class="tyai" data-k="${k}" rows="2" placeholder="${esc(s.hint?ansKeys(cl.key).map(hintTxt).join(" · "):cl.lab)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}</div>`
               :`<div class="tyvh"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>${(()=>{let o="";for(let k=0;k<tcells.length;k+=2){const cl=tcells[k];o+=`<div class="tyvr">${cl.lab?`<div class="vlab">${esc(cl.lab)}</div>`:""}<textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k].key).map(hintTxt).join(" · "):vr.A)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea><textarea class="tyai" data-k="${k+1}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k+1].key).map(hintTxt).join(" · "):vr.B)}" spellcheck="false">${esc((s.draftA||[])[k+1]||"")}</textarea></div>`;}return o;})()}`)
@@ -2085,8 +2087,8 @@ function answer(g){
   const before=todayN();
   grade(i,g);s.done++;s.tally[g]++;
   if(g<2){if(s.boss)s.bossFail=true;else s.wrongs.add(i);}
-  const pts=ptsOf(g,s.combo);
-  s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score+=pts;s.xp+=pts;S.xp=(S.xp||0)+pts;
+  const x0=S.xp||0;S.xp=Math.max(0,x0+ptsOf(g,s.rate));const pts=S.xp-x0;
+  s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score+=pts;s.xp+=pts;
   s.flash={g,pts,combo:s.combo};
   {const R=RV(),nn=g===0?R.again:g===1?R.hardN:R.goodN;   // 같은 학습에서 n장 뒤 다시
     if(nn>0&&(s.again[i]||0)<3){s.again[i]=(s.again[i]||0)+1;s.q.splice(Math.min(s.q.length,s.pos+nn),0,i);}}
@@ -2154,12 +2156,6 @@ VIEW.home=function(m){
         <div class="h9c lv9"><small>레벨</small><b class="num">Lv.${L.lv}</b><span class="xpb"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num">${(S.xp||0).toLocaleString()} XP</em></div>
       </div>
     </header>
-    <section class="h9today">
-      <div class="h9tl"><span class="h9ti">${ico("today",26)}</span>
-        <div><small>${pl?`오늘 계획 · 시험까지 ${pl.dd}일`:"오늘 할 일"}</small><h2>${pl?`복습 <b class="num">${due.toLocaleString()}</b> + 새 카드 <b class="num">${pl.left}</b>장`:due?`복습할 카드 <b class="num">${due.toLocaleString()}</b>장`:"오늘 복습은 끝났어요"}</h2>
-          <p>${pl?`남은 새 카드 ${pl.nAll.toLocaleString()}장을 하루 ${pl.per}장씩 나눴어요`:due?"잊기 전에 다시 보면 오래 기억돼요":"설정에서 시험일을 정하면 하루 계획을 세워 드려요"}${wr?` · 틀린 카드 <b class="num">${wr}</b>장`:""}</p></div></div>
-      <div class="h9tr">${pl&&(due||pl.left)?`<button class="btn pri lg" id="hplan">${ico("play",16)}계획대로 시작</button>`:due?`<button class="btn pri lg" id="hdue">${ico("play",16)}복습 시작</button>`:`<a class="btn pri lg" href="#/fc">${ico("play",16)}새 카드 외우기</a>`}${wr?`<button class="btn lg" id="hwr">틀린 카드</button>`:""}</div>
-    </section>
     <section class="h9go g5">
       <a class="g9 c1" href="#/fc"><span class="g9i">${ico("cards",22)}</span><span class="g9t"><b>플래시카드</b><small>${all.all.toLocaleString()}장 · 간격 반복</small></span>${ico("arrow",18)}</a>
       <a class="g9 c3" href="#/table"><span class="g9i">${ico("grid",22)}</span><span class="g9t"><b>표</b><small>${nt?nt+"개 · ":""}가리고 맞히기</small></span>${ico("arrow",18)}</a>
