@@ -1328,6 +1328,17 @@ body.glock #gbody>.empty{flex:none}
 .vsc.on{border-color:color-mix(in srgb,var(--dc,var(--pri)) 35%,var(--line))}
 .vsb{align-self:center;font-size:12px;font-weight:900;letter-spacing:.05em;color:#fff;background:linear-gradient(135deg,var(--c0),var(--pri));border-radius:99px;padding:5px 9px;box-shadow:var(--sh)}
 @media (max-width:699px){.card .a .vs9,.card .a .vs9.n3{grid-template-columns:minmax(0,1fr)}.vsb{justify-self:center}}
+/* 비교표 (A VS B) */
+.card .a .vsr{display:flex;flex-direction:column;gap:6px}
+.vsh{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;margin-bottom:2px}
+.vsh b{text-align:center;font-size:16px;font-weight:850;color:var(--dc,var(--pri));background:var(--ds,var(--pri-s));border-radius:12px;padding:7px 10px}
+.vrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;position:relative}
+.vrow .vlab{grid-column:1/-1;font-size:12.5px;font-weight:800;color:var(--ink-3);margin:4px 0 -2px}
+.vrow .vl,.vrow .vr{border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:15px;line-height:1.6;background:var(--surface)}
+.vrow:not(.on) .vl,.vrow:not(.on) .vr{color:var(--ink-3);text-align:center;font-weight:800;background:var(--sunk)}
+.vrow.c{display:block;font-size:14.5px;color:var(--ink-2);background:var(--sunk);border-radius:10px;padding:8px 11px}
+.vrow.c:not(.on){text-align:center;color:var(--ink-3);font-weight:800}
+.vsh.vsh1{margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -1711,6 +1722,35 @@ function vsInfo(q,a){
   if(!L.every(x=>base(x.l).length>=1&&qq.includes(base(x.l))))return null;
   return L;
 }
+/* 비교표: 질문의 'A와 B / A ↔ B / A vs B'를 찾아 답을 줄마다 [A쪽 | B쪽]으로 나눔
+   - "능동적 ↔ 수동적"  - "A: … B: …" 구역  - "시기: A-x / B-y"  - "A는 …, B는 …" */
+function vsRows(q,a){
+  const qq=plainA(q);if(!/차이|비교|구분|vs|VS|대비|↔/.test(qq))return null;
+  const m=qq.match(/([^\s,·&()]{1,10})\s*(?:와|과|↔|vs|VS)\s*([^\s,·&():]{1,10}?)(?=의|에|\s*구분|\s*비교|\s*:|\s*대비|\s*특성|\s*차이|\s|$)/);if(!m)return null;
+  let A=m[1],B=m[2];
+  const qv=qq.match(/['‘"“]([^'’"”]+?)\s*(?:vs|VS)\s*([^'’"”]+?)['’"”]/);if(qv){A=qv[1].trim();B=qv[2].trim();}
+  if(A===B)return null;
+  const esc2=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const lines=String(a||"").split("\n").map(x=>x.trim()).filter(Boolean),rows=[];let sec=null,secs={[A]:[],[B]:[]},split=0;
+  const strip=x=>x.replace(/^[\s•·\-–]+/,"").trim();
+  for(const ln of lines){
+    const p=plainA(ln).replace(BUL,"").trim();
+    const sm=p.match(new RegExp("^("+esc2(A)+"|"+esc2(B)+")[^:：]{0,8}[:：]\\s*(.*)$"));
+    if(sm){sec=sm[1];sm[2].split("•").map(strip).filter(Boolean).forEach(x=>secs[sec].push(x));continue;}
+    if(sec){p.split("•").map(strip).filter(Boolean).forEach(x=>secs[sec].push(x));continue;}
+    if(p.includes("↔")){const [l,r]=p.split("↔");rows.push({l:strip(l),r:strip(r)});split++;continue;}
+    const dm=p.match(new RegExp("^(?:(.{1,16}?)\\s*[:：]\\s*)?("+esc2(A)+"|"+esc2(B)+")\\s*-\\s*(.+?)\\s*/\\s*("+esc2(A)+"|"+esc2(B)+")\\s*-\\s*(.+)$"));
+    if(dm&&dm[2]!==dm[4]){const v={[dm[2]]:dm[3],[dm[4]]:dm[5]};rows.push({lab:dm[1]||"",l:v[A],r:v[B]});split++;continue;}
+    const cm=p.match(new RegExp("^(.*?"+esc2(A)+".*?),\\s*("+esc2(B)+".*)$"));
+    if(cm&&cm[1].length>3){rows.push({l:cm[1].trim(),r:cm[2].trim()});split++;continue;}
+    rows.push({c:p});
+  }
+  if(secs[A].length&&secs[B].length){const n=Math.max(secs[A].length,secs[B].length);for(let k=0;k<n;k++)rows.push({l:secs[A][k]||"",r:secs[B][k]||""});split+=n;}
+  if(split<1){   // 줄을 나눌 수 없으면, 'A와 B(의) 구분·비교·차이'가 분명할 때만 제목(A VS B)
+    const st=qq.match(/([가-힣A-Za-z]{1,8})\s*(?:와|과|↔)\s*([가-힣A-Za-z]{1,8})\s*(?:의\s*)?(?:특성\s*)?(?:구분|비교|차이|대비)/);
+    return st&&st[1]===A&&st[2]===B&&!/^(의|이|가|을|를|에)$/.test(B)?{A,B,rows:null}:null;}
+  return{A,B,rows};
+}
 function drawCard(){
   const s=SES,box=PBOX;if(!box||!box.isConnected)return;
   const o=FCO(),mode=fmode();
@@ -1728,7 +1768,8 @@ function drawCard(){
   const nCz=czCount(c[6]),cz=mode==="cloze"&&nCz>0;s.cz=cz;
   if(mode==="pair"&&(!s.pair||s.pair.pos!==s.pos)){const p=makePair(i);s.pair=p?Object.assign(p,{pos:s.pos}):{pos:s.pos,none:true};}
   const pr=mode==="pair"&&s.pair&&!s.pair.none?s.pair:null;
-  const its=ansItems(c[6]),n=cz?nCz:its.length,sh=pr?(pr.pick!=null?n:0):Math.min(s.shown,n),full=sh>=n,same=s.last===s.pos;
+  const vs=!cz&&!pr?vsInfo(c[5],c[6]):null,vr=!cz&&!pr&&!vs?vsRows(c[5],c[6]):null;s.vsn=vr&&vr.rows?vr.rows.length:0;
+  const its=ansItems(c[6]),n=cz?nCz:vr&&vr.rows?vr.rows.length:its.length,sh=pr?(pr.pick!=null?n:0):Math.min(s.shown,n),full=sh>=n,same=s.last===s.pos;
   const jf=same&&!s.lastSh&&sh>0&&!pr;s.last=s.pos;s.lastSh=sh;
   const gq=[...new Set(gOf(i).map(y=>y[0]))].sort(qSort);
   const mres=Array.isArray(s.typed)?multiScore(s.typed,c[6]):null,tr=mres?mres.flat:s.typed!=null?typeScore(s.typed,c[6]):null,tok=tr?tr.filter(y=>y.ok).length:0;
@@ -1737,9 +1778,10 @@ function drawCard(){
   if(!same){s.hint=false;s.draft="";s.draftA=[];s.hintUsed=false;}
   let ga="";if(full&&gq.length&&o.gtrace){const g0=gOf(i).slice().sort((a,b)=>qSort(a[0],b[0]))[0],sub=GQ[g0[0]].subs.find(y=>y[0]===g0[1]);if(sub)ga=`<p class="gtr"><b>${esc(qLabel(g0[0]))} ${esc(g0[1])}</b> ${esc(sub[1].length>160?sub[1].slice(0,160)+"…":sub[1])}</p>`;}
   const st={k:0,n:sh,fresh:same};
-  const vs=!cz&&!pr?vsInfo(c[5],c[6]):null;
   const aBody=cz?its.map(t=>`<div class="ait on">${czHTML(t,st)}</div>`).join("")
     :vs?`<div class="vs9 n${vs.length}">${vs.map((x,k)=>`${k?`<span class="vsb">VS</span>`:""}<div class="vsc ${k<sh?"on":""} ${k===sh-1&&same?"new":""}"><b>${fmt(x.l)}</b><div class="vst">${k<sh?fmt(x.body):"?"}</div></div>`).join("")}</div>`
+    :vr&&!vr.rows?`<div class="vsh vsh1"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>`+its.map((t,k)=>`<div class="ait ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${fmt(t)}</div>`).join("")
+    :vr?`<div class="vsr"><div class="vsh"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>${vr.rows.map((r,k)=>r.c!=null?`<div class="vrow c ${k<sh?"on":""}">${k<sh?esc(r.c):"?"}</div>`:`<div class="vrow ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${r.lab?`<div class="vlab">${esc(r.lab)}</div>`:""}<div class="vl">${k<sh?esc(r.l):"?"}</div><div class="vr">${k<sh?esc(r.r):"?"}</div></div>`).join("")}</div>`
     :its.map((t,k)=>`<div class="ait ${k<sh?"on":""} ${k===sh-1&&same?"new":""}">${fmt(t)}</div>`).join("");
   const right=pr?pr.opts.indexOf(i):-1;
   box.innerHTML=`<div class="player game m-${mode}">
@@ -1832,7 +1874,7 @@ function drawCard(){
 }
 const BUL=/^\s*(?:[①-⑳⑴-⒇❶-❿]|[•·▪■□◆◇○●◦※▶▷⇨⇒→➜\-–]|\d{1,2}[.)]|\(\d{1,2}\)|[가-하][.)]|\([가-하]\)|\[)/;
 function ansItems(a){const out=[];String(a||"").split("\n").forEach(l=>{if(!l.trim())return;if(!out.length||BUL.test(l))out.push(l);else out[out.length-1]+="\n"+l;});return out.length?out:[String(a||"")];}
-const curN=()=>{const a=C[SES.q[SES.pos]][6];return SES.cz?czCount(a):ansItems(a).length;};
+const curN=()=>{const a=C[SES.q[SES.pos]][6];return SES.cz?czCount(a):SES.vsn?SES.vsn:ansItems(a).length;};
 function flipCard(){if(!SES||SES.ended||SES.pos>=SES.q.length)return;if(fmode()==="pair"&&SES.pair&&!SES.pair.none)return;if(fmode()==="type"&&!SES.shown)return;if(SES.shown<curN()){SES.shown=FCO().reveal==="all"?curN():SES.shown+1;drawCard();}}
 function showAll(){if(!SES||SES.ended||SES.pos>=SES.q.length)return;if(fmode()==="pair"&&SES.pair&&!SES.pair.none)return;SES.shown=curN();drawCard();}
 function step(n){const s=SES;if(!s||s.ended)return;const p=s.pos+n;if(p<0||p>s.q.length)return;s.pos=p;s.shown=0;s.typed=null;drawCard();}
