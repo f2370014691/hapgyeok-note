@@ -1175,6 +1175,11 @@ button,a,.card,.cw{touch-action:manipulation}
 }
 .slotcap{font-size:12.5px;font-weight:750;color:var(--pri);background:var(--pri-s);border-radius:99px;padding:3px 11px;align-self:flex-start;margin:0}
 .mpv button{padding:6px 12px;font-size:13px}
+.qtab button{padding:5px 11px;font-size:12.5px}
+.exf{margin:0 0 14px;text-align:center}
+.exf figcaption{font-size:12.5px;font-weight:750;color:var(--mid);text-align:left;margin:0 0 6px 4px}
+.exf img{display:block;margin:0 auto;max-width:none;background:#fff;border-radius:8px;box-shadow:var(--sh)}
+.exs{margin-top:10px;text-align:center}
 </style>
 </head>
 <body>
@@ -1831,9 +1836,10 @@ function gichulIn(box,sc,items){
   const [qid,n]=items[s.pos],q=QQ(qid),sub=q.subs.find(x=>x[0]===n)||q.subs[0],tk=qid+"|"+n;
   const ap=ansParts(sub[1],sub[2]),my=s.typed[tk]||ap.slots.map(()=>""),AL=ansL(q);s.pick=s.pick||{};
   const cards=(q.links[n]||[]).map(c=>CID[c]).filter(x=>x!=null);
+  const exN=q.expl?q.expl.length:0,exOn=exN&&s.ex===tk;
   box.innerHTML=`<div class="qv">
     <div class="qtop">
-      <div class="qtl"><span class="qtl9">${ico("file",16)}문제 사진</span>
+      <div class="qtl">${exN?`<span class="seg2 qtab"><button data-qt="q" aria-pressed="${!exOn}">문제 사진</button><button data-qt="e" aria-pressed="${!!exOn}">📖 해설 ${exN}</button></span>`:`<span class="qtl9">${ico("file",16)}문제 사진</span>`}
         <span class="sp"></span>
         <div class="zoom"><span>크기</span><input type="range" id="qz" min="50" max="250" step="10" value="${QZ}" aria-label="문제 사진 크기"><b class="num" id="qzv">${QZ}%</b></div></div>
       <div class="qtr"><button class="iconbtn sm" id="qpp" aria-label="이전 문제" ${s.pos?"":"disabled"}>${ico("left",16)}</button>
@@ -1849,13 +1855,14 @@ function gichulIn(box,sc,items){
         <div class="qask">${esc(sub[1])}</div>
         ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.num?" · 순서는 상관없어요":""}</p>`:""}
         ${q.mc?mcHTML(q,sub[2],s.pick[tk],s.open):(()=>{const ev=s.open?evalSlots(ap,my):null;return ap.slots.map((mk,k)=>slotHTML(ap,mk,k,my[k],s.open,ev,AL,"data-k",ap.slots.length>1?2:4)).join("");})()}
-        <div class="qbtns">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button><button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 문제 ${ico("chev",15)}</button>`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button></div>
+        <div class="qbtns">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button><button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 문제 ${ico("chev",15)}</button>`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진 보기":"📖 해설 보기"}</button>`:""}</div>
         ${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 ${cards.length}개 더보기`} ${ico("chev",14)}</button>
           ${s.more?cards.map(i=>`<div class="qpcard"><b>${fmt(C[i][5])}</b><div>${fmt(C[i][6])}</div></div>`).join(""):""}`:""}
       </div>
     </div></div>`;
   const key=(q.img&&q.img.subs&&q.img.subs[n])||(q.img&&q.img.full)||q.pages[0];
-  if(key)gImg(key).then(u=>{const b=box.querySelector("#qpi");if(b)b.innerHTML=`<img src="${u}" alt="${esc(qLabel(qid))} ${esc(n)}" style="width:${QZ}%">`;}).catch(()=>{const b=box.querySelector("#qpi");if(b)b.innerHTML=`<p class="stem">${esc(q.stem)}</p>`;});
+  if(exOn)Promise.all(q.expl.map(e=>gImg(e.img))).then(us=>{const b=box.querySelector("#qpi");if(b)b.innerHTML=us.map((u,i)=>`<figure class="exf"><figcaption>📖 하쌤 해설 · ${esc(q.expl[i].t)}</figcaption><img src="${u}" alt="해설 ${esc(q.expl[i].t)}" style="width:${QZ}%"></figure>`).join("");}).catch(()=>{const b=box.querySelector("#qpi");if(b)b.innerHTML=`<p class="stem">해설을 불러오지 못했어요</p>`;});
+  else if(key)gImg(key).then(u=>{const b=box.querySelector("#qpi");if(b)b.innerHTML=`<img src="${u}" alt="${esc(qLabel(qid))} ${esc(n)}" style="width:${QZ}%">`;}).catch(()=>{const b=box.querySelector("#qpi");if(b)b.innerHTML=`<p class="stem">${esc(q.stem)}</p>`;});
   const on=(id,f)=>{const b=box.querySelector(id);if(b)b.onclick=f;};
   const re=()=>gichulIn(box,sc,items);
   const keep=()=>{s.typed[tk]=[...box.querySelectorAll(".qmy textarea")].map(t=>t.value);};
@@ -1864,10 +1871,11 @@ function gichulIn(box,sc,items){
   on("#qal",()=>{keep();s.pos--;s.open=false;s.more=false;re();});on("#qar",()=>{keep();s.pos++;s.open=false;s.more=false;re();});
   on("#qpo",()=>{keep();s.open=true;re();});on("#qhide",()=>{keep();s.open=false;re();});
   on("#qpnx",()=>{s.pos++;s.open=false;s.more=false;re();});on("#qpall",()=>openQ(qid,[n]));
+  const exT=v=>{keep();s.ex=v?tk:null;re();};on("#qex",()=>exT(!exOn));box.querySelectorAll("[data-qt]").forEach(b=>b.onclick=()=>exT(b.dataset.qt==="e"));
   on("#qmore",()=>{keep();s.more=!s.more;re();});
   box.querySelectorAll(".mcb").forEach(b=>b.onclick=()=>{s.pick[tk]=b.dataset.c;s.open=true;re();});
   box.querySelector("#qsel").onchange=e=>{s.pos=+e.target.value;s.open=false;s.more=false;re();};
-  const z=box.querySelector("#qz");z.oninput=()=>{QZ=+z.value;box.querySelector("#qzv").textContent=QZ+"%";const im=box.querySelector("#qpi img");if(im)im.style.width=QZ+"%";try{localStorage.setItem(SBASE+":qz",QZ);}catch(e){}};
+  const z=box.querySelector("#qz");z.oninput=()=>{QZ=+z.value;box.querySelector("#qzv").textContent=QZ+"%";box.querySelectorAll("#qpi img").forEach(im=>im.style.width=QZ+"%");try{localStorage.setItem(SBASE+":qz",QZ);}catch(e){}};
   if(window.matchMedia&&matchMedia("(min-width:900px)").matches){const v=box.querySelector(".qv");if(v){const y=v.getBoundingClientRect().top+window.scrollY-8;window.scrollTo({top:y});}}
 }
 
@@ -1940,7 +1948,9 @@ function openQ(qid,hl,others){
   el.querySelectorAll(".ashow").forEach(b=>b.onclick=()=>{const x=b.closest(".abox");x.classList.toggle("on");b.textContent=x.classList.contains("on")?"답안 가리기":"민쌤 답안 보기";});
   (async()=>{const box=el.querySelector("#qpages");const keys=q.img?[one||q.img.full]:q.pages;
     try{const urls=await Promise.all(keys.map(gImg));box.innerHTML=urls.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img class="qpage" style="width:${QZ}%" src="${u}" alt="${esc(qLabel(qid))} 시험지"></a>`).join("")+(one?`<p class="muted small center"><button class="linkbtn" id="qfull">문항 전체 보기</button></p>`:"");
-      const f=box.querySelector("#qfull");if(f)f.onclick=()=>openQ(qid,[],others);}
+      const f=box.querySelector("#qfull");if(f)f.onclick=()=>openQ(qid,[],others);
+      if(q.expl&&q.expl.length){const d=document.createElement("div");d.className="exs";d.innerHTML=`<button class="btn sm" id="qexb">📖 하쌤 해설 ${q.expl.length}개 보기</button>`;box.appendChild(d);
+        d.querySelector("#qexb").onclick=async()=>{const us=await Promise.all(q.expl.map(e=>gImg(e.img)));d.innerHTML=us.map((u,i)=>`<figure class="exf"><figcaption>📖 하쌤 해설 · ${esc(q.expl[i].t)}</figcaption><img class="qpage" src="${u}" alt="해설" style="width:${QZ}%"></figure>`).join("");};}}
     catch(x){box.innerHTML=`<p class="stem">${esc(q.stem)}</p>`;}})();
 }
 const MK="①②③④⑤⑥⑦⑧⑨⑩";
