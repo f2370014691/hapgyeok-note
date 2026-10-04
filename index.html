@@ -1086,6 +1086,78 @@ td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;w
 .rst9 .row{flex-wrap:nowrap}
 .wmbtn{margin:6px 0 12px}
 .wmleg{justify-content:flex-end}
+
+/* ===== v17: 홈 다시 정리 (.home10) ===== */
+.home10{max-width:1000px}
+.t10{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:6px 2px 22px}
+.t10d{font-size:13px;font-weight:700;color:var(--ink-3)}
+.t10 h1{font-size:28px;font-weight:800;letter-spacing:-.04em;margin-top:3px}
+.dd10{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 16px;box-shadow:var(--sh);font:inherit;color:inherit;flex:none}
+.dd10 small{font-size:12px;font-weight:700;color:var(--ink-3)}
+.dd10 b{font-size:17px;font-weight:800;color:var(--c0);letter-spacing:-.02em}
+.dd10.ghost{cursor:pointer;border-style:dashed}.dd10.ghost b{color:var(--pri)}
+.g10{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;margin-bottom:28px}
+.c10{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--sh)}
+.today10{position:relative;overflow:hidden;padding:22px 24px;display:flex;flex-direction:column;gap:10px}
+.today10::after{content:"";position:absolute;right:-60px;top:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--pri) 16%,transparent),transparent 70%);pointer-events:none}
+.tdh{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:750;color:var(--pri)}
+.tdi{width:30px;height:30px;border-radius:10px;background:var(--pri-s);display:grid;place-items:center}
+.tdn{display:flex;align-items:baseline;gap:4px;margin-top:2px}
+.tdn b{font-size:46px;font-weight:850;letter-spacing:-.05em;line-height:1}
+.tdn span{font-size:18px;font-weight:700;color:var(--ink-2)}
+.tdn.done b{font-size:28px;letter-spacing:-.03em}
+.tdsp{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--ink-2)}
+.tdsp span{display:inline-flex;align-items:center;gap:6px}
+.tdsp i{width:8px;height:8px;border-radius:50%}.tdsp .d1{background:var(--pri)}.tdsp .d2{background:var(--good)}.tdsp .d3{background:var(--bad)}
+.tdm{font-size:13.5px;color:var(--ink-3)}
+.tdb{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px;position:relative;z-index:1}
+.me10{display:flex;align-items:center;gap:18px;padding:20px 22px}
+.ring10{--p:0;width:112px;height:112px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--good) calc(var(--p)*1%),var(--sunk) 0)}
+.ring10>div{width:90px;height:90px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring10 b{font-size:26px;font-weight:850;letter-spacing:-.04em;line-height:1.1}
+.ring10 small{font-size:12px;color:var(--ink-3);font-weight:650}
+.me10t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.me10t>small{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.me10t>b{font-size:18px;font-weight:800;letter-spacing:-.03em}
+.me10s{display:flex;gap:12px;font-size:13.5px;color:var(--ink-2);margin:4px 0 6px}
+.me10s b{color:var(--ink)}
+.xp10{display:block;height:6px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.xp10 i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pri),#A78BFA)}
+.me10t em{font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.s10{font-size:17px;font-weight:800;letter-spacing:-.03em;margin:0 4px 12px}
+.s10h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.s10h>span{font-size:13px;color:var(--ink-3);margin-right:4px}
+.go10{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:28px}
+.go10 a{display:flex;flex-direction:column;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s}
+.go10 a:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.gi10{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin-bottom:8px}
+.go10 .k1 .gi10{background:var(--c0-s);color:var(--c0)}.go10 .k2 .gi10{background:var(--mid-s);color:var(--mid)}.go10 .k3 .gi10{background:var(--c1-s);color:var(--c1)}.go10 .k4 .gi10{background:var(--c2-s);color:var(--c2)}
+.go10 b{font-size:15.5px;font-weight:800}
+.go10 small{font-size:12.5px;color:var(--ink-3)}
+.subj10{padding:6px 8px;margin-bottom:16px}
+.sr10{display:flex;align-items:center;gap:14px;padding:14px 12px;border-radius:14px;transition:background .12s}
+.sr10+.sr10{border-top:1px solid var(--line);border-radius:0 0 14px 14px}
+.sr10:hover{background:var(--hover)}
+.sl10{width:38px;height:38px;border-radius:12px;background:var(--ds);color:var(--dc);display:grid;place-items:center;font-weight:850;font-size:16px;flex:none}
+.sm10{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.st10{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.st10 b{font-size:15.5px;font-weight:800}.st10 .num{font-size:14px;font-weight:800;color:var(--dc)}
+.sb10{display:flex;height:7px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.sb10 .k{background:var(--dc)}.sb10 .l{background:color-mix(in srgb,var(--dc) 32%,transparent)}
+.sm10 small{font-size:12.5px;color:var(--ink-3)}
+.sr10>.ic{color:var(--ink-3)}
+@media (max-width:899px){
+  .home10{padding-top:18px}
+  .t10{align-items:center;margin-bottom:16px}.t10 h1{font-size:23px}
+  .g10{grid-template-columns:minmax(0,1fr);gap:10px;margin-bottom:22px}
+  .today10{padding:20px}
+  .tdb .btn{flex:1}
+  .me10{padding:16px 18px}.ring10{width:92px;height:92px}.ring10>div{width:74px;height:74px}.ring10 b{font-size:21px}
+  .go10{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:22px}
+}
+@media (max-width:899px){.go10{gap:8px}.go10 a{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;padding:12px 14px}.go10 .gi10{grid-row:1/3;margin:0;width:36px;height:36px}.go10 b{font-size:14.5px;line-height:1.3}.go10 small{line-height:1.3}}
+.me10s{flex-wrap:wrap;gap:4px 12px}.me10s span,.me10t>b,.me10t em{white-space:nowrap}
+@media (min-width:900px) and (max-width:1180px){.g10{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}.me10{gap:14px;padding:18px}.ring10{width:88px;height:88px}.ring10>div{width:70px;height:70px}.ring10 b{font-size:20px}.me10t>b{font-size:16px}}
 </style>
 </head>
 <body>
@@ -1553,45 +1625,55 @@ function weakMap(){return DOCS.map((dn0,d)=>`<div class="wm" style="--dc:${DC[d]
 let WMOPEN=false;
 VIEW.home=function(m){
   const all=counts(ALL()),due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,dd=ddays(),L=lvOf(S.xp||0),now=new Date();
-  const ring=(c,sz,col)=>{const r=(sz-8)/2,Lc=2*Math.PI*r;return `<svg class="ring8" width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" aria-hidden="true"><circle cx="${sz/2}" cy="${sz/2}" r="${r}" stroke-width="7" class="r0"/><circle cx="${sz/2}" cy="${sz/2}" r="${r}" stroke-width="7" stroke="${col}" stroke-dasharray="${c.k/(c.all||1)*Lc} ${Lc}" stroke-linecap="round"/></svg>`;};
-  const nq=GQ?Object.keys(GQ).length:0,nt=TB.length,pl=planInfo();
-  m.innerHTML=`<div class="page home9">
-    <header class="h9top">
-      <div class="h9hi"><p class="h9date">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</p><h1>${esc(ME.id)}님, 반가워요</h1><p class="h9sub">오늘도 한 장씩 쌓아 볼까요?</p></div>
-      <div class="h9chips">
-        ${dd!=null?`<div class="h9c dd9"><small>시험까지</small><b class="num">${dlabel(dd)}</b></div>`:`<button class="h9c dd9 ghost" id="hdd"><small>시험일</small><b>정하기</b></button>`}
-        <div class="h9c goal9"><span class="gring" style="--p:${Math.min(100,todayN()/goalN()*100)}"><b class="num">${Math.min(999,todayN())}</b></span><span class="gtx"><small>오늘 목표 ${goalN()}장</small><b>${todayN()>=goalN()?"달성! 🎉":`${goalN()-todayN()}장 남음`}</b><em>${streak()?`🔥 ${streak()}일 연속`:"오늘 시작해 볼까요?"}</em></span></div>
-        <div class="h9c lv9"><small>레벨</small><b class="num">Lv.${L.lv}</b><span class="xpb"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num">${(S.xp||0).toLocaleString()} XP</em></div>
-      </div>
+  const nq=GQ?Object.keys(GQ).length:0,nt=TB.length,pl=planInfo(),tn=todayN(),gn=goalN(),gp=Math.min(100,tn/gn*100),stk=streak();
+  const hr=now.getHours(),hi=hr<6?"늦은 밤에도 힘내요":hr<12?"좋은 아침이에요":hr<18?"오후도 힘내요":"오늘 하루 마무리해요";
+  const todo=pl?due+pl.left:due;
+  m.innerHTML=`<div class="page home10">
+    <header class="t10">
+      <div><p class="t10d">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</p><h1>${esc(ME.id)}님, ${hi}</h1></div>
+      ${dd!=null?`<span class="dd10"><small>시험까지</small><b class="num">${dlabel(dd)}</b></span>`:`<button class="dd10 ghost" id="hdd"><small>시험일</small><b>정하기</b></button>`}
     </header>
-    <section class="h9today">
-      <div class="h9tl"><span class="h9ti">${ico("today",26)}</span>
-        <div><small>${pl?`오늘 계획 · 시험까지 ${pl.dd}일`:"오늘 할 일"}</small><h2>${pl?`복습 <b class="num">${due.toLocaleString()}</b> + 새 카드 <b class="num">${pl.left}</b>장`:due?`복습할 카드 <b class="num">${due.toLocaleString()}</b>장`:"오늘 복습은 끝났어요"}</h2>
-          <p>${pl?`남은 새 카드 ${pl.nAll.toLocaleString()}장을 하루 ${pl.per}장씩 나눴어요`:due?"잊기 전에 다시 보면 오래 기억돼요":"설정에서 시험일을 정하면 하루 계획을 세워 드려요"}${wr?` · 틀린 카드 <b class="num">${wr}</b>장`:""}</p></div></div>
-      <div class="h9tr">${pl&&(due||pl.left)?`<button class="btn pri lg" id="hplan">${ico("play",16)}계획대로 시작</button>`:due?`<button class="btn pri lg" id="hdue">${ico("play",16)}복습 시작</button>`:`<a class="btn pri lg" href="#/fc">${ico("play",16)}새 카드 외우기</a>`}${wr?`<button class="btn lg" id="hwr">틀린 카드</button>`:""}</div>
-    </section>
-    <section class="h9go">
-      <a class="g9 c1" href="#/fc"><span class="g9i">${ico("cards",22)}</span><span class="g9t"><b>플래시카드</b><small>${all.all.toLocaleString()}장 · 간격 반복으로 외우기</small></span>${ico("arrow",18)}</a>
-      <a class="g9 c2" href="#/gichul"><span class="g9i">${ico("file",22)}</span><span class="g9t"><b>기출</b><small>${nq?nq+"문항 · ":""}2009~2026 소주제별</small></span>${ico("arrow",18)}</a>
-      <a class="g9 c3" href="#/table"><span class="g9i">${ico("grid",22)}</span><span class="g9t"><b>표</b><small>${nt?nt+"개 · ":""}가리고 맞히기</small></span>${ico("arrow",18)}</a>
-    </section>
-    <div class="h9sec"><h2>과목별 진도</h2><span class="muted small num">전체 ${pct(all)}% 외움 · ${all.k.toLocaleString()} / ${all.all.toLocaleString()}장</span></div>
-    <section class="h9subj">${DOCS.map((d,i)=>{const c=counts(docIdx(i));return `<a class="s9" href="#/fc" data-d="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}">
-      <span class="s8r">${ring(c,58,"var(--dc)")}<b class="num">${pct(c)}%</b></span>
-      <span class="s9t"><b>${esc(d)}</b><small class="num">${c.k.toLocaleString()} / ${c.all.toLocaleString()}장 외움</small>
-        <span class="s9bar"><i class="k" style="width:${c.k/(c.all||1)*100}%"></i><i class="l" style="width:${c.l/(c.all||1)*100}%"></i></span>
-        <small class="s9m">대주제 ${CH[i].length}개${c.due?` · 복습 ${c.due}장`:""}</small></span>${ico("chev",18)}</a>`;}).join("")}</section>
+    <div class="g10">
+      <section class="c10 today10">
+        <div class="tdh"><span class="tdi">${ico("today",20)}</span><span>${pl?`오늘 계획 · 시험까지 ${pl.dd}일`:"오늘 할 일"}</span></div>
+        ${todo?`<div class="tdn"><b class="num">${todo.toLocaleString()}</b><span>장</span></div>
+          <div class="tdsp">${due?`<span><i class="d1"></i>복습 <b class="num">${due.toLocaleString()}</b></span>`:""}${pl&&pl.left?`<span><i class="d2"></i>새 카드 <b class="num">${pl.left}</b></span>`:""}${wr?`<span><i class="d3"></i>틀린 카드 <b class="num">${wr}</b></span>`:""}</div>
+          <p class="tdm">${pl?`남은 새 카드 ${pl.nAll.toLocaleString()}장을 하루 ${pl.per}장씩 나눴어요`:"잊기 전에 다시 보면 오래 기억돼요"}</p>`
+        :`<div class="tdn done"><b>오늘 할 일 끝!</b></div><p class="tdm">${pl?"오늘 계획을 모두 마쳤어요. 더 해 볼까요?":"설정에서 시험일을 정하면 하루 계획을 세워 드려요"}</p>`}
+        <div class="tdb">${pl&&todo?`<button class="btn pri lg" id="hplan">${ico("play",15)}계획대로 시작</button>`:due?`<button class="btn pri lg" id="hdue">${ico("play",15)}복습 시작</button>`:`<a class="btn pri lg" href="#/fc">${ico("play",15)}새 카드 외우기</a>`}${wr?`<button class="btn lg" id="hwr">틀린 카드만</button>`:""}</div>
+      </section>
+      <section class="c10 me10">
+        <div class="ring10" style="--p:${gp}"><div><b class="num">${tn}</b><small>/ ${gn}장</small></div></div>
+        <div class="me10t">
+          <small>오늘 목표</small><b>${tn>=gn?"달성했어요 🎉":`${gn-tn}장 남았어요`}</b>
+          <div class="me10s"><span>🔥 <b class="num">${stk}</b>일 연속</span><span>⭐ Lv.<b class="num">${L.lv}</b></span></div>
+          <span class="xp10"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num">다음 레벨까지 ${L.need-L.cur} XP</em>
+        </div>
+      </section>
+    </div>
+    <h2 class="s10">바로 가기</h2>
+    <nav class="go10">
+      <a href="#/fc" class="k1"><span class="gi10">${ico("cards",20)}</span><b>플래시카드</b><small>${all.all.toLocaleString()}장</small></a>
+      <a href="#/gichul" class="k2"><span class="gi10">${ico("file",20)}</span><b>기출</b><small>${nq?nq+"문항":"2009~2026"}</small></a>
+      <a href="#/table" class="k3"><span class="gi10">${ico("grid",20)}</span><b>표</b><small>${nt?nt+"개":"가리고 맞히기"}</small></a>
+      <a href="#/search" class="k4"><span class="gi10">${ico("search",20)}</span><b>찾기</b><small>모든 카드</small></a>
+    </nav>
+    <div class="s10h"><h2 class="s10">과목별 진도</h2><span class="num">${pct(all)}% · ${all.k.toLocaleString()} / ${all.all.toLocaleString()}장</span></div>
+    <section class="c10 subj10">${DOCS.map((d,i)=>{const c=counts(docIdx(i));return `<a class="sr10" href="#/fc" data-d="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}">
+      <span class="sl10">${DLET[i]}</span>
+      <span class="sm10"><span class="st10"><b>${esc(d)}</b><span class="num">${pct(c)}%</span></span>
+        <span class="sb10"><i class="k" style="width:${c.k/(c.all||1)*100}%"></i><i class="l" style="width:${c.l/(c.all||1)*100}%"></i></span>
+        <small class="num">${c.k.toLocaleString()} / ${c.all.toLocaleString()}장 외움${c.due?` · 복습 ${c.due}장`:""}</small></span>${ico("chev",16)}</a>`;}).join("")}</section>
     <button class="optbtn wmbtn ${WMOPEN?"open":""}" id="wmt" aria-expanded="${WMOPEN}"><span class="ob1">약점 지도</span><span class="ob2">소주제별로 자주 틀리는 곳을 색으로 보여 줘요</span><span class="obc">${ico("chev",16)}</span></button>
     ${WMOPEN?`<div class="h9sec wmleg"><span class="wleg"><i class="w3"></i>자주 틀림<i class="w2"></i>가끔 틀림<i class="w1"></i>잘함<i class="n"></i>아직</span></div>
     <section class="wmap">${weakMap()}</section>`:""}
   </div>`;
-  const hd=m.querySelector("#hdue");if(hd)hd.onclick=e=>{e.preventDefault();loadSC();SC.sp="due";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
-  const hp=m.querySelector("#hplan");if(hp)hp.onclick=e=>{e.preventDefault();loadSC();SC.sp="plan";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
+  const run=sp=>e=>{e.preventDefault();loadSC();SC.sp=sp;saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
+  const on=(q,f)=>{const b=m.querySelector(q);if(b)b.onclick=f;};
+  on("#hdue",run("due"));on("#hplan",run("plan"));on("#hwr",run("wrong"));on("#hdd",()=>go("#/set"));
   m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const [d,k,t]=b.dataset.w.split(",").map(Number);loadSC();SC.sp="";SC.d=d;SC.k=k;SC.t=t;saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");});
-  m.querySelector("#wmt").onclick=()=>{WMOPEN=!WMOPEN;const y=window.scrollY;VIEW.home(m);window.scrollTo({top:y});};
-  const hw=m.querySelector("#hwr");if(hw)hw.onclick=e=>{e.preventDefault();loadSC();SC.sp="wrong";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
-  const hx=m.querySelector("#hdd");if(hx)hx.onclick=()=>go("#/set");
-  m.querySelectorAll(".s9[data-d]").forEach(a=>a.onclick=e=>{e.preventDefault();loadSC();SC.sp="";SC.d=+a.dataset.d;SC.k=null;SC.t=null;saveSC();FCRUN=false;go("#/fc");});
+  on("#wmt",()=>{WMOPEN=!WMOPEN;const y=window.scrollY;VIEW.home(m);window.scrollTo({top:y});});
+  m.querySelectorAll(".sr10[data-d]").forEach(a=>a.onclick=e=>{e.preventDefault();loadSC();SC.sp="";SC.d=+a.dataset.d;SC.k=null;SC.t=null;saveSC();FCRUN=false;go("#/fc");});
 };
 
 /* 플래시카드: 시작 전에 과목 → 대주제 → 소주제 고르기 */
