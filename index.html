@@ -660,6 +660,7 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 .sheet.wide .qsplit .qpage{max-width:none;max-height:none;margin:0 auto 8px}
 .sheet.wide .qsplit .qpages a{display:block}
 @media (max-width:899px){.sheet.wide .qsplit .qpages{max-height:60dvh}.szoom input{width:80px}}
+.qcls{font-size:12px;font-weight:700;color:var(--dc,var(--pri));background:var(--ds,var(--pri-s));border-radius:99px;padding:2px 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
 </style>
 </head>
 <body>
@@ -863,9 +864,9 @@ VIEW.table=function(m){
 };
 /* 기출 */
 VIEW.gichul=function(m){
-  const sc=curScope(false),items=GQ?qpItems(sc.idx):[];
+  const sc=curScope(false),items=GQ?gItems(sc):[];
   m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("기출")}
-    <p class="pmeta muted small">${esc(sc.title)} · 연결된 기출 ${items.length}개 (2014~2026 교육과정 A·B)</p>
+    <p class="pmeta muted small">${esc(sc.title)} · 기출 하위 물음 ${items.length}개 (2014~2026 교육과정 A·B 전체를 소주제로 분류)</p>
     <section id="gbody"></section></div>`;
   bindPicker(m);
   const b=m.querySelector("#gbody");
@@ -1100,6 +1101,18 @@ function fcChooser(m){
 /* ---------- 기출: 창 높이 고정 · 사진만 스크롤 · 크기 조절 · 소문항(①②)별 답안 쓰기 ---------- */
 let QPI={key:"",pos:0,open:false,typed:{},more:false};
 let QZ=100;try{QZ=+localStorage.getItem(SBASE+":qz")||100;}catch(e){}
+/* 기출 하위 물음을 소주제로: q.cls[하위물음]=["대주제|소주제",...] (없으면 연결된 카드로) */
+let TNAME=null;
+function tpos(name){if(!TNAME){TNAME={};CH.forEach((chs,d)=>chs.forEach((ch,k)=>ch.topics.forEach((tp,t)=>TNAME[ch.name+"|"+tp.name]=[d,k,t])));}return TNAME[name];}
+function gItems(sc){
+  const inSc=p=>p&&p[0]===sc.d&&(sc.k==null||p[1]===sc.k)&&(sc.t==null||p[2]===sc.t);
+  const idxSet=new Set(sc.idx),out=[];
+  for(const qid in GQ){const q=GQ[qid];for(const [n] of q.subs){
+    const cl=q.cls&&q.cls[n];
+    if(cl&&cl.length){if(cl.some(t=>inSc(tpos(t))))out.push([qid,n]);}
+    else if((q.links[n]||[]).some(c=>CID[c]!=null&&idxSet.has(CID[c])))out.push([qid,n]);}}
+  return out.sort((a,b)=>qSort(a[0],b[0])||a[1].localeCompare(b[1]));
+}
 function qpItems(idx){const set=new Map();idx.forEach(i=>gOf(i).forEach(([q,n])=>set.set(q+"|"+n,[q,n])));return [...set.values()].sort((a,b)=>qSort(a[0],b[0])||a[1].localeCompare(b[1]));}
 function gichulIn(box,sc,items){
   if(QPI.key!==sc.key)QPI={key:sc.key,pos:0,open:false,typed:{},more:false};
@@ -1109,7 +1122,7 @@ function gichulIn(box,sc,items){
   const cards=(q.links[n]||[]).map(c=>CID[c]).filter(x=>x!=null);
   box.innerHTML=`<div class="qv">
     <div class="qtop">
-      <div class="qtl"><span class="tag gtag">${esc(q.y.replace("추"," 추시"))}학년도 ${q.s} ${q.no}번 ${esc(n)}</span>${q.pts?`<span class="muted small">${q.pts}점</span>`:""}
+      <div class="qtl"><span class="tag gtag">${esc(q.y.replace("추"," 추시"))}학년도 ${q.s} ${q.no}번 ${esc(n)}</span>${q.pts?`<span class="muted small">${q.pts}점</span>`:""}${q.cls&&q.cls[n]?`<span class="qcls">${q.cls[n].slice(0,2).map(t=>esc(t.split("|")[1])).join(" · ")}</span>`:""}
         <span class="sp"></span>
         <div class="zoom"><span>크기</span><input type="range" id="qz" min="50" max="250" step="10" value="${QZ}" aria-label="문제 사진 크기"><b class="num" id="qzv">${QZ}%</b></div></div>
       <div class="qtr"><button class="iconbtn sm" id="qpp" aria-label="이전 문제" ${s.pos?"":"disabled"}>${ico("left",16)}</button>
