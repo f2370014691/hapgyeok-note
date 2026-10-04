@@ -650,6 +650,8 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 .gnote .gi{font-size:24px}.gnote div{flex:1;min-width:0;display:flex;flex-direction:column}
 .gnote b{font-size:14.5px;color:color-mix(in srgb,var(--mid) 55%,var(--ink))}.gnote small{font-size:12.5px;color:var(--ink-2)}
 .gnote.end{width:100%;text-align:left;margin-top:4px}
+.qsub .slot{margin-top:8px}
+.qsub .qbtns{margin-top:10px}
 </style>
 </head>
 <body>
@@ -1171,12 +1173,13 @@ function openQ(qid,hl,others){
       <button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
     <div class="sbd"><div class="qsplit">
       <div class="qpages" id="qpages"><div class="qph"></div></div>
-      <div class="qright">${q.subs.map(([n,ask,ans])=>`<div class="qsub ${hl&&hl.includes(n)?"hl":""}"><div class="qask"><b>${esc(n)}</b> ${esc(ask)}</div>${ansBox(ask,ans)}</div>`).join("")}</div>
+      <div class="qright">${q.subs.map(([n,ask,ans])=>`<div class="qsub ${hl&&hl.includes(n)?"hl":""}" data-sub="${esc(n)}">${subWrite(qid,n,ask,ans)}</div>`).join("")}</div>
     </div></div></div>`;
   document.body.appendChild(el);document.body.classList.add("noscroll");
   el.onclick=e=>{if(e.target===el)closeQ();};
   el.querySelector("#qclose").onclick=closeQ;
   const oth=el.querySelector("#qoth");if(oth)oth.onchange=()=>{const o=oth.value;openQ(o,(SES&&SES.q[SES.pos]!=null)?gOf(SES.q[SES.pos]).filter(y=>y[0]===o).map(y=>y[1]):[],others);};
+  bindSubWrite(el,qid,q);
   el.querySelectorAll(".ashow").forEach(b=>b.onclick=()=>{const x=b.closest(".abox");x.classList.toggle("on");b.textContent=x.classList.contains("on")?"답안 가리기":"민쌤 답안 보기";});
   (async()=>{const box=el.querySelector("#qpages");const keys=q.img?[one||q.img.full]:q.pages;
     try{const urls=await Promise.all(keys.map(gImg));box.innerHTML=urls.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img class="qpage" src="${u}" alt="${esc(qLabel(qid))} 시험지"></a>`).join("")+(one?`<p class="muted small center"><button class="linkbtn" id="qfull">문항 전체 보기</button></p>`:"");
@@ -1197,6 +1200,23 @@ function ansParts(ask,ans){
 function ansBox(ask,ans){
   const {slots,parts}=ansParts(ask,ans);
   return `<div class="abox ${ans?"":"empty"}">${slots.map((m,k)=>`<div class="aline">${m?`<span class="mk">${m}</span>`:""}<span class="av">${esc(parts[k])}</span></div>`).join("")}${ans?`<button class="ashow" type="button">민쌤 답안 보기</button>`:""}</div>`;
+}
+const QW={};   // 문항 창에서 쓴 답: {"문항|하위물음":{t:[...],open:bool}}
+function subWrite(qid,n,ask,ans){
+  const k=qid+"|"+n,st=QW[k]||(QW[k]={t:[],open:false}),ap=ansParts(ask,ans);
+  return `<div class="qask"><b>${esc(n)}</b> ${esc(ask)}</div>
+    ${ap.slots.map((mk,j)=>{const my=st.t[j]||"",tr=st.open&&my.trim()&&ap.parts[j]?typeScore(my,ap.parts[j]):null,ok=tr?tr.filter(y=>y.ok).length:0;
+      return `<div class="slot"><label class="qmy"><span>${mk?`<b class="mk8">${mk}</b>`:""}내 답안</span><textarea data-j="${j}" rows="${ap.slots.length>1?2:3}" placeholder="${mk?`${mk}의 답을 써 보세요`:"답안을 써 보세요"}">${esc(my)}</textarea></label>
+        ${st.open?`<div class="qans8"><span class="ql">모범답안</span><p>${esc(ap.parts[j]||"(답안 없음)")}</p>${tr?`<div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}<span class="sc8 ${ok>=tr.length*.8?"good":ok>=tr.length*.5?"mid":"bad"}">${ok}/${tr.length}</span></div>`:""}</div>`:""}</div>`;}).join("")}
+    ${ans?`<div class="qbtns"><button class="btn sm ${st.open?"":"pri"}" data-open="1">${st.open?"모범답안 가리기":"모범답안 보기"}</button></div>`:""}`;
+}
+function bindSubWrite(el,qid,q){
+  el.querySelectorAll("[data-sub]").forEach(box=>{
+    const n=box.dataset.sub,k=qid+"|"+n,sub=q.subs.find(x=>x[0]===n);
+    const keep=()=>{QW[k].t=[...box.querySelectorAll("textarea")].map(t=>t.value);};
+    box.querySelectorAll("textarea").forEach(t=>t.oninput=keep);
+    const b=box.querySelector("[data-open]");if(b)b.onclick=()=>{keep();QW[k].open=!QW[k].open;box.innerHTML=subWrite(qid,n,sub[1],sub[2]);bindSubWrite(el,qid,q);};
+  });
 }
 function closeQ(){const o=document.getElementById("qsheet");if(o)o.remove();document.body.classList.remove("noscroll");}
 document.addEventListener("keydown",e=>{if(document.getElementById("qsheet")){if(e.key==="Escape")closeQ();e.stopImmediatePropagation();}},true);
