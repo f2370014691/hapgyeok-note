@@ -1032,6 +1032,50 @@ td.ng .cw.typ .ti{border-color:var(--bad);background:var(--bad-s)}
 .h9c.goal9{justify-content:flex-start}
 @media (max-width:899px){.h9chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}.h9c.goal9{grid-column:1/-1;order:-1}.h9c{min-width:0}}
 .h9c.dd9{align-items:flex-start}
+
+/* ===== v16: 표 디자인 다듬기 · 정답/오답 색 뚜렷하게 ===== */
+.tbs{gap:14px}
+.tb{padding:0;border-radius:20px;border:1px solid var(--line);box-shadow:var(--sh)}
+.tbh{margin:0;padding:14px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--ds,var(--pri-s)) 55%,var(--surface)),var(--surface))}
+.tbh b{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:-.03em}
+.tbh b::before{content:"";width:4px;height:18px;border-radius:99px;background:var(--dc,var(--pri));flex:none}
+.tbw{padding:14px 16px 4px}
+.tt{border-collapse:separate;border-spacing:0;font-size:14.5px;line-height:1.6;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tt th{background:color-mix(in srgb,var(--dc,var(--pri)) 9%,var(--surface))!important;color:color-mix(in srgb,var(--dc,var(--pri)) 70%,var(--ink))!important;font-weight:800;font-size:13px;letter-spacing:0;padding:10px 12px!important;border:0!important;border-bottom:1px solid var(--line)!important;border-left:1px solid var(--line)!important}
+.tt th:first-child{border-left:0!important}
+.tt td{padding:10px 12px!important;border:0!important;border-top:1px solid var(--line)!important;border-left:1px solid var(--line)!important;background:var(--surface)}
+.tt td:first-child{border-left:0!important}
+.tt tbody tr:first-child td{border-top:0!important}
+.tt tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--sunk) 55%,var(--surface))}
+.tt td.rh{background:color-mix(in srgb,var(--dc,var(--pri)) 5%,var(--surface))!important;font-weight:750;color:var(--ink)}
+.tt tbody tr:hover td{background:color-mix(in srgb,var(--pri-s) 45%,var(--surface))}
+.tt strong{background:linear-gradient(transparent 62%,color-mix(in srgb,var(--hl) 85%,transparent) 62%)}
+.tbf{padding:8px 16px 14px;margin:0}
+
+/* 가리기 칸 */
+.hc9{inset:-5px -7px;border-radius:10px;border:1.5px dashed color-mix(in srgb,var(--dc,var(--pri)) 30%,var(--line-2));background:color-mix(in srgb,var(--dc,var(--pri)) 6%,var(--surface));color:color-mix(in srgb,var(--dc,var(--pri)) 55%,var(--ink-3))}
+.cw.hid:hover .hc9{border-style:solid}
+.cw.hid.on .cv{animation:czin .3s ease-out}
+
+/* 타이핑 칸: 기본 · 정답 · 오답 */
+.cw.typ .ti{inset:-5px -7px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);padding:4px 8px}
+.cw.typ .ti:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-s)}
+td.ok .cw.typ .ti{border:2px solid #12A150;background:#E3F8EA;color:#0B5D2E;font-weight:650;padding-right:28px}
+td.ng .cw.typ .ti{border:2px solid #E5484D;background:#FFE8E8;color:#9B1C1F;font-weight:650;padding-right:28px;text-decoration:line-through;text-decoration-color:color-mix(in srgb,#E5484D 55%,transparent)}
+td.ok .cw.typ::after,td.ng .cw.typ::after{position:absolute;top:50%;right:-1px;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:900;color:#fff;pointer-events:none;z-index:1}
+td.ok .cw.typ::after{content:"✓";background:#12A150}
+td.ng .cw.typ::after{content:"✗";background:#E5484D}
+td.ok .cw.typ.peek::after,td.ng .cw.typ.peek::after,.tt.rev td .cw.typ::after{display:none}
+:root[data-theme="dark"] td.ok .cw.typ .ti{background:#123524;color:#7EE2A8;border-color:#2FBF71}
+:root[data-theme="dark"] td.ng .cw.typ .ti{background:#3B1618;color:#FF9A9D;border-color:#F2555A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) td.ok .cw.typ .ti{background:#123524;color:#7EE2A8;border-color:#2FBF71}:root:not([data-theme="light"]) td.ng .cw.typ .ti{background:#3B1618;color:#FF9A9D;border-color:#F2555A}}
+.tt.rev td.ok .cw .cv{color:#12A150;font-weight:700}
+.tt.rev td.ng .cw .cv{color:#E5484D;font-weight:700}
+.tsc{font-weight:750;color:var(--ink-2)!important}
+@media (max-width:899px){.tbw{padding:10px 10px 2px}.tbh{padding:12px 14px}.tbf{padding:6px 12px 12px}}
+td.ok .cw.typ .ti,td.ng .cw.typ .ti{padding-right:8px}
+td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;width:19px;height:19px;font-size:11px;box-shadow:0 0 0 2px var(--surface)}
+.cw.typ .ti{scrollbar-width:none}.cw.typ .ti::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
