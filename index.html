@@ -3023,7 +3023,7 @@ function hyCurDocs(){const D=hyG(HY.k==="area"?"영역":"총론");return HY.d<0?
 function hyTitle(){const ds=hyCurDocs();return HY.d<0?(HY.k==="area"?"영역별 목표 및 내용 전체":"총론 전체"):(HY.k==="area"?ds[0].title+" 목표 및 내용":ds[0].title);}
 /* 여러 자료를 이어 볼 때 같은 큰 제목(Ⅰ. 구성방향 등)은 한 번만 */
 function hyLines(ds){const L=[];let lh="";ds.forEach(d=>d.lines.forEach(x=>{if(x.h){if(x.h===lh)return;lh=x.h;}L.push(x);}));return L;}
-const HYM=[["see","👀","보며 타이핑","문장을 보며 한 줄씩 따라 치기","t1"],["type","⌨️","안 보고 타이핑","안 보고 한 줄씩 그대로","t2"],["fill","✏️","빈칸 채우기","핵심어를 직접 쓰기","t3"],["click","👆","빈칸 클릭","가려진 핵심어 눌러 확인","t4"]];
+const HYM=[["see","👀","보며 타이핑","문장을 보며 한 줄씩 따라 치기","t1"],["type","⌨️","안 보고 타이핑","안 보고 한 줄씩 그대로","t2"],["click","👆","빈칸 클릭","가려진 핵심어 눌러 확인","t4"],["fill","✏️","빈칸 채우기","핵심어를 직접 쓰기","t3"]];
 const hyCnt=ds=>{const L=hyLines(ds).filter(x=>x.t!=null);return{l:L.length,b:L.reduce((a,x)=>a+hyBlanks(x.t).length,0)};};
 function hyChooser(m){
   const pg="heisil",steps=["k","d","md"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
