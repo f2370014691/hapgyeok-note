@@ -2140,7 +2140,7 @@ function nextTopic(){if(SC.sp||SC.k==null)return null;const tps=CH[SC.d][SC.k].t
   if(SC.k<CH[SC.d].length-1)return ()=>{SC.k++;SC.t=SC.t==null?null:0;saveSC();SES=null;renderRoute();};return null;}
 function renderRoute(){
   loadSC();const pv=route.v;route=parseHash();if(route.v==="fc"&&pv!=="fc"&&!FCKEEP)FCRUN=false;FCKEEP=false;if(PGRUN[route.v]!=null&&pv!==route.v&&!PGKEEP)PGRUN[route.v]=false;PGKEEP=false;if(pv!==route.v&&WZ0[route.v])WZ[route.v]=WZ0[route.v];buildIdx();renderSide();
-  const m=document.getElementById("main");document.body.classList.remove("fclock");document.body.classList.remove("glock","grun");{const tb=document.getElementById("tabbar");document.documentElement.style.setProperty("--tbh",((tb&&tb.offsetHeight)||0)+"px");}(VIEW[route.v]||VIEW.fc)(m);window.scrollTo({top:0});
+  const m=document.getElementById("main");document.body.classList.remove("fclock");document.body.classList.remove("glock","grun");{const tb=document.getElementById("tabbar");document.documentElement.style.setProperty("--tbh",((tb&&tb.offsetHeight)||0)+"px");}if(route.v==="search"&&window._lastV!=="search"){loadSC();SC.sa=true;SC.sp="";}window._lastV=route.v;(VIEW[route.v]||VIEW.fc)(m);window.scrollTo({top:0});
 }
 function setSync(st){cloudState=st;document.querySelectorAll(".sync").forEach(el=>{
   el.className="sync "+st;el.title=st==="ok"?"서버에 저장됨":st==="err"?"저장 실패 · 다시 시도 중":st==="big"?"기록이 너무 커요":"저장 중…";
