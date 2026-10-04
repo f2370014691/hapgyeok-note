@@ -1918,6 +1918,13 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .sin input{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;padding:0;border:0;pointer-events:none}
 .sin .btn{flex:none}
 @media (max-width:699px){.sbox i.spc{width:8px}}
+/* v61: 연결된 카드 — 민쌤/하쌤 표시 */
+.qpcard{position:relative}
+.qpcard .dkb{display:inline-block;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;margin-bottom:4px;background:#E0E7FF;color:#4338CA}
+.qpcard.h26 .dkb{background:#FCE7F3;color:#BE185D}
+.qpcard.h26{border-left:3px solid #EC4899}.qpcard.m27{border-left:3px solid #6366F1}
+:root[data-theme="dark"] .qpcard .dkb{background:#2A2656;color:#C7D2FE}:root[data-theme="dark"] .qpcard.h26 .dkb{background:#4A1D35;color:#F9A8D4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .qpcard .dkb{background:#2A2656;color:#C7D2FE}:root:not([data-theme="light"]) .qpcard.h26 .dkb{background:#4A1D35;color:#F9A8D4}}
 </style>
 </head>
 <body>
@@ -2942,9 +2949,9 @@ function gichulIn(box,sc,items){
         ${q.mc?mcHTML(q,sub[2],s.pick[tk],s.open):(()=>{const ev=s.open?evalSlots(ap,my):null;return penTg()+ap.slots.map((mk,k)=>slotHTML(ap,mk,k,my[k],s.open,ev,AL,"data-k",ap.slots.length>1?2:4,tk)).join("");})()}
         ${s.open&&!q.mc?(()=>{const ev=evalSlots(ap,my);let tt=0,oo=0;ev.forEach(e=>{if(e.tr){tt+=e.tr.length;oo+=e.tr.filter(y=>y.ok).length;}});const sug=tt?(oo/tt>=.8?1:0):null,cur=QR(tk);
           return `<div class="qgr"><span>채점</span><button class="qgb ok ${cur&&cur.r===1?"on":""} ${!cur&&sug===1?"sug":""}" data-qr="1">⭕ 맞았어요</button><button class="qgb ng ${cur&&cur.r===0?"on":""} ${!cur&&sug===0?"sug":""}" data-qr="0">❌ 틀렸어요</button><button class="btn pri sm" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button></div>`;})():""}
-        <div class="qbtns">${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 ${cards.length}개 더보기`}</button>`:""}<span class="qbr">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button>${q.mc?`<button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button>`:""}`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진":"📖 해설"}</button>`:""}</span></div>
+        <div class="qbtns">${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 ${cards.length}개 더보기${(()=>{const h=cards.filter(i=>deckOf(C[i])==="h26").length,mm=cards.length-h;return h&&mm?` (민쌤 ${mm} · 하쌤 ${h})`:h?" (하쌤)":" (민쌤)";})()}`}</button>`:""}<span class="qbr">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button>${q.mc?`<button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button>`:""}`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진":"📖 해설"}</button>`:""}</span></div>
         ${cards.length?`
-          ${s.more?cards.map(i=>`<div class="qpcard"><b>${fmt(C[i][5])}</b><div>${fmt(C[i][6])}</div></div>`).join(""):""}`:""}
+          ${s.more?cards.map(i=>`<div class="qpcard ${deckOf(C[i])}"><span class="dkb">${deckOf(C[i])==="h26"?"하쌤":"민쌤"}</span><b>${fmt(C[i][5])}</b><div>${fmt(C[i][6])}</div></div>`).join(""):""}`:""}
       </div>
     </div></div>`;
   const key=(q.img&&q.img.subs&&q.img.subs[n])||(q.img&&q.img.full)||q.pages[0];
