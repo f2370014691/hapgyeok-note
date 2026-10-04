@@ -2021,7 +2021,7 @@ function gichulIn(box,sc,items){
           ${q.cls&&q.cls[n]?`<div class="qc9">${q.cls[n].slice(0,3).map(t=>`<span>${esc(t.split("|")[1])}</span>`).join("")}</div>`:""}</div>
         ${(()=>{const inS=new Set(items.filter(x=>x[0]===qid).map(x=>x[1])),out=q.subs.filter(x=>!inS.has(x[0]));return out.length?`<p class="qoth">이 문항의 다른 물음 ${out.length}개(${out.slice(0,4).map(x=>esc(x[0])).join(" ")}${out.length>4?" …":""})는 다른 소주제에 있어요 <button class="linkbtn" id="qothb">문항 전체 보기</button></p>`:"";})()}
         <div class="qask">${esc(sub[1])}</div>
-        ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.num?" · 순서는 상관없어요":""}</p>`:""}
+        ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.free?" · 순서는 상관없어요":""}</p>`:""}
         ${q.mc?mcHTML(q,sub[2],s.pick[tk],s.open):(()=>{const ev=s.open?evalSlots(ap,my):null;return penTg()+ap.slots.map((mk,k)=>slotHTML(ap,mk,k,my[k],s.open,ev,AL,"data-k",ap.slots.length>1?2:4,tk)).join("");})()}
         <div class="qbtns">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button><button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 문제 ${ico("chev",15)}</button>`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진 보기":"📖 해설 보기"}</button>`:""}</div>
         ${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 ${cards.length}개 더보기`} ${ico("chev",14)}</button>
@@ -2133,12 +2133,40 @@ const splitItems=a=>String(a||"").split(/\n|•|\s\/\s/).map(x=>x.replace(/^[\s\
 /* 물음이 답을 몇 개 요구하는지 보고 칸을 나눔. free = 순서 상관없이 채점 */
 function ansParts(ask,ans){
   ask=String(ask||"");ans=String(ans||"");
-  for(let g=0;g<MKS.length;g++){const mk=[...new Set([...ask].filter(ch=>MKS[g].includes(ch)))];
-    if(g===0){if(mk.length)return{slots:mk,parts:ans?mkSplit(mk,ans):mk.map(()=>"")};continue;}
-    if(mk.length>=2&&mk.filter(m=>ans.includes(m)).length>=2)return{slots:mk,parts:mkSplit(mk,ans)};}
+  // 답안의 • 항목들
+  const bul=ans.split("•").map(x=>x.replace(/^[\s\/]+|[\s\/]+$/g,"")).filter(Boolean);
+  for(let g=0;g<MKS.length;g++){const mk=[...new Set([...ask].filter(ch=>MKS[g].includes(ch)))],inA=mk.filter(x=>ans.includes(x));
+    if(g===0){if(!mk.length)continue;
+      if(!ans)return{slots:mk,parts:mk.map(()=>"")};
+      if(inA.length>=2&&inA.length<mk.length)return{slots:inA,parts:mkSplit(inA,ans)};   // ①~④ 중 답에 나온 것만
+      if(inA.length)return{slots:mk,parts:mkSplit(mk,ans)};
+      // 답안에 ①② 표시가 없으면 • 항목·줄·첫 쉼표로 나눔
+      const lines=ans.split("\n").map(x=>x.replace(/^[\s•]+/,"").trim()).filter(Boolean),a1=ans.replace(/^[\s•]+/,""),ci=a1.search(/,\s/);
+      const its=bul.length===mk.length?bul:lines.length===mk.length?lines:(mk.length===2&&bul.length<=1&&ci>0&&ci<=30)?[a1.slice(0,ci).trim(),a1.slice(ci+1).trim()]:null;
+      return its?{slots:mk,parts:its}:{slots:mk,parts:[ans.trim(),...mk.slice(1).map(()=>"")],whole:true};}
+    if(inA.length>=2)return{slots:inA,parts:mkSplit(inA,ans)};}
+  const one=/(?:^|[^\d])(1|한)\s*가지|하나만/.test(ask)&&!/각각/.test(ask);
+  // ㉠㉡ 등이 물음에 2개 이상 있는데 답안에는 기호가 없을 때: • 항목이나 쉼표로 같은 개수면 나눔
+  for(let g=1;g<MKS.length;g++){const mk=[...new Set([...ask].filter(ch=>MKS[g].includes(ch)))];
+    if(mk.length>=2&&!mk.some(x=>ans.includes(x))){
+      const cm=ans.replace(/^[\s•]+/,"").split(/\s*,\s*/).filter(Boolean);
+      const its=bul.length===mk.length?bul:cm.length===mk.length?cm:null;
+      if(its)return{slots:mk,parts:its};}}
+  // 답안 항목 머리에 ㉠㉡·ⓐⓑ 등이 붙어 있을 때 (물음은 '빈칸' 등으로만 말할 때)
+  if(bul.length>=2)for(let g=1;g<MKS.length;g++){const hd=bul.map(b=>MKS[g].includes(b[0])?b[0]:null);
+    if(hd.every(Boolean)&&new Set(hd).size===hd.length)return{slots:hd,parts:bul.map(b=>b.slice(1).replace(/^[\s:：]+/,"").trim())};}
   const m=ask.match(/(\d|두|세|네|다섯|여섯|일곱)\s*(?:가지|개)(?!월)/),N=m?(+m[1]||KNUM[m[1]]||0):0;
   if(N>=2&&N<=8){const its=splitItems(ans),ok=its.length>=N;
     return{slots:[...Array(N)].map((_,k)=>String(k+1)),parts:ok?[...its.slice(0,N-1),its.slice(N-1).join(" / ")]:[ans.trim(),...Array(N-1).fill("")],free:ok,num:true,whole:!ok};}
+  if(!one&&bul.length>=2){
+    // 이름표가 붙은 항목 (예: "B : 루소", "교사A : …", "공간: …")
+    const lb=bul.map(b=>{const x=b.match(/^([^:：\n]{1,10}?)\s*[:：]\s*([\s\S]+)$/);return x?[x[1].trim(),x[2].trim()]:null;});
+    if(lb.every(Boolean)&&new Set(lb.map(x=>x[0])).size===lb.length)return{slots:lb.map(x=>x[0]),parts:lb.map(x=>x[1]),lab:true};
+    return{slots:bul.map((_,k)=>String(k+1)),parts:bul,free:true,num:true};
+  }
+  // "~을 쓰고, ~을 서술하시오"처럼 할 일이 두 가지인데 답이 한 줄일 때: 첫 쉼표에서 나눔
+  if(!one&&/쓰고\s*,|쓰고 |밝히고|제시하고/.test(ask)){const a1=ans.replace(/^[\s•]+/,""),i=a1.search(/,\s/);
+    if(i>0&&i<=30)return{slots:["1","2"],parts:[a1.slice(0,i).trim(),a1.slice(i+1).trim()],num:true};}
   return{slots:[""],parts:[ans.trim()]};
 }
 /* 칸마다 비교할 모범답안 (순서 상관없으면 가장 잘 맞는 답과 짝지음, 같은 답 두 번은 안 됨) */
@@ -2192,7 +2220,7 @@ const QW={};   // 문항 창에서 쓴 답: {"문항|하위물음":{t:[...],open
 function subWrite(qid,n,ask,ans){
   const k=qid+"|"+n,st=QW[k]||(QW[k]={t:[],open:false}),ap=ansParts(ask,ans),q=QQ(qid),AL=ansL(q);
   return `<div class="qask"><b>${esc(n)}</b> ${esc(ask)}</div>
-    ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.num?" · 순서는 상관없어요":""}</p>`:""}
+    ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.free?" · 순서는 상관없어요":""}</p>`:""}
     ${q.mc?mcHTML(q,ans,st.pick,st.open):(()=>{const ev=st.open?evalSlots(ap,st.t):null;return penTg()+ap.slots.map((mk,j)=>slotHTML(ap,mk,j,st.t[j],st.open,ev,AL,"data-j",ap.slots.length>1?2:3,k)).join("");})()}
     ${ans?`<div class="qbtns"><button class="btn sm ${st.open?"":"pri"}" data-open="1">${st.open?AL+" 가리기":AL+" 보기"}</button></div>`:""}`;
 }
