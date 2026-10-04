@@ -652,6 +652,14 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 .gnote.end{width:100%;text-align:left;margin-top:4px}
 .qsub .slot{margin-top:8px}
 .qsub .qbtns{margin-top:10px}
+/* 기출 창: 크기 조절 + 사진 칸만 스크롤 */
+.shd{align-items:center}
+.szoom{position:static;margin-left:auto;box-shadow:none;background:var(--sunk);border:0}
+.shd select{margin-left:8px}
+.sheet.wide .qsplit .qpages{max-height:calc(92vh - 110px);overflow:auto;text-align:left;background:var(--sunk);padding:10px}
+.sheet.wide .qsplit .qpage{max-width:none;max-height:none;margin:0 auto 8px}
+.sheet.wide .qsplit .qpages a{display:block}
+@media (max-width:899px){.sheet.wide .qsplit .qpages{max-height:60dvh}.szoom input{width:80px}}
 </style>
 </head>
 <body>
@@ -1170,6 +1178,7 @@ function openQ(qid,hl,others){
   el.innerHTML=`<div class="sheet wide" role="dialog" aria-modal="true" aria-label="기출 문항">
     <div class="shd"><div><span class="ytag">${esc(q.y.replace("추"," 추시"))}학년도 · 교육과정 ${q.s}</span><h2>${q.no}번 <small>${q.pts?q.pts+"점":""}</small></h2></div>
       ${others&&others.length>1?`<select id="qoth" aria-label="다른 기출">${others.map(o=>`<option value="${esc(o)}" ${o===qid?"selected":""}>${esc(qLabel(o))}</option>`).join("")}</select>`:""}
+      <div class="zoom szoom"><span>크기</span><input type="range" id="sqz" min="50" max="250" step="10" value="${QZ}" aria-label="문제 사진 크기"><b class="num" id="sqzv">${QZ}%</b></div>
       <button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
     <div class="sbd"><div class="qsplit">
       <div class="qpages" id="qpages"><div class="qph"></div></div>
@@ -1180,9 +1189,10 @@ function openQ(qid,hl,others){
   el.querySelector("#qclose").onclick=closeQ;
   const oth=el.querySelector("#qoth");if(oth)oth.onchange=()=>{const o=oth.value;openQ(o,(SES&&SES.q[SES.pos]!=null)?gOf(SES.q[SES.pos]).filter(y=>y[0]===o).map(y=>y[1]):[],others);};
   bindSubWrite(el,qid,q);
+  {const z=el.querySelector("#sqz");z.oninput=()=>{QZ=+z.value;el.querySelector("#sqzv").textContent=QZ+"%";el.querySelectorAll(".qpage").forEach(im=>im.style.width=QZ+"%");try{localStorage.setItem(SBASE+":qz",QZ);}catch(e){}};}
   el.querySelectorAll(".ashow").forEach(b=>b.onclick=()=>{const x=b.closest(".abox");x.classList.toggle("on");b.textContent=x.classList.contains("on")?"답안 가리기":"민쌤 답안 보기";});
   (async()=>{const box=el.querySelector("#qpages");const keys=q.img?[one||q.img.full]:q.pages;
-    try{const urls=await Promise.all(keys.map(gImg));box.innerHTML=urls.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img class="qpage" src="${u}" alt="${esc(qLabel(qid))} 시험지"></a>`).join("")+(one?`<p class="muted small center"><button class="linkbtn" id="qfull">문항 전체 보기</button></p>`:"");
+    try{const urls=await Promise.all(keys.map(gImg));box.innerHTML=urls.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img class="qpage" style="width:${QZ}%" src="${u}" alt="${esc(qLabel(qid))} 시험지"></a>`).join("")+(one?`<p class="muted small center"><button class="linkbtn" id="qfull">문항 전체 보기</button></p>`:"");
       const f=box.querySelector("#qfull");if(f)f.onclick=()=>openQ(qid,[],others);}
     catch(x){box.innerHTML=`<p class="stem">${esc(q.stem)}</p>`;}})();
 }
