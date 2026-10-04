@@ -2018,6 +2018,64 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .admdel{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
 .admdel small{color:var(--ink-3);font-size:12px}
 .btn.dangerline{color:#DC2626;border-color:color-mix(in srgb,#EF4444 40%,transparent)}
+
+/* v69: 키우는 캐릭터 (달걀 → 병아리 → 닭) */
+.pet{display:block;overflow:visible}
+.pet .pbody{transform-origin:60px 105px}
+.pet.pidle .pbody{animation:pbob 2.4s ease-in-out infinite}
+.pet.ps0.pidle .pbody,.pet.ps1.pidle .pbody{animation:pwob 2.8s ease-in-out infinite}
+.pet .pblink{transform-box:fill-box;transform-origin:center;animation:pblink 4s infinite}
+.pet.pjump .pbody{animation:pjump .6s cubic-bezier(.3,1.6,.5,1)}
+.pet .psparkle{animation:ptw 1.6s ease-in-out infinite}
+@keyframes pbob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-3px) scale(1.02,.98)}}
+@keyframes pwob{0%,100%{transform:rotate(0)}20%{transform:rotate(-4deg)}40%{transform:rotate(3deg)}60%{transform:rotate(0)}}
+@keyframes pblink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes pjump{0%{transform:translateY(0)}40%{transform:translateY(-16px) scale(1.05)}100%{transform:translateY(0)}}
+@keyframes ptw{0%,100%{opacity:1}50%{opacity:.3}}
+.h9c.pet9{flex-direction:row;align-items:center;gap:10px;min-width:220px;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:transform .15s,box-shadow .15s}
+.h9c.pet9:hover{transform:translateY(-2px)}
+.pet9c{position:relative;flex:none;width:64px;height:64px}
+.pet9t{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+.pet9t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h9c.pet9 b{color:var(--pri)}
+.pfood{position:absolute;right:-6px;top:-4px;font-style:normal;font-size:11px;font-weight:800;background:#FFF3BF;color:#92400E;border-radius:999px;padding:1px 6px;box-shadow:var(--sh);animation:pbob 1.6s ease-in-out infinite}
+.lvb.petlv{display:inline-flex;align-items:center;gap:4px;border:0;font:inherit;font-weight:800;cursor:pointer;padding:2px 12px 2px 6px}
+.lvb.petlv .pet{margin:-2px 0}
+.petsh{max-width:640px}
+.petstage{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.petbig{position:relative;flex:none;border:0;background:radial-gradient(circle at 50% 60%,color-mix(in srgb,#FFD43B 22%,transparent),transparent 70%);border-radius:50%;padding:6px;cursor:pointer}
+.pheart{position:absolute;top:30%;font-style:normal;font-size:24px;pointer-events:none;animation:pheart 1s ease-out forwards}
+@keyframes pheart{0%{transform:translate(-50%,0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translate(-50%,-70px) scale(1.2);opacity:0}}
+.petinfo{flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px}
+.petst{align-self:flex-start;font-size:12px;font-weight:800;color:#B45309;background:#FFF3BF;border-radius:999px;padding:3px 10px}
+.petinfo>b{font-size:28px;font-weight:900;color:var(--pri);line-height:1.1}
+.petinfo p{margin:0;color:var(--ink-2,var(--ink));font-size:14px}
+.petinfo small{font-size:12px;color:var(--ink-3)}
+.petinfo .xpb.big{height:9px;border-radius:999px;background:var(--sunk);overflow:hidden}
+.petinfo .xpb.big i{display:block;height:100%;background:linear-gradient(90deg,#FCC419,#FF922B);border-radius:inherit}
+.petnx b{color:var(--ink)}
+.petmood{font-size:13.5px;font-weight:700;background:var(--sunk);border-radius:12px;padding:7px 12px;align-self:flex-start}
+.petbtns{display:flex;gap:8px;flex-wrap:wrap}
+.petbtns .btn b{margin-left:4px}
+.petsh3{margin:22px 0 10px;font-size:15px}
+.petline{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.pl{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:14px;background:var(--sunk);opacity:.55;text-align:center}
+.pl.dn{opacity:.85}
+.pl.on{opacity:1;background:color-mix(in srgb,#FCC419 20%,var(--surface));box-shadow:inset 0 0 0 2px #FCC419}
+.pl b{font-size:11.5px;font-weight:800;white-space:nowrap}
+.pl small{font-size:10.5px;color:var(--ink-3)}
+.plq{width:54px;height:54px;display:grid;place-items:center;font-size:22px;font-weight:900;color:var(--ink-3)}
+.petpop{position:fixed;inset:0;z-index:300;background:rgba(20,20,40,.45);display:grid;place-items:center;animation:fadein .2s}
+.petpopc{background:var(--surface);border-radius:26px;padding:26px 28px 22px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;max-width:340px;box-shadow:0 24px 60px rgba(0,0,0,.25)}
+.petpopc b{font-size:18px}
+.petpopc small{color:var(--ink-3)}
+.petpopc .btn{margin-top:8px}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@media (max-width:699px){
+  .petline{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .petstage{justify-content:center}
+  .h9c.pet9{grid-column:1/-1}
+}
 </style>
 </head>
 <body>
@@ -2592,6 +2650,8 @@ VIEW.admin=function(m){
   m.innerHTML=`<div class="page adm9"><header class="phd9"><div><h1>관리자</h1><p>가입한 아이디 ${ADM.length}개 · 학습 진행 (읽기 전용)</p></div><button class="btn sm" id="admre">${ico("undo",14)}새로 불러오기</button></header>
     <section class="admcode"><div><b>🔑 확인 코드 바꾸기</b><small>새로 가입하거나 학습 자료가 갱신됐을 때 묻는 코드예요. 바꾸면 이전 코드는 바로 쓸 수 없어요.</small></div>
       <form id="admcf" autocomplete="off"><input type="password" id="admc1" class="field" placeholder="새 확인 코드" autocomplete="new-password" minlength="4" required><input type="password" id="admc2" class="field" placeholder="한 번 더" autocomplete="new-password" minlength="4" required><button class="btn pri sm" type="submit">바꾸기</button></form></section>
+    <section class="admcode"><div><b>🆓 아이디 비우기</b><small>예전에 삭제한 계정의 아이디로 "이미 있는 아이디"가 뜰 때, 그 아이디를 넣으면 다시 가입할 수 있어요. 지금 쓰는 계정의 아이디는 비울 수 없어요.</small></div>
+      <form id="admidf" autocomplete="off"><input type="text" id="admid" class="field" placeholder="비울 아이디" maxlength="20" required><button class="btn sm" type="submit">비우기</button></form></section>
     <div class="admnote">🔒 비밀번호는 Firebase가 되돌릴 수 없는 형태로만 보관해서 관리자도 볼 수 없어요. 잊은 비밀번호는 새로 정해 주세요(컴퓨터의 reset_admin_pw.py에서 아이디를 바꿔 실행).</div>
     <div class="admtw"><table class="admt"><thead><tr><th>아이디</th><th>가입</th><th>마지막 학습</th><th>최근 접속<br><small>기기 · IP</small></th><th>레벨</th><th>민쌤 카드<br><small>외움/학습/전체</small></th><th>하쌤 카드<br><small>외움/학습/전체</small></th><th>기출 정답</th><th>문제풀이 정답</th><th>모의고사 정답</th><th>최근 14일</th></tr></thead><tbody>
     ${ADM.map(u=>{const s=u.s,mx=Math.max(1,...s.days.map(d=>d[1]));return `<tr class="${u.uid===ADMSEL?"on":""}" data-u="${u.uid}"><td><b>${esc(u.id)}</b>${u.uid===ADMIN_UID?` <span class="admme">관리자</span>`:""}</td><td>${dt(u.t)}</td><td>${dt(s.upd)}</td><td>${(()=>{const a=(u.acc||[])[0];if(!a)return "—";const nd=new Set(u.acc.map(x=>x.dv)).size;return `${dt(a.t)}<br><small>${esc(a.os)} · ${esc(a.br)}${a.ip?" · "+esc(a.ip):""}${nd>1?` <span class="admdv">기기 ${nd}대</span>`:""}</small>`;})()}</td><td>Lv.${s.lv}<br><small>${s.xp.toLocaleString()} XP</small></td>
@@ -2616,6 +2676,11 @@ VIEW.admin=function(m){
   </div>`;
   m.querySelector("#admre").onclick=()=>{ADM=null;VIEW.admin(m);};
   {const b=m.querySelector("#admdel");if(b&&sel)b.onclick=async()=>{b.disabled=true;if(await admDelete(sel)){ADM=ADM.filter(u=>u.uid!==sel.uid);ADMSEL=null;VIEW.admin(m);}else b.disabled=false;};}
+  {const f=m.querySelector("#admidf");if(f)f.onsubmit=async e=>{e.preventDefault();const id=f.querySelector("#admid").value.trim().normalize("NFC");if(!id)return;
+    if(ADM.some(u=>u.id===id)){toast(`'${id}'는 지금 쓰는 계정이에요. 먼저 아래에서 계정을 삭제해 주세요`);return;}
+    if(!confirm(`'${id}' 아이디를 비울까요? 이 아이디로 예전 계정에는 더 이상 로그인할 수 없고, 새로 가입할 수 있게 돼요.`))return;
+    const bt=f.querySelector("button");bt.disabled=true;try{const fb=await loadFB(),h=await idHash(id),g=await idGen(h);await fb.setDoc(fb.doc(fb.db,"config","idgen"),{[h]:g+1},{merge:true});f.reset();toast(`'${id}' 아이디를 비웠어요. 이제 새로 가입할 수 있어요`);}
+    catch(err){toast("비우지 못했어요 ("+(err.code||err.message||err)+")");}bt.disabled=false;};}
   {const f=m.querySelector("#admcf");if(f)f.onsubmit=async e=>{e.preventDefault();const a=f.querySelector("#admc1").value,b=f.querySelector("#admc2").value;
     if(a.length<4){toast("4자 이상으로 정해 주세요");return;}if(a!==b){toast("두 번 입력한 코드가 달라요");return;}
     if(!confirm("확인 코드를 바꿀까요? 이전 코드는 바로 쓸 수 없게 돼요."))return;
@@ -2652,7 +2717,105 @@ function playerIn(box,sc){
 let PBOX=null;
 /* 학습: 알아요 +5(연속으로 맞히면 1장마다 +1, 최대 +10), 헷갈려요 +0~3 (타이핑 정답률에 따라, 잴 수 없으면 +2), 몰랐어요 -5 */
 const ptsOf=(g,rate,combo)=>g===2?5+Math.min(combo||0,5):g===1?(rate==null?2:Math.max(0,Math.min(3,Math.round(rate*3)))):-5;
-const lvOf=xp=>{const lv=1+Math.floor(xp/300);return{lv,cur:xp%300,need:300};};
+/* ---------- 레벨 · 키우는 캐릭터 (달걀 → 병아리 → 닭) ---------- */
+/* 레벨 n → n+1 에 필요한 XP: 100, 120, 140 … (낮은 레벨은 빨리, 높을수록 천천히) */
+const lvNeed=lv=>100+20*(lv-1);
+const lvBase=lv=>100*(lv-1)+10*(lv-1)*(lv-2);
+const lvOf=xp=>{let lv=1;while(lvBase(lv+1)<=xp)lv++;return{lv,cur:xp-lvBase(lv),need:lvNeed(lv)};};
+const PET_ST=[
+  {from:1, n:"달걀",       d:"따뜻하게 품는 중이에요. 공부할수록 알이 꿈틀거려요"},
+  {from:3, n:"톡톡 달걀",   d:"안에서 톡톡! 금이 가기 시작했어요"},
+  {from:6, n:"아기 병아리", d:"알을 깨고 나왔어요! 삐약삐약"},
+  {from:11,n:"병아리",     d:"뽀송한 솜털로 뒤뚱뒤뚱 걸어 다녀요"},
+  {from:17,n:"큰 병아리",   d:"날개깃이 나고 머리에 작은 볏이 돋았어요"},
+  {from:25,n:"중닭",       d:"하얀 깃털이 자라 제법 닭다워졌어요"},
+  {from:35,n:"닭",         d:"멋진 볏과 꼬리깃을 가진 어른 닭이 됐어요"},
+  {from:50,n:"황금 왕관 닭",d:"합격의 기운! 황금빛 왕관 닭이에요"}];
+const jong=w=>{const c=(w||"").charCodeAt((w||"").length-1)-0xAC00;return c>=0&&c<=11171?c%28:0;};
+const josaGa=w=>w+(jong(w)?"이":"가"),josaRo=w=>{const j=jong(w);return w+(j&&j!==8?"으로":"로");};
+const petStage=lv=>{let i=0;PET_ST.forEach((s,k)=>{if(lv>=s.from)i=k;});return i;};
+const PET=()=>S.pet||(S.pet={name:"",fed:{},pets:0,born:today()});
+const petName=()=>PET().name||"삐약이";
+/* 모이: 오늘 카드 10장마다 1알 (하루 최대 10알), 준 만큼 빠짐 */
+const petFood=()=>{const p=PET(),got=Math.min(10,Math.floor(todayN()/10));return Math.max(0,got-(p.fed[today()]||0));};
+const petMood=()=>{const p=PET(),t=today();if(p.fed[t])return["신나요","😆"];const y=new Date();y.setDate(y.getDate()-1);if(p.fed[today(y)])return["조금 출출해요","🙂"];
+  return Object.keys(p.fed).length?["배고파요","🥺"]:["모이를 기다려요","🐣"];};
+let PSVGN=0;
+function petSVG(st,sz=96,cls=""){
+  const eye=(x,y)=>`<g class="pblink"><ellipse cx="${x}" cy="${y}" rx="3.2" ry="3.8" fill="#2B2B3A"/><circle cx="${x+1.1}" cy="${y-1.3}" r="1.1" fill="#fff"/></g>`;
+  const blush=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="4.5" ry="2.6" fill="#FF9EB0" opacity=".55"/>`;
+  const beak=(x,y,s=1)=>`<path d="M${x-5*s} ${y} L${x+5*s} ${y} L${x} ${y+6*s} Z" fill="#FF9F1C" stroke="#E07A00" stroke-width="1" stroke-linejoin="round"/>`;
+  const feet=(y,c="#FF9F1C")=>`<path d="M48 ${y} v7 m-4 0 h8 M72 ${y} v7 m-4 0 h8" stroke="${c}" stroke-width="3" stroke-linecap="round" fill="none"/>`;
+  const comb=(x,y,s=1,c="#EF4444")=>`<path d="M${x-9*s} ${y} q${2*s} ${-11*s} ${7*s} ${-6*s} q${2*s} ${-10*s} ${7*s} ${-3*s} q${4*s} ${-9*s} ${7*s} ${1*s} Z" fill="${c}"/>`;
+  const egg=(crack)=>`<ellipse cx="60" cy="66" rx="30" ry="38" fill="url(#pg-egg)" stroke="#E9D9B8" stroke-width="2"/>
+    <ellipse cx="49" cy="50" rx="7" ry="10" fill="#fff" opacity=".7"/><circle cx="70" cy="80" r="4" fill="#EBD9B4"/><circle cx="52" cy="88" r="2.6" fill="#EBD9B4"/><circle cx="75" cy="58" r="2.4" fill="#EBD9B4"/>
+    ${crack?`<path d="M34 60 l8 -6 l6 7 l7 -8 l7 8 l6 -7 l7 6 l8 -5" fill="none" stroke="#B9A57E" stroke-width="2.4" stroke-linejoin="round"/>${eye(52,72)}${eye(68,72)}${blush(45,80)}${blush(75,80)}`:""}`;
+  const chick=(o)=>`${o.feet?feet(96):""}
+    <ellipse cx="60" cy="72" rx="${o.rx||28}" ry="${o.ry||26}" fill="url(#pg-chick)"/>
+    ${o.wing?`<ellipse cx="${60-(o.rx||28)+6}" cy="76" rx="8" ry="12" fill="#FFD43B" transform="rotate(20 ${60-(o.rx||28)+6} 76)"/><ellipse cx="${60+(o.rx||28)-6}" cy="76" rx="8" ry="12" fill="#FFD43B" transform="rotate(-20 ${60+(o.rx||28)-6} 76)"/>`:""}
+    ${o.comb?comb(60,46,.8,"#FF6B6B"):""}
+    <path d="M54 46 q6 -10 12 0" fill="#FFE066" />
+    ${eye(50,66)}${eye(70,66)}${beak(60,72)}${blush(42,76)}${blush(78,76)}
+    ${o.shell?`<path d="M28 86 l8 -8 l7 7 l8 -9 l9 9 l8 -9 l8 9 l7 -7 l9 8 v14 q-32 18 -64 0 Z" fill="url(#pg-egg)" stroke="#E9D9B8" stroke-width="2" stroke-linejoin="round"/>`:""}`;
+  const hen=(o)=>`${feet(98,"#F59E0B")}
+    <path d="M86 64 q22 -18 16 8 q-4 12 -14 10 Z" fill="${o.gold?"url(#pg-gold)":"#F1F3F5"}" stroke="${o.gold?"#D97706":"#DEE2E6"}" stroke-width="1.5"/>
+    ${o.tail?`<path d="M90 62 q20 -26 20 -2 M92 66 q24 -16 18 6" fill="none" stroke="${o.gold?"#B45309":"#495057"}" stroke-width="4" stroke-linecap="round"/>`:""}
+    <ellipse cx="60" cy="74" rx="32" ry="26" fill="${o.gold?"url(#pg-gold)":"url(#pg-hen)"}" stroke="${o.gold?"#D97706":"#E9ECEF"}" stroke-width="1.5"/>
+    <ellipse cx="66" cy="78" rx="14" ry="10" fill="${o.gold?"#F59E0B":"#E9ECEF"}" opacity=".8"/>
+    <circle cx="44" cy="50" r="18" fill="${o.gold?"url(#pg-gold)":"url(#pg-hen)"}" stroke="${o.gold?"#D97706":"#E9ECEF"}" stroke-width="1.5"/>
+    ${comb(44,36,o.big?1.15:.9)}
+    ${eye(40,48)}${beak(30,52,.9).replace(/M(\d+)/,"M$1")}
+    <path d="M32 58 q-3 9 3 10 q4 -3 1 -10 Z" fill="#EF4444"/>${blush(48,56)}
+    ${o.crown?`<path d="M30 22 l5 -12 l7 8 l6 -11 l6 11 l7 -8 l5 12 Z" fill="#FCC419" stroke="#E67700" stroke-width="1.5" stroke-linejoin="round"/><circle cx="48" cy="12" r="2.4" fill="#FF6B6B"/>`:""}
+    ${o.gold?`<g class="psparkle"><path d="M98 30 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 Z" fill="#FFD43B"/><path d="M16 80 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 l4 -1.5 Z" fill="#FFD43B"/></g>`:""}`;
+  const body=[()=>egg(false),()=>egg(true),()=>chick({shell:true,rx:24,ry:22}),()=>chick({feet:true,wing:true}),()=>chick({feet:true,wing:true,comb:true,rx:27,ry:28}),
+    ()=>hen({}),()=>hen({tail:true,big:true}),()=>hen({tail:true,big:true,gold:true,crown:true})][st]();
+  return `<svg class="pet ${cls} ps${st}" width="${sz}" height="${sz}" viewBox="0 0 120 120" aria-hidden="true"><defs>
+    <radialGradient id="pg-egg" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#F6E7C8"/></radialGradient>
+    <radialGradient id="pg-chick" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#FFF3B0"/><stop offset="1" stop-color="#FFD43B"/></radialGradient>
+    <radialGradient id="pg-hen" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9ECEF"/></radialGradient>
+    <linearGradient id="pg-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3BF"/><stop offset=".5" stop-color="#FCC419"/><stop offset="1" stop-color="#F08C00"/></linearGradient></defs>
+    <ellipse cx="60" cy="110" rx="30" ry="5" fill="#000" opacity=".08"/><g class="pbody">${body}</g></svg>`.replace(/pg-/g,"pg"+(++PSVGN)+"-");
+}
+/* 레벨이 오르거나 단계가 바뀌면 축하 */
+function petCheck(x0){const a=lvOf(x0).lv,b=lvOf(S.xp||0).lv;if(b<=a)return;const s0=petStage(a),s1=petStage(b);
+  if(s1>s0)petCelebrate(s1);else toast(`🎉 Lv.${b} 달성! ${josaGa(petName())} 쑥 컸어요`);}
+function petCelebrate(st){const el=document.createElement("div");el.className="petpop";
+  el.innerHTML=`<div class="petpopc">${petSVG(st,150,"pjump")}<b>${esc(josaGa(petName()))} ${esc(josaRo(PET_ST[st].n))} 자랐어요!</b><small>${esc(PET_ST[st].d)}</small><button class="btn pri">좋아요</button></div>`;
+  document.body.appendChild(el);const x=()=>el.remove();el.querySelector("button").onclick=x;el.onclick=e=>{if(e.target===el)x();};sfx&&sfx("good");}
+/* 홈의 캐릭터 칸 */
+function petChip(){const L=lvOf(S.xp||0),st=petStage(L.lv),f=petFood(),[mt,me]=petMood();
+  return `<button class="h9c pet9" id="petopen" aria-label="${esc(petName())} 키우기"><span class="pet9c">${petSVG(st,64,"pidle")}${f?`<i class="pfood">🌾${f}</i>`:""}</span>
+    <span class="pet9t"><small>${esc(petName())} · ${esc(PET_ST[st].n)} ${me}</small><b class="num">Lv.${L.lv}</b><span class="xpb"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num">${L.cur}/${L.need} XP</em></span></button>`;}
+/* 키우기 창 */
+function petSheet(){
+  closeQ();const el=document.createElement("div");el.className="sheetbg";el.id="qsheet";
+  const draw=()=>{const L=lvOf(S.xp||0),st=petStage(L.lv),nx=PET_ST[st+1],f=petFood(),[mt,me]=petMood(),p=PET(),fedT=p.fed[today()]||0;
+    el.innerHTML=`<div class="sheet petsh" role="dialog" aria-modal="true" aria-label="캐릭터 키우기"><div class="shd"><div><span class="ytag">키우기</span><h2>${esc(petName())} <button class="iconbtn sm" id="petren" aria-label="이름 바꾸기" title="이름 바꾸기">✏️</button></h2></div><button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
+      <div class="sbd">
+        <div class="petstage"><button class="petbig" id="petpat" aria-label="쓰다듬기">${petSVG(st,180,"pidle")}</button>
+          <div class="petinfo"><span class="petst">${st+1}단계 · ${esc(PET_ST[st].n)}</span><b class="num">Lv.${L.lv}</b><p>${esc(PET_ST[st].d)}</p>
+            <div class="xpb big"><i style="width:${L.cur/L.need*100}%"></i></div><small class="num">다음 레벨까지 ${L.need-L.cur} XP · 모두 ${(S.xp||0).toLocaleString()} XP</small>
+            ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${Math.max(0,lvBase(nx.from)-(S.xp||0)).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 마지막 단계까지 다 키웠어요!</small>`}
+            <div class="petmood">${me} ${esc(mt)} · 오늘 모이 ${fedT}번 먹음</div>
+            <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>🌾 모이 주기 <b class="num">${f}</b></button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
+            <small class="muted">모이는 오늘 카드 10장을 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
+        <h3 class="petsh3">성장 단계</h3>
+        <div class="petline">${PET_ST.map((s,k)=>`<div class="pl ${k<st?"dn":k===st?"on":""}">${k<=st?petSVG(k,54):`<span class="plq">?</span>`}<b>${k<=st?esc(s.n):"???"}</b><small>Lv.${s.from}</small></div>`).join("")}</div>
+      </div></div>`;
+    el.querySelector("#qclose").onclick=closeQ;
+    const pat=()=>{const b=el.querySelector(".petbig");PET().pets=(PET().pets||0)+1;save();const h=document.createElement("i");h.className="pheart";h.textContent=["💛","🤍","💕","✨"][Math.floor(Math.random()*4)];h.style.left=(30+Math.random()*40)+"%";b.appendChild(h);setTimeout(()=>h.remove(),1000);
+      const sv=b.querySelector("svg");sv.classList.remove("pjump");void sv.getBoundingClientRect();sv.classList.add("pjump");};
+    el.querySelector("#petpat").onclick=pat;el.querySelector("#petpat2").onclick=pat;
+    el.querySelector("#petfeed").onclick=()=>{if(!petFood())return;const p=PET(),t=today();p.fed[t]=(p.fed[t]||0)+1;
+      const ks=Object.keys(p.fed).sort();while(ks.length>40)delete p.fed[ks.shift()];
+      const x0=S.xp||0;S.xp=x0+3;save();petCheck(x0);sfx&&sfx("good");draw();
+      const b=el.querySelector(".petbig");const g=document.createElement("i");g.className="pheart";g.textContent="🌾";g.style.left="50%";b.appendChild(g);setTimeout(()=>g.remove(),1000);};
+    el.querySelector("#petren").onclick=()=>{const v=prompt("캐릭터 이름을 정해 주세요 (10자까지)",petName());if(v==null)return;PET().name=v.trim().slice(0,10);save();draw();};
+  };
+  draw();document.body.appendChild(el);document.body.classList.add("noscroll");el.onclick=e=>{if(e.target===el)closeQ();};
+}
+
 const fmode=()=>{const o=FCO();return o.mode||(o.typing?"type":"click");};
 const MODES=[["click","👆","클릭으로","눌러서 답 보고 스스로 채점"],["type","⌨️","타이핑으로","답을 써 보고 핵심어로 채점"],["cloze","🧩","빈칸 채우기","핵심어만 빈칸 · 초성 힌트"],["pair","⚖️","헷갈리는 짝 고르기","설명을 보고 두 질문 중 고르기"]];
 /* 빈칸: **굵은 핵심어**를 빈칸으로, 첫 글자 초성 힌트 */
@@ -2913,7 +3076,7 @@ function answer(g){
   const before=todayN();
   grade(i,g);s.done++;s.tally[g]++;
   if(g<2){if(s.boss)s.bossFail=true;else s.wrongs.add(i);}
-  const x0=S.xp||0;S.xp=Math.max(0,x0+ptsOf(g,s.rate,s.combo));const pts=S.xp-x0;
+  const x0=S.xp||0;S.xp=Math.max(0,x0+ptsOf(g,s.rate,s.combo));const pts=S.xp-x0;setTimeout(()=>petCheck(x0),400);
   s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score+=pts;s.xp+=pts;
   s.flash={g,pts,combo:s.combo};
   {const R=RV(),nn=g===0?R.again:g===1?R.hardN:R.goodN;   // 같은 학습에서 n장 뒤 다시
@@ -2981,7 +3144,7 @@ VIEW.home=function(m){
       <div class="h9chips">
         ${dd!=null?`<div class="h9c dd9"><small>시험까지</small><b class="num">${dlabel(dd)}</b></div>`:`<button class="h9c dd9 ghost" id="hdd"><small>시험일</small><b>정하기</b></button>`}
         <div class="h9c goal9"><span class="gring" style="--p:${Math.min(100,todayN()/goalN()*100)}"><b class="num">${Math.min(999,todayN())}</b></span><span class="gtx"><small>오늘 목표 ${goalN()}장</small><b>${todayN()>=goalN()?"달성! 🎉":`${goalN()-todayN()}장 남음`}</b><em>${streak()?`🔥 ${streak()}일 연속`:"오늘 시작해 볼까요?"}</em></span></div>
-        <div class="h9c lv9"><small>레벨</small><b class="num">Lv.${L.lv}</b><span class="xpb"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num">${(S.xp||0).toLocaleString()} XP</em></div>
+        ${petChip()}
       </div>
     </header>
     <section class="h9go g5">
@@ -3004,6 +3167,7 @@ VIEW.home=function(m){
   </div>`;
   const hd=m.querySelector("#hdue");if(hd)hd.onclick=e=>{e.preventDefault();loadSC();SC.sp="due";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   const hp=m.querySelector("#hplan");if(hp)hp.onclick=e=>{e.preventDefault();loadSC();SC.sp="plan";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
+  {const p=m.querySelector("#petopen");if(p)p.onclick=petSheet;}
   m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const [d,k,t]=b.dataset.w.split(",").map(Number);loadSC();SC.sp="";SC.d=d;SC.k=k;SC.t=t;saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");});
   m.querySelector("#wmt").onclick=()=>{WMOPEN=!WMOPEN;const y=window.scrollY;VIEW.home(m);window.scrollTo({top:y});};
   const hw=m.querySelector("#hwr");if(hw)hw.onclick=e=>{e.preventDefault();loadSC();SC.sp="wrong";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
@@ -3051,7 +3215,7 @@ function fcChooser(m){
     </div>`;
 
   m.innerHTML=`<div class="page fc8 wzp" style="--dc:${DC[d]};--ds:${DCS[d]}">
-    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>범위와 방식을 고르면 바로 시작해요</p></div><span class="fchr">${pgTools("fc")}<span class="lvb big">Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</span><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
+    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>범위와 방식을 고르면 바로 시작해요</p></div><span class="fchr">${pgTools("fc")}<button class="lvb big petlv" id="petopen2" title="${esc(petName())} 키우기">${petSVG(petStage(L.lv),26)}Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</button><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
     ${OPTOPEN?`<div class="optpop9"><div class="optph"><b>옵션</b><button class="iconbtn sm" id="optx" aria-label="닫기">✕</button></div>${OPTS}</div>`:""}
     <div class="quick8">
       <button class="qk" data-q="due">${ico("today",18)}<b>오늘 복습</b><span class="num">${due}</span></button>
@@ -3079,7 +3243,7 @@ function fcChooser(m){
   m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tsToggle(b.dataset.t);keep();});
   m.querySelectorAll("[data-md]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});});
   m.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{timer:+b.dataset.tl});save();re();});
-  bindPgTools(m,"fc",()=>fcChooser(m));
+  bindPgTools(m,"fc",()=>fcChooser(m));{const p=m.querySelector("#petopen2");if(p)p.onclick=petSheet;}
   {const o=m.querySelector("#optt");if(o)o.onclick=()=>{OPTOPEN=!OPTOPEN;re();};const x=m.querySelector("#optx");if(x)x.onclick=()=>{OPTOPEN=false;re();};}
   {const o=m.querySelector("#ogt");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{gtrace:e.target.checked});save();};}
   {const o=m.querySelector("#osn");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{sound:e.target.checked});save();if(e.target.checked)sfx("good");};}
