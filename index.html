@@ -1560,6 +1560,58 @@ html.ipad body.grun main input,html.ipad body.grun main textarea{-webkit-user-se
 }
 .hytile em,.hygo1 em{color:#fff!important}.hytile small,.hygo1 small{color:#fff!important}
 @media (max-width:699px){.hymt span{font-size:17px}.hymt button.on{color:var(--pri)}}
+/* v45: 고시문 한눈에 + 네모 칸 타이핑 */
+.gsdoc{background:var(--surface,#fff);border:1px solid var(--line);border-radius:6px;padding:18px 20px 22px;margin-bottom:120px}
+.gsh{font-size:18px;font-weight:900;margin:18px 0 6px;padding:6px 10px;background:var(--ink);color:var(--surface,#fff);border-radius:3px;letter-spacing:-.02em}
+.gsh:first-child{margin-top:0}
+.gss{font-size:15px;font-weight:800;margin:14px 0 6px;color:var(--pri)}
+.gl,.gl2{display:flex;align-items:flex-start;gap:6px;margin:3px 0;padding:3px 4px;border-radius:4px;cursor:pointer}
+.gl2{cursor:default}
+.gn{flex:none;min-width:22px;font-size:13px;font-weight:800;color:var(--ink-3);padding-top:4px}
+.gb{display:flex;flex-wrap:wrap;gap:2px;row-gap:3px}
+.gb i{position:relative;width:22px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:3px;background:var(--surface,#fff);font-style:normal;transition:background .1s,border-color .1s,transform .1s}
+.gb i.sp{width:8px;border:0;background:none}
+.gb i b{font-size:14.5px;font-weight:600;color:var(--ink-3);opacity:.32}
+.gb i.ok{background:var(--ink);border-color:var(--ink)}.gb i.ok b{color:var(--surface,#fff);opacity:1}
+.gb i.ing{background:color-mix(in srgb,var(--pri) 18%,transparent);border-color:var(--pri)}.gb i.ing b{opacity:.7;color:var(--ink)}
+.gb i.bad{background:var(--bad,#e5484d);border-color:var(--bad,#e5484d)}.gb i.bad b{color:#fff;opacity:1}
+.gb i.cur{border:2px solid var(--pri);animation:gsblink 1s steps(2) infinite}
+@keyframes gsblink{50%{border-color:transparent}}
+.gl.g-now{background:color-mix(in srgb,var(--pri) 8%,transparent);outline:2px solid color-mix(in srgb,var(--pri) 40%,transparent)}
+.gl.g-done .gb i.ok{background:color-mix(in srgb,var(--pri) 85%,#000);border-color:transparent}
+.gl.k-big .gb i b,.gl.k-cat .gb i b{font-weight:800}
+.gl.g-pop .gb i.ok{animation:gspop .25s}
+@keyframes gspop{50%{transform:scale(1.12)}}
+.gstw{overflow-x:auto;margin:6px 0}
+.gst{width:100%;border-collapse:collapse}
+.gst th,.gst td{border:1px solid var(--line);padding:6px 8px;vertical-align:middle;text-align:left}
+.gst thead th{background:var(--bg-2,#f3f4f7);font-size:13px;text-align:center}
+.gst tbody th{width:132px;background:color-mix(in srgb,var(--pri) 5%,transparent)}
+.gst tbody th .gb{justify-content:center}
+.gsbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface,#fff);border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(0,0,0,.06);padding:8px 14px 10px}
+@media (min-width:1100px){.gsbar{left:var(--sbw,240px)}}
+.gsst{display:flex;gap:14px;justify-content:center;font-variant-numeric:tabular-nums}
+.gsst span{display:flex;align-items:baseline;gap:5px}.gsst small{font-size:12px;color:var(--ink-3)}.gsst b{font-size:17px;font-weight:900}
+.gsin{display:flex;gap:6px;max-width:760px;margin:6px auto 0}
+.gsin input{flex:1;min-width:0;font:inherit;font-size:18px;font-weight:600;padding:9px 12px;border:2px solid var(--pri);border-radius:6px;background:var(--surface,#fff);color:var(--ink);outline:none}
+.gsprog{height:4px;max-width:760px;margin:7px auto 0;background:var(--line);border-radius:2px;overflow:hidden}.gsprog i{display:block;height:100%;background:var(--pri);transition:width .25s}
+.gl2 .hyp{margin:2px 0;line-height:2}
+@media (max-width:699px){
+  .gsdoc{padding:12px 10px 16px;margin-bottom:150px}
+  .gb i{width:19px;height:23px}.gb i b{font-size:13px}.gb i.sp{width:6px}
+  .gst tbody th{width:84px}
+  .gsbar{bottom:var(--tbh,60px);padding:6px 10px 8px}
+  .gsst{gap:10px}.gsst b{font-size:15px}
+  .gsin input{font-size:16px}
+}
+.gsbar{position:sticky;left:auto;right:auto;bottom:0;margin:0 -2px;border:1px solid var(--line);border-radius:8px 8px 0 0}
+.gsdoc{margin-bottom:10px}
+@media (min-width:1100px){.gsbar{left:auto}}
+@media (max-width:699px){.gsbar{bottom:var(--tbh,60px)}.gsdoc{margin-bottom:10px}}
+
+.gst td .gl,.gst td .gl2{justify-content:flex-start;border:0}
+.gst th .gl{justify-content:center}
+.gl2.k-big .hyp,.gl2.k-cat .hyp{font-weight:800}
 </style>
 </head>
 <body>
@@ -2565,48 +2617,61 @@ VIEW.heisil=function(m){
   if(HY.md==="type")return hyTypeLines(B,act,prog,plain,false);
   hyCloze(B,act,prog,L,HY.md);
 };
-/* 보며 타이핑: 타자 연습처럼 한 문장씩 */
 const hyJamo=s=>{let n=0;for(const ch of s){const c=hsy(ch);if(!c){n+=ch===" "?1:1;continue;}n+=2+(HVP[c.V]!=null?1:0)+(c.T?1:0)+(c.T&&HJ1[c.T]!=null?1:0);}return n;};
+/* 고시문 모양으로 배치: 큰 제목·소제목·문장, '범주' 줄부터는 [내용범주 | 내용] 표 */
+function hyLayout(L,lineHTML){
+  let out="",k=0,inTab=false,row=null;
+  const closeRow=()=>{if(row){out+=`<tr><th>${row.c}</th><td>${row.items.join("")}</td></tr>`;row=null;}};
+  const closeTab=()=>{closeRow();if(inTab){out+=`</tbody></table></div>`;inTab=false;}};
+  L.forEach(x=>{
+    if(x.h){closeTab();out+=`<h2 class="gsh">${esc(x.h)}</h2>`;return;}
+    if(x.sh){closeTab();out+=`<h3 class="gss">${esc(x.sh)}</h3>`;return;}
+    const i=k++;
+    if(x.cat){if(!inTab){out+=`<div class="gstw"><table class="gst"><thead><tr><th>내용범주</th><th>내용</th></tr></thead><tbody>`;inTab=true;}closeRow();row={c:lineHTML(x,i,"k-cat"),items:[]};return;}
+    if(inTab&&row){row.items.push(lineHTML(x,i,"k-item"));return;}
+    out+=lineHTML(x,i,x.big?"k-big":"");
+  });
+  closeTab();return out;
+}
+/* 보며 타이핑: 고시문 전체를 펼쳐 두고, 글자 하나하나를 네모 칸에 채워 가며 완성 */
 function hySee(B,L){
-  const T=[];let ctx="",sub="";L.forEach(x=>{if(x.h){ctx=x.h;sub="";}else if(x.sh)sub=x.sh;else if(x.t!=null)T.push(Object.assign({},x,{ctx,sub}));});
-  const S=HYT.see||(HYT.see={pos:0,ok:{},errs:0,keys:0,jamo:0,ms:0});
-  if(S.pos>=T.length)S.pos=T.length;
-  let t0=null,errs=0,lastLen=0,comp=false,timer=null;
+  const T=L.filter(x=>x.t!=null);
+  const S=HYT.see||(HYT.see={pos:0,done:{},errs:0,keys:0,jamo:0,ms:0});
   const fmt=ms=>{const s=Math.floor(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;};
-  const stats=()=>{const el=(S.ms+(t0?Date.now()-t0:0));const cpm=el>3000?Math.round(S.jamo/(el/60000)):0;const acc=S.keys?Math.max(0,Math.round((1-S.errs/S.keys)*100)):100;
-    const done=Object.keys(S.ok).length;
-    B.querySelector("#st1").textContent=cpm;B.querySelector("#st2").textContent=acc+"%";B.querySelector("#st3").textContent=`${done}/${T.length}`;B.querySelector("#st4").textContent=fmt(el);
-    B.querySelector(".mtbar i").style.width=(done/T.length*100)+"%";};
-  if(S.pos>=T.length){
-    const el=S.ms,cpm=el>3000?Math.round(S.jamo/(el/60000)):0,acc=S.keys?Math.max(0,Math.round((1-S.errs/S.keys)*100)):100;
-    B.innerHTML=`<div class="mtdone"><div class="mtbig">🎉</div><h2>다 했어요!</h2><div class="mtstats">
-      <div class="mts s1"><small>평균 타수</small><b>${cpm}</b></div><div class="mts s2"><small>정확도</small><b>${acc}%</b></div><div class="mts s3"><small>문장</small><b>${T.length}</b></div><div class="mts s4"><small>걸린 시간</small><b>${fmt(el)}</b></div></div>
-      <button class="hystart" id="mtagain">${ico("undo",18)}처음부터 다시</button></div>`;
-    B.querySelector("#mtagain").onclick=()=>{HYT.see=null;hySee(B,L);};return;}
-  const x=T[S.pos],prev=T[S.pos-1],next=T[S.pos+1];
-  const spans=s=>[...s].map(c=>`<i>${c===" "?"&nbsp;":esc(c)}</i>`).join("");
-  B.innerHTML=`<div class="mt">
-    <div class="mtstats"><div class="mts s1"><small>타수</small><b id="st1">0</b></div><div class="mts s2"><small>정확도</small><b id="st2">100%</b></div><div class="mts s3"><small>진행</small><b id="st3"></b></div><div class="mts s4"><small>시간</small><b id="st4">0:00</b></div></div>
-    <div class="mtbar"><i></i></div>
-    <div class="mtctx">${esc([x.ctx,x.sub].filter(Boolean).join(" › "))}${x.n?` <span class="mtn">${esc(x.n)}</span>`:""}</div>
-    ${prev?`<div class="mtprev">${esc(prev.t)}</div>`:`<div class="mtprev"></div>`}
-    <div class="mtcur ${x.cat?"cat":""}"><div class="mtref">${spans(x.t)}</div>
-      <input class="mtin" id="mtin" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기에 따라 치세요"></div>
-    <div class="mtnext">${next?esc(next.t):"마지막 문장이에요"}</div>
-    <div class="mtkeys"><button class="btn sm" id="mtp" ${S.pos?"":"disabled"}>${ico("left",14)}이전 문장</button><span class="muted small">Enter 다음 · 틀린 글자는 빨간색</span><button class="btn sm" id="mtn">건너뛰기${ico("chev",14)}</button></div></div>`;
-  const inp=B.querySelector("#mtin"),refs=[...B.querySelectorAll(".mtref i")],tt=hyNorm(x.t);
-  const paint=()=>{const v=hyNorm(inp.value),r=hyCmp(inp.value,x.t,comp);
-    refs.forEach((el,j)=>{el.className=j<v.length?(v[j]===tt[j]?"g":(j===v.length-1&&r.st==="ing"?"c":"b")):(j===v.length?"cur":"");});
-    B.querySelector(".mtcur").classList.toggle("ng",r.st==="ng");
+  const boxes=(x,i,kind)=>`<div class="gl ${kind}" data-i="${i}">${x.n&&kind!=="k-cat"?`<span class="gn">${esc(x.n==="·"?"•":x.n)}</span>`:""}<span class="gb">${[...hyNorm(x.t)].map(c=>c===" "?`<i class="sp"></i>`:`<i><b>${esc(c)}</b></i>`).join("")}</span></div>`;
+  B.innerHTML=`<div class="gsdoc">${hyLayout(L,boxes)}</div>
+    <div class="gsbar"><div class="gsst"><span><small>타수</small><b id="st1">0</b></span><span><small>정확도</small><b id="st2">100%</b></span><span><small>완성</small><b id="st3">0/${T.length}</b></span><span><small>시간</small><b id="st4">0:00</b></span></div>
+      <div class="gsin"><input id="gsin" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기에 치면 위 칸이 채워져요"><button class="btn sm" id="gsskip" title="이 줄 건너뛰기">${ico("chev",14)}</button><button class="btn sm dangerline" id="gsrst" title="처음부터">${ico("undo",14)}</button></div>
+      <div class="gsprog"><i></i></div></div>`;
+  const rows=[...B.querySelectorAll(".gl")],inp=B.querySelector("#gsin");
+  let t0=null,errs=0,lastLen=0,comp=false,timer=null;
+  const stats=()=>{if(!B.isConnected||!B.querySelector("#st1")){clearInterval(timer);timer=null;return;}const el=S.ms+(t0?Date.now()-t0:0),cpm=el>3000?Math.round(S.jamo/(el/60000)):0,acc=S.keys?Math.max(0,Math.round((1-S.errs/S.keys)*100)):100,n=Object.keys(S.done).length;
+    B.querySelector("#st1").textContent=cpm;B.querySelector("#st2").textContent=acc+"%";B.querySelector("#st3").textContent=`${n}/${T.length}`;B.querySelector("#st4").textContent=fmt(el);
+    B.querySelector(".gsprog i").style.width=(n/T.length*100)+"%";};
+  const cells=i=>[...rows[i].querySelectorAll(".gb i")];
+  const mark=()=>{rows.forEach((r,i)=>{r.classList.toggle("g-done",!!S.done[i]);r.classList.toggle("g-now",i===S.pos);if(S.done[i])cells(i).forEach(c=>c.className=c.classList.contains("sp")?"sp":"ok");else if(i!==S.pos)cells(i).forEach(c=>c.className=c.classList.contains("sp")?"sp":"");});};
+  const paint=()=>{if(S.pos>=T.length)return "";const tt=hyNorm(T[S.pos].t),v=hyNorm(inp.value),r=hyCmp(inp.value,T[S.pos].t,comp);
+    const cs=cells(S.pos);let j=0;
+    [...tt].forEach((ch,ci)=>{const el=cs[ci];const sp=ch===" ";let c="";
+      if(ci<v.length)c=v[ci]===ch?"ok":(ci===v.length-1&&r.st==="ing"?"ing":"bad");else if(ci===v.length)c="cur";
+      if(el)el.className=(sp?"sp ":"")+c;});
+    rows[S.pos].classList.toggle("g-ng",r.st==="ng");
     if(r.st==="ng"&&v.length>lastLen&&!comp)errs++;lastLen=v.length;return r.st;};
-  const finish=()=>{const el=t0?Date.now()-t0:0;S.ms+=el;t0=null;S.jamo+=hyJamo(x.t);S.keys+=hyJamo(x.t);S.errs+=errs;S.ok[S.pos]=1;S.pos++;sfx("good");clearInterval(timer);
-    B.querySelector(".mtcur").classList.add("pass");setTimeout(()=>hySee(B,L),160);};
-  inp.addEventListener("compositionstart",()=>comp=true);inp.addEventListener("compositionend",()=>{comp=false;if(paint()==="ok")finish();});
-  inp.oninput=e=>{if(!t0){t0=Date.now();timer=setInterval(stats,500);}comp=comp||e.isComposing;const st=paint();if(st==="ok"&&!comp)finish();};
-  inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();comp=false;const st=paint();if(st==="ok")finish();else{const c=B.querySelector(".mtcur");c.classList.remove("shake9");void c.offsetWidth;c.classList.add("shake9");sfx("bad");}}};
-  B.querySelector("#mtp").onclick=()=>{clearInterval(timer);if(t0)S.ms+=Date.now()-t0;S.pos=Math.max(0,S.pos-1);hySee(B,L);};
-  B.querySelector("#mtn").onclick=()=>{clearInterval(timer);if(t0)S.ms+=Date.now()-t0;S.pos++;hySee(B,L);};
-  stats();setTimeout(()=>inp.focus(),30);
+  const go=i=>{if(t0){S.ms+=Date.now()-t0;t0=null;}clearInterval(timer);timer=null;
+    S.pos=i;errs=0;lastLen=0;inp.value="";mark();
+    if(S.pos<T.length){rows[S.pos].scrollIntoView({block:"center",behavior:"smooth"});paint();}
+    else{inp.placeholder="🎉 다 완성했어요! 처음부터 하려면 ↺";inp.disabled=true;}
+    stats();};
+  const finish=()=>{const x=T[S.pos];if(t0){S.ms+=Date.now()-t0;t0=null;}S.jamo+=hyJamo(x.t);S.keys+=hyJamo(x.t);S.errs+=errs;S.done[S.pos]=1;sfx("good");
+    rows[S.pos].classList.add("g-pop");const nx=T.findIndex((_,i)=>i>S.pos&&!S.done[i]);setTimeout(()=>go(nx<0?(T.findIndex((_,i)=>!S.done[i])<0?T.length:T.findIndex((_,i)=>!S.done[i])):nx),180);};
+  inp.addEventListener("compositionstart",()=>comp=true);
+  inp.addEventListener("compositionend",()=>{comp=false;if(paint()==="ok")finish();});
+  inp.oninput=e=>{if(S.pos>=T.length)return;if(!t0){t0=Date.now();if(!timer)timer=setInterval(stats,500);}comp=comp||e.isComposing;if(paint()==="ok"&&!comp)finish();};
+  inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();comp=false;if(paint()==="ok")finish();else{rows[S.pos]?.classList.remove("shake9");void rows[S.pos]?.offsetWidth;rows[S.pos]?.classList.add("shake9");sfx("bad");}}};
+  rows.forEach((r,i)=>r.onclick=()=>{go(i);inp.focus();});
+  B.querySelector("#gsskip").onclick=()=>{go(Math.min(T.length,S.pos+1));inp.focus();};
+  B.querySelector("#gsrst").onclick=()=>{HYT.see=null;hySee(B,L);};
+  go(S.pos);setTimeout(()=>inp.focus(),50);
 }
 /* 줄 전체를 100% 똑같이 쓰기 */
 function hyTypeLines(B,act,prog,L,see){   // see: 보며 타이핑 (문장을 띄워 두고 따라 치기)
@@ -2642,8 +2707,7 @@ function hyCloze(B,act,prog,secs,md){   // secs = 줄 목록 (h·sh·{n,t})
     if(md==="read")return `<mark class="hyk">${a}</mark>`;
     if(md==="click")return `<button class="hyb ${HYT.open[k]?"on":""}" data-b="${k}"><span>${a}</span></button>`;
     return `<span class="hybw"><input class="hybi" data-b="${k}" size="${Math.max(2,[...ans].length+1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></span>`;}).replace(/\n/g,"<br>");
-  B.innerHTML=secs.map(x=>x.h?`<h2 class="hyh">${esc(x.h)}</h2>`:x.sh?`<h3 class="hysh">${esc(x.sh)}</h3>`
-    :`<div class="hyl2 ${x.cat?"cat":""} ${x.big?"big":""}"><span class="hyn">${esc(x.n||"")}</span><p class="hyp">${fill(x.t)}</p></div>`).join("");
+  B.innerHTML=`<div class="gsdoc">${hyLayout(secs,(x,i,kind)=>`<div class="gl2 ${kind}">${x.n&&kind!=="k-cat"?`<span class="gn">${esc(x.n==="·"?"•":x.n)}</span>`:""}<p class="hyp">${fill(x.t)}</p></div>`)}</div>`;
   const N=ANS.length;
   if(md==="read"){prog.innerHTML=`핵심어 <b class="num">${N}</b>개`;act.innerHTML="";return;}
   if(md==="click"){
