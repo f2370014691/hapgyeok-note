@@ -1994,6 +1994,20 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .admdv{display:inline-block;font-size:10.5px;font-weight:800;color:#B45309;background:color-mix(in srgb,#F59E0B 16%,transparent);border-radius:999px;padding:0 6px;margin-left:2px}
 .admdid{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;font-weight:700;background:hsl(var(--h) 70% 92%);color:hsl(var(--h) 60% 32%)}
 .adma td,.adma th{white-space:nowrap}
+/* v66: 기출·문풀·모고 제목줄 한 줄 고정 (아이패드 세로 등 좁은 폭) */
+@media (min-width:700px){
+  .phd9.ph1{flex-wrap:nowrap}
+  .ph1 .phx{flex-wrap:nowrap;overflow:hidden}
+  .ph1 .phx>*,.ph1 .qfbar,.ph1 .qfbar .seg2{flex:none;flex-wrap:nowrap}
+  .ph1 .qfbar .seg2 button{white-space:nowrap}
+  .ph1.t1 .scnt{display:none}
+  .ph1.t2 .qlx{display:none}
+  .ph1.t2 .chg9{padding-left:9px;padding-right:9px}
+  .ph1.t2 .qfbar .seg2 button{padding-left:7px;padding-right:7px}
+  .ph1.t3 .pk9{max-width:190px;min-width:0;overflow:hidden}
+  .ph1.t3 .pk9 .ddb,.ph1.t3 .pk9 select{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ph1.t3 .phx .picker,.ph1.t3 .phx{flex-shrink:1;min-width:0}
+}
 </style>
 </head>
 <body>
@@ -2241,17 +2255,20 @@ function compactHead(m){
 /* 제목줄을 키우되, 늘어난 높이만큼 위 여백을 줄여 문제 영역의 위치·크기는 그대로 */
 function phGrow(m){
   const ph=m.querySelector(".phd9.ph1"),pg=ph&&ph.closest(".page");if(!pg)return;
-  ph.classList.remove("big");pg.style.paddingTop="";pg.style.marginTop="";
+  ph.classList.remove("big","t1","t2","t3");pg.style.paddingTop="";pg.style.marginTop="";
   if(!matchMedia("(min-width:700px)").matches)return;
+  /* 제목줄은 항상 한 줄: 넘치면 개수 글자 → 버튼 글자 → 드롭다운 폭 순서로 줄임 */
+  const x=ph.querySelector(".phx"),over=()=>ph.scrollWidth>ph.clientWidth+1||(x&&x.scrollWidth>x.clientWidth+1);
+  for(const c of ["t1","t2","t3"]){if(!over())break;ph.classList.add(c);}
   const gb=m.querySelector("#gbody"),top=()=>gb?gb.getBoundingClientRect().top:ph.getBoundingClientRect().bottom;
   const t0=top(),h0=ph.getBoundingClientRect().height;ph.classList.add("big");
   const h1=ph.getBoundingClientRect().height,pad=parseFloat(getComputedStyle(pg).paddingTop)||0,off=pad-(h1-h0);
-  if(off<-30){ph.classList.remove("big");return;}   // 너무 커지면(여러 줄로 넘침) 원래 크기 유지
+  if(off<-30||over()){ph.classList.remove("big");return;}   // 너무 커지면(여러 줄로 넘침) 원래 크기 유지
   pg.style.paddingTop=Math.max(0,off)+"px";let mt=off<0?off:0;pg.style.marginTop=mt+"px";
   const d=t0-top();if(Math.abs(d)>.5)pg.style.marginTop=(mt+d)+"px";   // 문제 영역 시작 위치를 원래와 똑같이
 }
 window.addEventListener("resize",()=>{const m=document.getElementById("main");if(m&&m.querySelector(".phd9.ph1"))phGrow(m);});
-function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+"범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;QWR[pg]=null;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
+function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+`<span class="qlx">범위 바꾸기</span>`;b.title="범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;QWR[pg]=null;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
 /* 고르기 화면: 한 단계씩 (고르면 다음 단계, 앞 단계는 '뒤로'로) */
 let WZ={};const WZ0={fc:"ver",table:"ver",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
 const wzBack=(steps,cur)=>{const i=steps.indexOf(cur);return i>0?`<button class="btn sm wzback" data-wzb="${steps[i-1]}">${ico("left",14)}뒤로</button>`:"";};
@@ -2352,7 +2369,7 @@ const qfSet=(pg,v)=>{try{localStorage.setItem(SBASE+":qf:"+pg,v);}catch(e){}};
 const qfApply=(items,f)=>f==="wrong"?items.filter(([q,n])=>{const r=QR(q+"|"+n);return r&&r.r===0;}):f==="new"?items.filter(([q,n])=>!QR(q+"|"+n)):items;
 function qfBar(pg,items){
   const f=qfGet(pg),w=items.filter(([q,n])=>{const r=QR(q+"|"+n);return r&&r.r===0;}).length,nw=items.filter(([q,n])=>!QR(q+"|"+n)).length;
-  return `<div class="qfbar"><span class="seg2 qf">${[["all","전체 "+items.length],["wrong","❌ 오답 "+w],["new","안 푼 것 "+nw]].map(([v,l])=>`<button data-qf="${v}" aria-pressed="${f===v}">${l}</button>`).join("")}</span><button class="btn sm" id="qana">📊 오답 분석</button></div>`;
+  return `<div class="qfbar"><span class="seg2 qf">${[["all","전체 "+items.length],["wrong","❌ 오답 "+w],["new","안 푼 것 "+nw]].map(([v,l])=>`<button data-qf="${v}" aria-pressed="${f===v}">${l}</button>`).join("")}</span><button class="btn sm" id="qana" title="오답 분석">📊<span class="qlx"> 오답 분석</span></button></div>`;
 }
 let QFCTX=null;   // 채점하면 위쪽 '오답 N' 숫자를 바로 고치려고
 function qfRefresh(){if(!QFCTX||!QFCTX.m.isConnected)return;const o=QFCTX.m.querySelector(".qfbar");if(!o)return;const t=document.createElement("div");t.innerHTML=qfBar(QFCTX.pg,QFCTX.items0);o.replaceWith(t.firstElementChild);bindQf(QFCTX.m,QFCTX.pg,QFCTX.src,QFCTX.items0);}
