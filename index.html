@@ -376,6 +376,8 @@ body.locked{background:radial-gradient(circle at 15% 10%,color-mix(in srgb,var(-
 /* 플래시카드 글자는 드래그로 선택되지 않게 */
 .card,.card *{-webkit-user-select:none;user-select:none}
 .card textarea{-webkit-user-select:text;user-select:text}
+
+.pane.wide{max-width:1600px}
 </style>
 </head>
 <body>
@@ -605,7 +607,7 @@ VIEW.topic=function(m){
   // 소주제 이동 (같은 대주제 안 이전·다음)
   let nav="";if(sc.t!=null){const tps=CH[sc.d][sc.k].topics;const pv=sc.t>0?`#/t/${sc.d}/${sc.k}/${sc.t-1}`:"",nx=sc.t<tps.length-1?`#/t/${sc.d}/${sc.k}/${sc.t+1}`:"";
     nav=`<span class="tnav">${pv?`<a class="iconbtn sm" href="${pv}${tab!=="cards"?"/"+tab:""}" title="이전 소주제">${ico("left",16)}</a>`:""}${nx?`<a class="iconbtn sm" href="${nx}${tab!=="cards"?"/"+tab:""}" title="다음 소주제">${ico("chev",16)}</a>`:""}</span>`;}
-  m.innerHTML=`<div class="pane" style="--dc:${DC[d]};--ds:${DCS[d]}">
+  m.innerHTML=`<div class="pane ${tab==="gichul"?"wide":""}" style="--dc:${DC[d]};--ds:${DCS[d]}">
     <header class="th">
       <a class="back iconbtn" href="#/" aria-label="목차로">${ico("left")}</a>
       <div class="thl"><nav class="crumb">${crumbs.map(([h,l])=>`<a href="${h}">${esc(l)}</a>`).join(ico("chev",12))}</nav>
