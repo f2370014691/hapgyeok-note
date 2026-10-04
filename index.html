@@ -1836,6 +1836,50 @@ body{background:var(--bg);background-image:radial-gradient(1200px 380px at 70% -
 }
 .h9go.g5 .g9{grid-column:auto!important}
 @media (max-width:699px){.h9go.g5 .g9{padding:14px!important;gap:10px}.g9 .g9i{width:40px!important;height:40px!important}}
+
+/* v56: 해이실 보며 타이핑 — 위 고시문(글) + 아래 한 글자씩 칸 + 완성 줄 날아 들어가기 */
+.sdoc{background:var(--surface);border-radius:22px;box-shadow:var(--sh);padding:24px 28px 28px;margin-bottom:14px}
+.sdoc .gsh{font-size:19px;margin:22px 0 10px;padding-bottom:8px;border-bottom:2px solid color-mix(in srgb,var(--pri) 25%,var(--line))}
+.sdoc .gsh:first-child{margin-top:0}
+.sl{position:relative;display:flex;align-items:baseline;gap:8px;padding:7px 36px 7px 10px;margin:2px 0;border-radius:12px;cursor:pointer;transition:background .2s,color .2s}
+.sl:hover{background:var(--hover)}
+.sn{flex:none;min-width:22px;font-weight:800;color:color-mix(in srgb,var(--pri) 70%,var(--ink-3));font-size:14px}
+.stx{font-size:16.5px;line-height:1.7;color:color-mix(in srgb,var(--ink) 38%,transparent);word-break:keep-all;transition:color .3s}
+.sl.k-big .stx,.sl.k-cat .stx{font-weight:800}
+.sck{position:absolute;right:10px;top:50%;transform:translateY(-50%) scale(.4);opacity:0;width:22px;height:22px;border-radius:50%;background:var(--grad);color:#fff;font-size:12px;font-weight:900;display:grid;place-items:center;transition:transform .3s cubic-bezier(.3,1.6,.5,1),opacity .2s}
+.sl.s-now{background:color-mix(in srgb,var(--pri) 8%,transparent);box-shadow:inset 3px 0 0 var(--pri)}
+.sl.s-now .stx{color:var(--ink)}
+.sl.s-done .stx{color:var(--ink);background:linear-gradient(transparent 62%,color-mix(in srgb,#8B5CF6 22%,transparent) 62%);border-radius:2px}
+.sl.s-done .sck{opacity:1;transform:translateY(-50%) scale(1)}
+.sl.s-pop{animation:spop .8s ease}
+@keyframes spop{0%{background:color-mix(in srgb,#8B5CF6 28%,transparent)}100%{background:transparent}}
+.sdoc .gst th .sl{justify-content:center;padding-right:10px}.sdoc .gst th .sck{display:none}
+.spanel{position:sticky;bottom:0;z-index:25;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:22px 22px 0 0;box-shadow:0 -12px 32px rgba(18,20,40,.10);padding:12px 16px 12px}
+.sst{display:flex;gap:8px;justify-content:center;font-variant-numeric:tabular-nums}
+.sst span{display:flex;align-items:baseline;gap:5px;padding:3px 10px;border-radius:999px;background:var(--sunk)}.sst small{font-size:11.5px;color:var(--ink-3)}.sst b{font-size:15px;font-weight:900}
+.sctx{font-size:12.5px;color:var(--ink-3);text-align:center;margin:8px 0 6px}.sctx b{color:var(--pri)}
+.sbox{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;row-gap:5px;max-width:860px;margin:0 auto;padding:4px}
+.sbox i{width:30px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:var(--sunk);border:1.5px solid transparent;font-style:normal;transition:background .12s,transform .12s}
+.sbox i.sp{width:12px;background:none}
+.sbox i b{font-size:18px;font-weight:700;color:var(--ink-3);opacity:.45}
+.sbox i.ok{background:var(--grad);transform:translateY(-1px)}.sbox i.ok b{color:#fff;opacity:1}
+.sbox i.ing{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 12%,transparent)}.sbox i.ing b{opacity:.8;color:var(--ink)}
+.sbox i.bad{background:#EF4444}.sbox i.bad b{color:#fff;opacity:1}
+.sbox i.cur{border-color:var(--pri);animation:gsblink 1s steps(2) infinite}
+.sbox.sp.ok{background:none}
+.sall{font-size:17px;font-weight:800;color:var(--pri);padding:10px}
+.sfly{position:fixed;z-index:200;margin:0;transform-origin:0 0;transition:transform .5s cubic-bezier(.5,0,.2,1),opacity .5s;pointer-events:none}
+.sin{display:flex;gap:6px;max-width:760px;margin:10px auto 0}
+.sin input{flex:1;min-width:0;font:inherit;font-size:17px;font-weight:600;padding:10px 14px;border:1.5px solid var(--pri);border-radius:14px;background:var(--surface);color:var(--ink);outline:none}
+.sin input:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 18%,transparent)}
+.spanel .gsprog{max-width:760px;margin:9px auto 0;height:5px}
+@media (max-width:699px){
+  .sdoc{padding:16px 12px 18px;border-radius:16px}
+  .stx{font-size:15px}
+  .spanel{bottom:var(--tbh,60px);padding:10px 10px 10px;border-radius:18px 18px 0 0}
+  .sbox i{width:24px;height:30px}.sbox i b{font-size:15px}.sbox i.sp{width:8px}
+  .sst{gap:5px}.sst span{padding:2px 7px}
+}
 </style>
 </head>
 <body>
@@ -2994,41 +3038,55 @@ function hyLayout(L,lineHTML){
   });
   closeTab();return out;
 }
-/* 보며 타이핑: 고시문 전체를 펼쳐 두고, 글자 하나하나를 네모 칸에 채워 가며 완성 */
+/* 보며 타이핑: 위에는 고시문을 보기 좋게 정리해 두고, 아래 패널에서 지금 줄을 한 글자씩 네모 칸에 채운다.
+   한 줄을 다 치면 그 글자들이 위 고시문 자리로 날아 들어가고 그 줄은 ✓ 완성 표시 */
 function hySee(B,L){
   const T=L.filter(x=>x.t!=null);
   const S=HYT.see||(HYT.see={pos:0,done:{},errs:0,keys:0,jamo:0,ms:0});
   const fmt=ms=>{const s=Math.floor(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;};
-  const boxes=(x,i,kind)=>`<div class="gl ${kind}" data-i="${i}">${x.n&&kind!=="k-cat"?`<span class="gn">${esc(x.n==="·"?"•":x.n)}</span>`:""}<span class="gb">${[...hyNorm(x.t)].map(c=>c===" "?`<i class="sp"></i>`:`<i><b>${esc(c)}</b></i>`).join("")}</span></div>`;
-  B.innerHTML=`<div class="gsdoc">${hyLayout(L,boxes)}</div>
-    <div class="gsbar"><div class="gsst"><span><small>타수</small><b id="st1">0</b></span><span><small>정확도</small><b id="st2">100%</b></span><span><small>완성</small><b id="st3">0/${T.length}</b></span><span><small>시간</small><b id="st4">0:00</b></span></div>
-      <div class="gsin"><input id="gsin" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기에 치면 위 칸이 채워져요"><button class="btn sm" id="gsskip" title="이 줄 건너뛰기">${ico("chev",14)}</button><button class="btn sm dangerline" id="gsrst" title="처음부터">${ico("undo",14)}</button></div>
+  const line=(x,i,kind)=>`<div class="sl ${kind}" data-i="${i}">${x.n&&kind!=="k-cat"?`<span class="sn">${esc(x.n==="·"?"•":x.n)}</span>`:""}<span class="stx">${esc(hyNorm(x.t))}</span><span class="sck">✓</span></div>`;
+  B.innerHTML=`<div class="sdoc">${hyLayout(L,line)}</div>
+    <div class="spanel"><div class="sst"><span><small>타수</small><b id="st1">0</b></span><span><small>정확도</small><b id="st2">100%</b></span><span><small>완성</small><b id="st3">0/${T.length}</b></span><span><small>시간</small><b id="st4">0:00</b></span></div>
+      <div class="sctx" id="sctx"></div><div class="sbox" id="sbox"></div>
+      <div class="sin"><input id="gsin" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기에 치면 위 칸이 한 글자씩 채워져요"><button class="btn sm" id="gsskip" title="이 줄 건너뛰기">${ico("chev",14)}</button><button class="btn sm dangerline" id="gsrst" title="처음부터">${ico("undo",14)}</button></div>
       <div class="gsprog"><i></i></div></div>`;
-  const rows=[...B.querySelectorAll(".gl")],inp=B.querySelector("#gsin");
-  let t0=null,errs=0,lastLen=0,comp=false,timer=null;
+  const rows=[...B.querySelectorAll(".sl")],inp=B.querySelector("#gsin"),box=B.querySelector("#sbox"),ctx=B.querySelector("#sctx");
+  let t0=null,errs=0,lastLen=0,comp=false,timer=null,busy=false;
   const stats=()=>{if(!B.isConnected||!B.querySelector("#st1")){clearInterval(timer);timer=null;return;}const el=S.ms+(t0?Date.now()-t0:0),cpm=el>3000?Math.round(S.jamo/(el/60000)):0,acc=S.keys?Math.max(0,Math.round((1-S.errs/S.keys)*100)):100,n=Object.keys(S.done).length;
     B.querySelector("#st1").textContent=cpm;B.querySelector("#st2").textContent=acc+"%";B.querySelector("#st3").textContent=`${n}/${T.length}`;B.querySelector("#st4").textContent=fmt(el);
     B.querySelector(".gsprog i").style.width=(n/T.length*100)+"%";};
-  const cells=i=>[...rows[i].querySelectorAll(".gb i")];
-  const mark=()=>{rows.forEach((r,i)=>{r.classList.toggle("g-done",!!S.done[i]);r.classList.toggle("g-now",i===S.pos);if(S.done[i])cells(i).forEach(c=>c.className=c.classList.contains("sp")?"sp":"ok");else if(i!==S.pos)cells(i).forEach(c=>c.className=c.classList.contains("sp")?"sp":"");});};
-  const paint=()=>{if(S.pos>=T.length)return "";const tt=hyNorm(T[S.pos].t),v=hyNorm(inp.value),r=hyCmp(inp.value,T[S.pos].t,comp);
-    const cs=cells(S.pos);let j=0;
-    [...tt].forEach((ch,ci)=>{const el=cs[ci];const sp=ch===" ";let c="";
+  const mark=()=>rows.forEach((r,i)=>{r.classList.toggle("s-done",!!S.done[i]);r.classList.toggle("s-now",i===S.pos);});
+  const head=i=>{let h="",sh="";for(const x of L){if(x.h){h=x.h;sh="";}else if(x.sh)sh=x.sh;else if(x.t!=null&&T.indexOf(x)===i)break;}return [h,sh].filter(Boolean).join(" › ");};
+  const build=()=>{if(S.pos>=T.length){box.innerHTML=`<div class="sall">🎉 고시문을 모두 완성했어요!</div>`;ctx.textContent="";return;}
+    const x=T[S.pos];ctx.innerHTML=`${esc(head(S.pos))}${x.n?` <b>${esc(x.n==="·"?"•":x.n)}</b>`:""}`;
+    box.innerHTML=[...hyNorm(x.t)].map(c=>c===" "?`<i class="sp"></i>`:`<i><b>${esc(c)}</b></i>`).join("");};
+  const cells=()=>[...box.querySelectorAll("i")];
+  const paint=()=>{if(S.pos>=T.length)return "";const tt=hyNorm(T[S.pos].t),v=hyNorm(inp.value),r=hyCmp(inp.value,T[S.pos].t,comp),cs=cells();
+    [...tt].forEach((ch,ci)=>{const el=cs[ci];if(!el)return;const sp=ch===" ";let c="";
       if(ci<v.length)c=v[ci]===ch?"ok":(ci===v.length-1&&r.st==="ing"?"ing":"bad");else if(ci===v.length)c="cur";
-      if(el)el.className=(sp?"sp ":"")+c;});
-    rows[S.pos].classList.toggle("g-ng",r.st==="ng");
+      el.className=(sp?"sp ":"")+c;});
+    box.classList.toggle("ng",r.st==="ng");
     if(r.st==="ng"&&v.length>lastLen&&!comp)errs++;lastLen=v.length;return r.st;};
   const go=i=>{if(t0){S.ms+=Date.now()-t0;t0=null;}clearInterval(timer);timer=null;
-    S.pos=i;errs=0;lastLen=0;inp.value="";mark();
-    if(S.pos<T.length){rows[S.pos].scrollIntoView({block:"center",behavior:"smooth"});paint();}
-    else{inp.placeholder="🎉 다 완성했어요! 처음부터 하려면 ↺";inp.disabled=true;}
+    S.pos=i;errs=0;lastLen=0;inp.value="";mark();build();
+    if(S.pos<T.length){rows[S.pos].scrollIntoView({block:"center",behavior:"smooth"});paint();inp.disabled=false;}
+    else{inp.disabled=true;}
     stats();};
-  const finish=()=>{const x=T[S.pos];if(t0){S.ms+=Date.now()-t0;t0=null;}S.jamo+=hyJamo(x.t);S.keys+=hyJamo(x.t);S.errs+=errs;S.done[S.pos]=1;sfx("good");
-    rows[S.pos].classList.add("g-pop");const nx=T.findIndex((_,i)=>i>S.pos&&!S.done[i]);setTimeout(()=>go(nx<0?(T.findIndex((_,i)=>!S.done[i])<0?T.length:T.findIndex((_,i)=>!S.done[i])):nx),180);};
+  /* 다 친 줄: 패널의 글자들이 위 고시문 줄로 날아가 들어감 */
+  const fly=(i,done)=>{const tgt=rows[i];if(!tgt||!box.firstChild){done();return;}
+    const a=box.getBoundingClientRect(),b=tgt.querySelector(".stx").getBoundingClientRect();
+    const g=box.cloneNode(true);g.className="sbox sfly";g.removeAttribute("id");
+    Object.assign(g.style,{left:a.left+"px",top:a.top+"px",width:a.width+"px"});document.body.appendChild(g);
+    const sc=Math.min(1,b.width/a.width);
+    requestAnimationFrame(()=>{g.style.transform=`translate(${b.left-a.left}px,${b.top-a.top}px) scale(${sc})`;g.style.opacity=".15";});
+    setTimeout(()=>{g.remove();done();},520);};
+  const finish=()=>{if(busy)return;busy=true;const x=T[S.pos],i=S.pos;if(t0){S.ms+=Date.now()-t0;t0=null;}S.jamo+=hyJamo(x.t);S.keys+=hyJamo(x.t);S.errs+=errs;sfx("good");
+    fly(i,()=>{S.done[i]=1;rows[i].classList.add("s-pop");setTimeout(()=>rows[i]&&rows[i].classList.remove("s-pop"),900);
+      const nx=T.findIndex((_,k)=>k>i&&!S.done[k]),any=T.findIndex((_,k)=>!S.done[k]);busy=false;go(nx>=0?nx:any>=0?any:T.length);});};
   inp.addEventListener("compositionstart",()=>comp=true);
   inp.addEventListener("compositionend",()=>{comp=false;if(paint()==="ok")finish();});
-  inp.oninput=e=>{if(S.pos>=T.length)return;if(!t0){t0=Date.now();if(!timer)timer=setInterval(stats,500);}comp=comp||e.isComposing;if(paint()==="ok"&&!comp)finish();};
-  inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();comp=false;if(paint()==="ok")finish();else{rows[S.pos]?.classList.remove("shake9");void rows[S.pos]?.offsetWidth;rows[S.pos]?.classList.add("shake9");sfx("bad");}}};
+  inp.oninput=e=>{if(S.pos>=T.length||busy)return;if(!t0){t0=Date.now();if(!timer)timer=setInterval(stats,500);}comp=comp||e.isComposing;if(paint()==="ok"&&!comp)finish();};
+  inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();comp=false;if(paint()==="ok")finish();else{box.classList.remove("shake9");void box.offsetWidth;box.classList.add("shake9");sfx("bad");}}};
   rows.forEach((r,i)=>r.onclick=()=>{go(i);inp.focus();});
   B.querySelector("#gsskip").onclick=()=>{go(Math.min(T.length,S.pos+1));inp.focus();};
   B.querySelector("#gsrst").onclick=()=>{HYT.see=null;hySee(B,L);};
