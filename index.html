@@ -1988,6 +1988,12 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
   .mksum9{margin-left:0}
   .phd9 .pgt9{margin-left:0;width:100%}
 }
+
+/* v65: 접속 기록 */
+.lknote{font-size:11.5px;color:var(--ink-3);text-align:center;margin:10px 0 0;line-height:1.5}
+.admdv{display:inline-block;font-size:10.5px;font-weight:800;color:#B45309;background:color-mix(in srgb,#F59E0B 16%,transparent);border-radius:999px;padding:0 6px;margin-left:2px}
+.admdid{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;font-weight:700;background:hsl(var(--h) 70% 92%);color:hsl(var(--h) 60% 32%)}
+.adma td,.adma th{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -2497,6 +2503,20 @@ VIEW.mock=function(m){
 /* ---------- 관리자: 가입한 아이디와 학습 진행 (관리자 계정만, 읽기 전용) ---------- */
 const ADMIN_UID="xR7TPxRvHDWI7FYMnw45ObJaApW2";
 const isAdminMe=()=>!!(ME&&ME.uid===ADMIN_UID);
+/* 접속 기록: 로그인(자동 로그인 포함)할 때 기기·IP를 자기 계정 문서에 남김. 관리자만 모아서 봄 */
+function devId(){const k="hapgyeok-dev-id";try{let v=localStorage.getItem(k);if(!v){v=Math.random().toString(36).slice(2,10);localStorage.setItem(k,v);}return v;}catch(e){return "";}}
+function devInfo(){const u=navigator.userAgent||"",ipad=/iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1);
+  const os=ipad?"iPad":/iPhone/.test(u)?"iPhone":/Android/.test(u)?(/Mobile/.test(u)?"Android 폰":"Android 태블릿"):/Windows/.test(u)?"Windows PC":/CrOS/.test(u)?"Chromebook":/Mac/.test(u)?"Mac":/Linux/.test(u)?"Linux":"기타";
+  const br=/KAKAOTALK/i.test(u)?"카카오톡":/NAVER\(/.test(u)?"네이버 앱":/SamsungBrowser/.test(u)?"삼성 인터넷":/Whale/.test(u)?"웨일":/Edg[A-Z]?\//.test(u)?"Edge":/CriOS|Chrome\//.test(u)?"Chrome":/FxiOS|Firefox/.test(u)?"Firefox":/Safari/.test(u)?"Safari":"기타";
+  const pwa=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  return{os,br,pwa,scr:`${screen.width}×${screen.height}`,ua:u.slice(0,300)};}
+async function logAccess(){try{if(!FB||!ME)return;const d=devInfo();let ip="";
+  try{const c=new AbortController();setTimeout(()=>c.abort(),4000);ip=(await (await fetch("https://api.ipify.org?format=json",{signal:c.signal,cache:"no-store"})).json()).ip||"";}catch(e){}
+  const ref=FB.doc(FB.db,"users",ME.uid,"data","access");let log=[];
+  try{const p=await FB.getDoc(ref);if(p.exists())log=p.data().log||[];}catch(e){}
+  const now=Date.now(),e={t:now,ip,dv:devId(),os:d.os,br:d.br,pwa:d.pwa,scr:d.scr,ua:d.ua},L=log[0];
+  if(L&&L.dv===e.dv&&L.ip===e.ip&&now-L.t<30*60000)log[0]=Object.assign({},L,{t:now,n:(L.n||1)+1});else log.unshift(e);
+  await FB.setDoc(ref,{log:log.slice(0,50),updatedAt:now});}catch(e){}}
 let ADM=null,ADMSEL=null;
 function admStats(st){
   const S0=S;S=Object.assign(blank(),st||{});
@@ -2513,7 +2533,8 @@ async function admLoad(){
   const fb=await loadFB();const snap=await fb.getDocs(fb.collection(fb.db,"users"));const out=[];
   for(const d of snap.docs){const info=d.data()||{};let st=null;
     try{const p=await fb.getDoc(fb.doc(fb.db,"users",d.id,"data","flash"));if(p.exists())st=await unpackDoc(p.data());}catch(e){}
-    out.push({uid:d.id,id:info.id||"(아이디 없음)",t:info.t||0,st,s:admStats(st)});}
+    let acc=[];try{const p=await fb.getDoc(fb.doc(fb.db,"users",d.id,"data","access"));if(p.exists())acc=p.data().log||[];}catch(e){}
+    out.push({uid:d.id,id:info.id||"(아이디 없음)",t:info.t||0,st,s:admStats(st),acc});}
   out.sort((a,b)=>(b.s.upd||0)-(a.s.upd||0));ADM=out;
 }
 VIEW.admin=function(m){
@@ -2525,8 +2546,8 @@ VIEW.admin=function(m){
   const sel=ADM.find(u=>u.uid===ADMSEL);
   m.innerHTML=`<div class="page adm9"><header class="phd9"><div><h1>관리자</h1><p>가입한 아이디 ${ADM.length}개 · 학습 진행 (읽기 전용)</p></div><button class="btn sm" id="admre">${ico("undo",14)}새로 불러오기</button></header>
     <div class="admnote">🔒 비밀번호는 Firebase가 되돌릴 수 없는 형태로만 보관해서 관리자도 볼 수 없어요. 잊은 비밀번호는 새로 정해 주세요(컴퓨터의 reset_admin_pw.py에서 아이디를 바꿔 실행).</div>
-    <div class="admtw"><table class="admt"><thead><tr><th>아이디</th><th>가입</th><th>마지막 학습</th><th>레벨</th><th>민쌤 카드<br><small>외움/학습/전체</small></th><th>하쌤 카드<br><small>외움/학습/전체</small></th><th>기출 정답</th><th>문제풀이 정답</th><th>모의고사 정답</th><th>최근 14일</th></tr></thead><tbody>
-    ${ADM.map(u=>{const s=u.s,mx=Math.max(1,...s.days.map(d=>d[1]));return `<tr class="${u.uid===ADMSEL?"on":""}" data-u="${u.uid}"><td><b>${esc(u.id)}</b>${u.uid===ADMIN_UID?` <span class="admme">관리자</span>`:""}</td><td>${dt(u.t)}</td><td>${dt(s.upd)}</td><td>Lv.${s.lv}<br><small>${s.xp.toLocaleString()} XP</small></td>
+    <div class="admtw"><table class="admt"><thead><tr><th>아이디</th><th>가입</th><th>마지막 학습</th><th>최근 접속<br><small>기기 · IP</small></th><th>레벨</th><th>민쌤 카드<br><small>외움/학습/전체</small></th><th>하쌤 카드<br><small>외움/학습/전체</small></th><th>기출 정답</th><th>문제풀이 정답</th><th>모의고사 정답</th><th>최근 14일</th></tr></thead><tbody>
+    ${ADM.map(u=>{const s=u.s,mx=Math.max(1,...s.days.map(d=>d[1]));return `<tr class="${u.uid===ADMSEL?"on":""}" data-u="${u.uid}"><td><b>${esc(u.id)}</b>${u.uid===ADMIN_UID?` <span class="admme">관리자</span>`:""}</td><td>${dt(u.t)}</td><td>${dt(s.upd)}</td><td>${(()=>{const a=(u.acc||[])[0];if(!a)return "—";const nd=new Set(u.acc.map(x=>x.dv)).size;return `${dt(a.t)}<br><small>${esc(a.os)} · ${esc(a.br)}${a.ip?" · "+esc(a.ip):""}${nd>1?` <span class="admdv">기기 ${nd}대</span>`:""}</small>`;})()}</td><td>Lv.${s.lv}<br><small>${s.xp.toLocaleString()} XP</small></td>
       <td class="num">${s.m27.k}/${s.m27.k+s.m27.l}/${s.m27.all.toLocaleString()}</td><td class="num">${s.h26.k}/${s.h26.k+s.h26.l}/${s.h26.all.toLocaleString()}</td>
       <td>${qcell(s.q.g)}</td><td>${qcell(s.q.m)}</td><td>${qcell(s.q.k)}</td>
       <td><span class="admspark">${s.days.map(d=>`<i style="height:${Math.round(d[1]/mx*100)}%" title="${d[0]} · ${d[1]}장"></i>`).join("")}</span></td></tr>`;}).join("")}</tbody></table></div>
@@ -2541,6 +2562,8 @@ VIEW.admin=function(m){
         <div><small>모의고사</small><b>${pc(s.q.k[1],s.q.k[0])}</b><em>${s.q.k[0]}물음 채점</em></div>
         <div><small>시험일</small><b>${esc(s.exam||"—")}</b><em>가입 ${dt(sel.t)}</em></div>
       </div>
+      <h3>접속 기록 <small class="muted">최근 ${(sel.acc||[]).length}번 · 기기 ${new Set((sel.acc||[]).map(x=>x.dv)).size}대 · IP ${new Set((sel.acc||[]).map(x=>x.ip).filter(Boolean)).size}개</small></h3>
+      ${(sel.acc||[]).length?`<div class="admtw"><table class="admt adma"><thead><tr><th>접속 시각</th><th>기기</th><th>브라우저</th><th>화면</th><th>IP</th><th>기기 번호</th></tr></thead><tbody>${sel.acc.map(a=>`<tr title="${esc(a.ua||"")}"><td>${dt(a.t)}${a.n>1?` <small>(${a.n}번)</small>`:""}</td><td>${esc(a.os)}${a.pwa?" <small>앱</small>":""}</td><td>${esc(a.br)}</td><td class="num">${esc(a.scr||"")}</td><td class="num">${esc(a.ip||"—")}</td><td class="num"><span class="admdid" style="--h:${parseInt((a.dv||"0").slice(0,4),36)%360}">${esc((a.dv||"").slice(0,6))}</span></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted small">아직 접속 기록이 없어요. 이 기능이 생긴 뒤에 로그인하면 쌓여요.</p>`}
       <h3>최근 14일 카드 학습</h3><div class="admbars">${s.days.map(d=>`<div><i style="height:${Math.round(d[1]/Math.max(1,...s.days.map(x=>x[1]))*100)}%"></i><b>${d[1]||""}</b><small>${d[0].slice(5)}</small></div>`).join("")}</div></section>`;})():`<p class="muted small">행을 누르면 그 아이디의 학습 상세가 보여요.</p>`}
   </div>`;
   m.querySelector("#admre").onclick=()=>{ADM=null;VIEW.admin(m);};
@@ -3696,7 +3719,7 @@ async function enterFB(uid,info,raw,keep){
   try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
   await loadGlobal();
   if(!C.length)indexData(await openBlob(await keyFromRaw(raw)));
-  renderRoute();loadGichul();loadMunpul();loadNuri();loadMock();loadTables();setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
+  renderRoute();loadGichul();loadMunpul();loadNuri();loadMock();loadTables();setTimeout(logAccess,1500);setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
   toast(`${ME.id}님, 반가워요!`);
 }
 let needCodeLogin=false;
@@ -3756,6 +3779,7 @@ function showLock(mode){
     <label class="switch"><input type="checkbox" id="remember" checked><i></i>이 기기에서 자동 로그인</label>
     <p class="err" id="err" role="alert"></p>
     <button class="btn pri lg block" id="go-btn" type="submit">${mode==="login"?"로그인":"가입하고 시작하기"}</button>
+    <p class="lknote">로그인하면 접속 시각·기기 종류·IP가 계정 보안을 위해 관리자에게 기록돼요.</p>
   </form></div>`;
   m.querySelectorAll("[data-lm]").forEach(b=>b.onclick=()=>showLock(b.dataset.lm));
   m.querySelector("#lock").addEventListener("submit",async e=>{
