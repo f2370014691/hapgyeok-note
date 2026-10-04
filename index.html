@@ -3779,7 +3779,6 @@ function showLock(mode){
     <label class="switch"><input type="checkbox" id="remember" checked><i></i>이 기기에서 자동 로그인</label>
     <p class="err" id="err" role="alert"></p>
     <button class="btn pri lg block" id="go-btn" type="submit">${mode==="login"?"로그인":"가입하고 시작하기"}</button>
-    <p class="lknote">로그인하면 접속 시각·기기 종류·IP가 계정 보안을 위해 관리자에게 기록돼요.</p>
   </form></div>`;
   m.querySelectorAll("[data-lm]").forEach(b=>b.onclick=()=>showLock(b.dataset.lm));
   m.querySelector("#lock").addEventListener("submit",async e=>{
