@@ -1407,7 +1407,10 @@ const isDue=i=>{const x=ss(i);return !!x&&x[1]<=dn();};
 const isMastered=i=>{const x=ss(i);return !!x&&x[0]>=4;};
 const isWrong=i=>{const x=ss(i);return !!x&&x[2]>0;};
 /* 채점 간격 (설정에서 바꿀 수 있음) */
-const RV=()=>{const r=S.iv||{};return{again:Math.max(1,Math.min(50,+r.again||5)),againDay:Math.max(0,+r.againDay||0),hard:r.hard==null?1:Math.max(0,+r.hard),good:(Array.isArray(r.good)&&r.good.length?r.good:[1,3,7,14,30]).map(n=>Math.max(1,+n||1))};};
+const RV=()=>{const r=S.iv||{},num=(v,d,mn,mx)=>v==null||v===""||isNaN(+v)?d:Math.max(mn,Math.min(mx,+v));
+  return{again:num(r.again,5,0,50),againDay:num(r.againDay,0,0,365),hardN:num(r.hardN,0,0,50),hard:num(r.hard,1,0,365),goodN:num(r.goodN,0,0,50),
+    good:(Array.isArray(r.good)&&r.good.length?r.good:[1,3,7,14,30]).map(n=>Math.max(1,+n||1))};};
+const rvLab=(n,d)=>n>0?`${n}장 뒤`:dayL(d);
 const goodDays=b=>{const g=RV().good;return g[Math.min(g.length-1,Math.max(0,b-2))];};
 const BMAX=()=>RV().good.length+1;
 const dayL=n=>n===0?"오늘":n===1?"내일":n+"일 뒤";
@@ -1833,9 +1836,9 @@ function drawCard(){
     <div class="ctl">${pr?`<div class="pair9">${pr.opts.map((j,k)=>`<button class="po ${pr.pick!=null?(k===right?"ok":k===pr.pick?"ng":"dim"):""}" data-po="${k}" ${pr.pick!=null?"disabled":""}><span class="pk">${"AB"[k]}</span><span>${fmt(C[j][5])}</span></button>`).join("")}</div>
         ${pr.pick!=null?`<div class="reveal"><button class="showbtn" id="pnx">${pr.pick===right?"맞았어요 · 다음":"다음 (곧 다시 나와요)"} ${ico("chev",16)}</button></div>`:""}`
       :full?`<div class="grade ${tr?"sug"+(tok>=tr.length*.8?2:tok>=tr.length*.5?1:0):""}">
-        <button class="g0" data-g="0"><em>😵</em><b>몰랐어요</b><small>+0 · ${RV().again}장 뒤</small></button>
-        <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+5 · ${dayL(RV().hard)}</small></button>
-        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,s.combo)} · ${dayL(goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
+        <button class="g0" data-g="0"><em>😵</em><b>몰랐어요</b><small>+0 · ${rvLab(RV().again,RV().againDay)}</small></button>
+        <button class="g1" data-g="1"><em>🤔</em><b>헷갈려요</b><small>+5 · ${rvLab(RV().hardN,RV().hard)}</small></button>
+        <button class="g2" data-g="2"><em>😎</em><b>알아요</b><small>+${ptsOf(2,s.combo)} · ${rvLab(RV().goodN,goodDays(Math.min(BMAX(),Math.max(2,(x?x[0]:0)+1))))}</small></button></div>`
       :typing&&!sh?`<div class="ty9">
           <div class="ty9box ${multi?"multi":""} ${tcells?"cmp":""}">${tcells?(vs?`<div class="tyv n${tcells.length}">${tcells.map((cl,k)=>`${k?`<span class="vsb">VS</span>`:""}<label class="tyvc"><b>${esc(cl.lab)}</b><textarea class="tyai" data-k="${k}" rows="2" placeholder="${esc(cl.lab)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}</div>`
               :`<div class="tyvh"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>${(()=>{let o="";for(let k=0;k<tcells.length;k+=2){const cl=tcells[k];o+=`<div class="tyvr">${cl.lab?`<div class="vlab">${esc(cl.lab)}</div>`:""}<textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(vr.A)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea><textarea class="tyai" data-k="${k+1}" rows="1" placeholder="${esc(vr.B)}" spellcheck="false">${esc((s.draftA||[])[k+1]||"")}</textarea></div>`;}return o;})()}`)
@@ -1907,7 +1910,8 @@ function answer(g){
   const pts=ptsOf(g,s.combo);
   s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score+=pts;s.xp+=pts;S.xp=(S.xp||0)+pts;
   s.flash={g,pts,combo:s.combo};
-  if(g===0&&(s.again[i]||0)<3){s.again[i]=(s.again[i]||0)+1;s.q.splice(Math.min(s.q.length,s.pos+RV().again),0,i);}
+  {const R=RV(),nn=g===0?R.again:g===1?R.hardN:R.goodN;   // 같은 학습에서 n장 뒤 다시
+    if(nn>0&&(s.again[i]||0)<3){s.again[i]=(s.again[i]||0)+1;s.q.splice(Math.min(s.q.length,s.pos+nn),0,i);}}
   s.pos++;s.shown=0;s.typed=null;save();drawCard();
   sfx(g===2?([5,10,20,30,50].includes(s.combo)?"combo":"good"):g===1?"mid":"bad");
   if(g===2&&[5,10,20,30,50].includes(s.combo))burst(PBOX&&PBOX.querySelector("#card"),s.combo>=10?40:26);
@@ -2438,10 +2442,10 @@ VIEW.set=function(m){
     <section class="group"><h3>채점 규칙</h3>
       ${(()=>{const R=RV(),n=(id,v,mn,mx)=>`<input type="number" class="numin sm" id="${id}" value="${v}" min="${mn}" max="${mx}" inputmode="numeric">`;
         return `<div class="rv9">
-        <div class="rvr"><span class="rvl"><i class="dot g0"></i><b>몰랐어요</b></span><span class="rvc">같은 학습에서 ${n("rv-a",R.again,1,50)}장 뒤 다시 · 다음 복습 ${n("rv-ad",R.againDay,0,30)}일 뒤</span></div>
-        <div class="rvr"><span class="rvl"><i class="dot g1"></i><b>헷갈려요</b></span><span class="rvc">${n("rv-h",R.hard,0,60)}일 뒤 다시</span></div>
-        <div class="rvr"><span class="rvl"><i class="dot g2"></i><b>알아요</b></span><span class="rvc">연속으로 알 때마다 ${R.good.map((v,k)=>n("rv-g"+k,v,1,365)).join("<em>→</em>")}일 뒤</span></div>
-        <div class="rvb"><small>0일 = 오늘 · 알아요를 3번 연속하면 '외움'</small><button class="btn sm" id="rv-reset">기본값으로</button></div></div>`;})()}
+        <div class="rvr"><span class="rvl"><i class="dot g0"></i><b>몰랐어요</b></span><span class="rvc">같은 학습에서 ${n("rv-a",R.again,0,50)}장 뒤 다시 · ${n("rv-ad",R.againDay,0,365)}일 뒤 복습</span></div>
+        <div class="rvr"><span class="rvl"><i class="dot g1"></i><b>헷갈려요</b></span><span class="rvc">같은 학습에서 ${n("rv-hn",R.hardN,0,50)}장 뒤 다시 · ${n("rv-h",R.hard,0,365)}일 뒤 복습</span></div>
+        <div class="rvr"><span class="rvl"><i class="dot g2"></i><b>알아요</b></span><span class="rvc">같은 학습에서 ${n("rv-gn",R.goodN,0,50)}장 뒤 다시 · ${R.good.map((v,k)=>n("rv-g"+k,v,1,365)).join("<em>→</em>")}일 뒤 복습 <em>(연속으로 알 때마다)</em></span></div>
+        <div class="rvb"><small>0장 = 이번 학습에서는 다시 안 나옴 · 0일 = 오늘 · 알아요를 3번 연속하면 '외움'</small><button class="btn sm" id="rv-reset">기본값으로</button></div></div>`;})()}
     </section>
     <section class="group"><h3>계정</h3>
       <div class="item"><span><b>${esc(ME.id)}</b><small>기록은 서버에 자동 저장돼요</small></span><button class="btn sm" id="lo">로그아웃</button></div>
@@ -2455,7 +2459,8 @@ VIEW.set=function(m){
   $("#o-rv").onchange=e=>set("reveal",e.target.value);$("#o-ty").onchange=e=>{set("typing",e.target.checked);set("mode",e.target.checked?"type":"click");};$("#o-sh").onchange=e=>set("order",e.target.checked?"shuf":"seq");
   $("#ex").onchange=e=>{S.exam=e.target.value;save();renderToc();};
   {const rvSave=()=>{const g=k=>+(m.querySelector(k)||{}).value;const R=RV();
-      S.iv={again:Math.max(1,Math.min(50,g("#rv-a")||R.again)),againDay:Math.max(0,Math.min(30,g("#rv-ad")||0)),hard:Math.max(0,Math.min(60,isNaN(g("#rv-h"))?R.hard:g("#rv-h"))),good:R.good.map((v,k)=>Math.max(1,Math.min(365,g("#rv-g"+k)||v)))};save();SES=null;toast("채점 간격을 저장했어요");};
+      const gv=(k,d)=>{const v=g(k);return isNaN(v)?d:v;};
+      S.iv={again:gv("#rv-a",R.again),againDay:gv("#rv-ad",R.againDay),hardN:gv("#rv-hn",R.hardN),hard:gv("#rv-h",R.hard),goodN:gv("#rv-gn",R.goodN),good:R.good.map((v,k)=>Math.max(1,Math.min(365,g("#rv-g"+k)||v)))};save();SES=null;toast("채점 간격을 저장했어요");};
     m.querySelectorAll(".rv9 input").forEach(x=>x.onchange=rvSave);
     const rr=m.querySelector("#rv-reset");if(rr)rr.onclick=()=>{delete S.iv;save();SES=null;VIEW.set(m);toast("기본값으로 되돌렸어요");};}
   $("#o-md").onchange=e=>{set("mode",e.target.value);set("typing",e.target.value==="type");};
