@@ -1437,6 +1437,51 @@ body.glock .qfbar{flex:none}
   body.grun .phd9{margin:0 0 8px;padding:0;min-height:0;border:0}
   body.grun main>.page{padding-top:10px}
 }
+
+/* v39: 해이실 */
+.pgc .modes8.m3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.hy9{max-width:860px}
+.hybar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;margin:0 0 12px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.hyprog{font-size:13px;color:var(--ink-3);margin-right:auto}.hyprog b{color:var(--pri);font-size:15px}
+.hyact{display:flex;gap:6px;flex-wrap:wrap}
+.hyh{font-size:20px;margin:22px 0 6px;padding-bottom:6px;border-bottom:2px solid var(--pri)}
+.hysh{font-size:14px;color:var(--ink-3);margin:14px 0 6px;font-weight:800}
+.hyl{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:6px;align-items:start;margin:6px 0;transition:transform .15s}
+.hyn{padding-top:10px;font-size:13px;font-weight:800;color:var(--ink-3);text-align:right}
+.hyl.cat .hyn{color:var(--pri)}
+.hyi{width:100%;resize:none;overflow:hidden;font:inherit;font-size:16px;line-height:1.5;padding:8px 11px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface,#fff);color:var(--ink);outline:none}
+.hyl.cat .hyi{font-weight:800}.hyl.big .hyi{font-weight:700}
+.hyi:focus{border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 18%,transparent)}
+.hyl.ok .hyi{border-color:var(--good);background:color-mix(in srgb,var(--good) 9%,var(--surface,#fff))}
+.hyl.ng .hyi{border-color:var(--bad,#e5484d);background:color-mix(in srgb,var(--bad,#e5484d) 8%,var(--surface,#fff))}
+.hyfb{font-size:13px;margin-top:3px;min-height:0}
+.hyx{color:var(--bad,#e5484d);font-weight:800;margin-right:8px}.hyo{color:var(--good);font-weight:800}
+.hyv i{font-style:normal;color:var(--ink-3)}.hyv s{color:var(--bad,#e5484d);text-decoration:line-through;background:color-mix(in srgb,var(--bad,#e5484d) 12%,transparent);border-radius:3px}
+.hypk{font-size:13px;color:var(--ink-3);margin-top:3px;padding:4px 8px;border-left:3px solid var(--pri);background:var(--bg-2,#f5f5f8);border-radius:4px}
+.shake9{animation:shk .35s}@keyframes shk{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.hysec{background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 12px}
+.hyq{display:flex;align-items:center;gap:8px;font-size:15px;margin:0 0 8px}
+.hyp{margin:6px 0;line-height:2.05;font-size:15.5px;word-break:keep-all}
+.hyb{display:inline;padding:1px 6px;margin:0 1px;border:0;border-radius:6px;background:color-mix(in srgb,var(--pri) 16%,var(--bg-2,#eee));color:transparent;font:inherit;font-weight:700;cursor:pointer;line-height:1.6;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.hyb span{color:transparent}
+.hyb.on{background:color-mix(in srgb,var(--pri) 12%,transparent)}.hyb.on span{color:var(--pri)}
+.hyk{background:color-mix(in srgb,var(--pri) 14%,transparent);color:var(--pri);font-weight:800;padding:0 3px;border-radius:4px}
+.hybw{display:inline-block;vertical-align:baseline}
+.hybi{font:inherit;font-size:15px;font-weight:700;padding:1px 6px;border:0;border-bottom:2px solid var(--pri);background:color-mix(in srgb,var(--pri) 7%,transparent);border-radius:5px 5px 0 0;color:var(--ink);outline:none;max-width:100%}
+.hybi.ok{border-color:var(--good);color:var(--good);background:color-mix(in srgb,var(--good) 10%,transparent)}
+.hybi.ng{border-color:var(--bad,#e5484d);color:var(--bad,#e5484d);background:color-mix(in srgb,var(--bad,#e5484d) 10%,transparent)}
+.hybi.pk{border-color:var(--mid);color:color-mix(in srgb,var(--mid) 80%,var(--ink))}
+.hytw{overflow-x:auto;margin:6px 0}
+.hyt{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.9}
+.hyt th,.hyt td{border:1px solid var(--line);padding:6px 9px;vertical-align:top;word-break:keep-all}
+.hyt th{background:var(--bg-2,#f5f5f8)}
+@media (max-width:699px){
+  .pgc .modes8.m3{grid-template-columns:minmax(0,1fr)}
+  .hyl{grid-template-columns:28px minmax(0,1fr) auto;gap:4px}
+  .hyn{font-size:11.5px}
+  .hysec{padding:12px}
+  .hybar{top:0}
+}
 </style>
 </head>
 <body>
@@ -1563,6 +1608,7 @@ const IC={
 };
 IC.target='<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>';
 Object.assign(IC,{flame:'<path d="M12 22c4 0 7-2.7 7-7 0-3-1.6-5.4-3.5-7.2-.4 1.8-1.4 3.2-2.8 3.7.3-3.3-1-6.4-3.7-8.5C9 6 5 9 5 15c0 4.3 3 7 7 7z"/>',check:'<path d="m5 12 5 5L20 7"/>',arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>'});
+IC.eye='<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';IC.book='<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/>';
 IC.pen='<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>';
 const ico=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
 const DLET=["개","각","교"];
@@ -1581,7 +1627,7 @@ function learnQueue(idx){const q=idx.filter(isDue).concat(idx.filter(isNew));ret
 
 /* ---------- 페이지: #/fc 플래시카드 · #/table 표 · #/gichul 기출 · #/search 찾기 · #/set 설정 ---------- */
 let route={v:"home"},FCKEEP=false;
-const PAGES=[["home","홈","home"],["fc","플래시카드","cards"],["table","표","grid"],["gichul","기출","file"],["munpul","문제풀이","pen"],["search","찾기","search"]];
+const PAGES=[["home","홈","home"],["fc","플래시카드","cards"],["table","표","grid"],["gichul","기출","file"],["munpul","문제풀이","pen"],["heisil","해이실","book"],["search","찾기","search"]];
 function go(h){if(location.hash===h)renderRoute();else location.hash=h;}
 function parseHash(){const p=location.hash.replace(/^#\/?/,"").split("/").map(decodeURIComponent);
   if(PAGES.some(x=>x[0]===p[0])||p[0]==="set")return{v:p[0],q:p[1]||""};return{v:"home"};}
@@ -1641,7 +1687,7 @@ function renderSide(){
   const side=document.getElementById("side"),tab=document.getElementById("tabbar");
   if(!ME){if(side)side.innerHTML="";if(tab)tab.innerHTML="";return;}
   const dd=ddays(),cur=route.v;
-  const PG=PAGES.filter(p=>p[0]!=="munpul"||MQ);
+  const PG=PAGES.filter(p=>(p[0]!=="munpul"||MQ)&&(p[0]!=="heisil"||NU));
   const items=PG.map(([v,l,ic])=>`<a href="#/${v}" class="nv ${cur===v?"on":""}">${ico(ic,19)}<span>${l}</span></a>`).join("");
   if(side)side.innerHTML=`<div class="sbrand"><span class="logo">합</span><b>합격노트</b></div>
     <nav class="snav">${items}</nav>
@@ -1656,10 +1702,10 @@ const pageHead=(title,withSp,sub,cnt,withAll,cf)=>`<header class="phd9"><div><h1
 
 /* 표 */
 /* ---------- 표·기출·문제풀이: 플래시카드처럼 먼저 범위 고르기 ---------- */
-let PGRUN={table:false,gichul:false,munpul:false},PGKEEP=false;
+let PGRUN={table:false,gichul:false,munpul:false,heisil:false},PGKEEP=false;
 function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+"범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
 /* 고르기 화면: 한 단계씩 (고르면 다음 단계, 앞 단계는 '뒤로'로) */
-let WZ={};const WZ0={fc:"d",table:"d",gichul:"d",munpul:"src"};
+let WZ={};const WZ0={fc:"d",table:"d",gichul:"d",munpul:"src",heisil:"k"};
 const wzBack=(steps,cur)=>{const i=steps.indexOf(cur);return i>0?`<button class="btn sm wzback" data-wzb="${steps[i-1]}">${ico("left",14)}뒤로</button>`:"";};
 const wzNo=(steps,cur)=>`<span class="wzno">${steps.indexOf(cur)+1} / ${steps.length}</span>`;
 function pgChooser(m,pg){
@@ -2342,6 +2388,146 @@ async function loadMunpul(){
     if(route.v==="munpul"&&C.length&&!(SES&&inPlayer()))renderRoute();else if(ME)renderSide();
   }catch(e){}
 }
+/* ---------- 해이실: 누리과정 해설서 빈칸 · 영역 목표와 내용 ---------- */
+let NU=null,HY={k:"area",d:0,md:"type"},HYT={key:"",v:{},open:{}};
+try{Object.assign(HY,JSON.parse(localStorage.getItem(SBASE+":hy")||"{}"));}catch(e){}
+const hySave=()=>{try{localStorage.setItem(SBASE+":hy",JSON.stringify(HY));}catch(e){}};
+async function loadNuri(){
+  try{const r=await fetch("nuri.bin",{cache:"no-cache"});if(!r.ok)return;
+    const b=new Uint8Array(await r.arrayBuffer());
+    const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b.slice(0,12)},await keyFromRaw(RAWKEY),b.slice(12));
+    NU=await new Response(new Blob([pt]).stream().pipeThrough(new DecompressionStream("gzip"))).json();
+    if(route.v==="heisil")renderRoute();else if(ME)renderSide();
+  }catch(e){}
+}
+/* 한글 입력 중인 글자는 틀렸다고 하지 않기 (자모가 맞게 쌓이는 중이면 통과) */
+const HCHO="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ",HJONG=" ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
+const HJ1={3:1,5:4,6:4,9:8,10:8,11:8,12:8,13:8,14:8,15:8,18:17};
+const HVP={9:8,10:8,11:8,14:13,15:13,16:13,19:18};
+const hsy=c=>{const n=c?c.charCodeAt(0)-0xAC00:-1;return n>=0&&n<11172?{L:Math.floor(n/588),V:Math.floor(n%588/28),T:n%28}:null;};
+function hPart(c,t,nx){
+  if(c===t)return true;const ci=HCHO.indexOf(c),T=hsy(t);
+  if(ci>=0)return !!T&&T.L===ci;
+  const C=hsy(c);if(!C||!T||C.L!==T.L)return false;
+  if(C.V!==T.V)return C.T===0&&HVP[T.V]===C.V;
+  if(C.T===0)return true;
+  if(HJ1[T.T]===C.T)return true;
+  const N=hsy(nx);if(N&&T.T===0&&HJONG[C.T]===HCHO[N.L])return true;
+  return false;
+}
+const hyNorm=v=>String(v).replace(/[∙•ㆍ]/g,"·").replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
+function hyCmp(v,t,comp){
+  v=hyNorm(v);t=hyNorm(t);if(v===t)return{st:"ok",j:v.length};
+  const n=v.length;
+  for(let j=0;j<n;j++)if(v[j]!==t[j]){if(j===n-1&&(comp||hPart(v[j],t[j],t[j+1])))return{st:"ing",j};return{st:"ng",j};}
+  return n>t.length?{st:"ng",j:t.length}:{st:"ing",j:n};
+}
+const hyDocs=()=>NU?NU.docs:[],hyAreas=()=>hyDocs().filter(x=>x.area);
+const hyBlanks=s=>{const o=[];String(s).replace(/\{\{([\s\S]*?)\}\}/g,(m,a)=>{o.push(a);return m;});return o;};
+function hyAreaLines(list){const L=[];list.forEach(d=>{const a=d.area;L.push({h:a.name+" 영역"});L.push({sh:"목표"});L.push({n:"",t:a.goal,big:1});a.goals.forEach((g,i)=>L.push({n:(i+1)+")",t:g}));
+  L.push({sh:"내용 범주와 내용"});a.cats.forEach(c=>{L.push({n:"범주",t:c.name,cat:1});c.items.forEach(t=>L.push({n:"·",t}));});});return L;}
+/* 영역 목표·내용의 빈칸 클릭: 학습지의 '목표'·'내용' 문항이 있으면 그것, 없으면 줄마다 통째로 가리기 */
+function hyAreaSecs(d){const s=d.sections.filter(x=>/^\s*(목표|내용)\s*$/.test(x.h)).map(x=>Object.assign({},x,{h:d.area.name+" · "+x.h}));if(s.length)return s;
+  const a=d.area;return[{h:a.name+" · 목표",lines:[`{{${a.goal}}}`,...a.goals.map((g,i)=>`${i+1}) {{${g}}}`)]},{h:a.name+" · 내용",lines:a.cats.flatMap(c=>[`[{{${c.name}}}]`,...c.items.map(t=>`· {{${t}}}`)])}];}
+function hyCurDocs(){const D=hyDocs();if(HY.k==="area"){const A=hyAreas();return HY.d<0?A:A[HY.d]?[A[HY.d]]:A.slice(0,1);}return D[HY.d]?[D[HY.d]]:D.slice(0,1);}
+function hyChooser(m){
+  const A=hyAreas(),D=hyDocs(),pg="heisil";
+  const steps=["k","d","md","go"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
+  const TT={k:"무엇을 외울까요",d:HY.k==="area"?"영역":"자료",md:"방식",go:"시작"};
+  const MDS=HY.k==="area"?[["type","⌨️","100% 타이핑","한 글자라도 틀리면 바로 알려 줘요"],["click","👆","빈칸 클릭","핵심어를 눌러서 확인해요"]]
+    :[["click","👆","빈칸 클릭","가려진 핵심어를 눌러서 확인"],["type","⌨️","빈칸 타이핑","빈칸마다 직접 써요 · 틀리면 바로 표시"],["read","📖","답 보며 읽기","핵심어를 표시한 채로 읽어요"]];
+  if(!MDS.some(x=>x[0]===HY.md))HY.md=MDS[0][0];
+  const nb=d=>d.sections.reduce((a,s)=>a+hyBlanks((s.lines||[]).join("\n")+JSON.stringify(s.table||[])).length,0);
+  let body="";
+  if(cur==="k")body=`<div class="modes8"><button class="md8 ${HY.k==="area"?"on":""}" data-hk="area"><span class="mi">🎯</span><b>영역 목표 · 내용</b><small>5개 영역의 목표와 내용 범주·내용</small></button><button class="md8 ${HY.k==="doc"?"on":""}" data-hk="doc"><span class="mi">📘</span><b>해설서 빈칸</b><small>이해·성격·인간상·목적과 목표·운영·교수학습 및 평가 …</small></button></div>`;
+  else if(cur==="d")body=HY.k==="area"?`<div class="bigpick"><button class="bp ${HY.d<0?"on":""}" data-hd="-1"><b>5개 영역 전체</b><small>${A.length}개 영역</small></button>${A.map((d,i)=>`<button class="bp ${HY.d===i?"on":""}" data-hd="${i}"><b><span class="no8">${i+1}</span>${esc(d.area.name)}</b><small>내용 범주 ${d.area.cats.length}개 · 내용 ${d.area.cats.reduce((a,c)=>a+c.items.length,0)}개</small></button>`).join("")}</div>`
+    :`<div class="bigpick">${D.map((d,i)=>`<button class="bp ${HY.d===i?"on":""}" data-hd="${i}"><b><span class="no8">${i+1}</span>${esc(d.title)}</b><small>문항 ${d.sections.length}개 · 빈칸 ${nb(d)}개</small></button>`).join("")}</div>`;
+  else if(cur==="md")body=`<div class="modes8 ${MDS.length>2?"m3":""}">${MDS.map(([v,ic,l,sm])=>`<button class="md8 ${HY.md===v?"on":""}" data-hm="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`;
+  else{const ds=hyCurDocs(),t=HY.k==="area"?(HY.d<0?"5개 영역 전체":ds[0].area.name+" 영역")+" 목표 · 내용":ds[0].title;
+    body=`<div class="go8 wzgo"><div class="go8t"><small>선택한 범위</small><b>${esc(t)}</b><span class="muted small">${MDS.find(x=>x[0]===HY.md)[2]}</span></div><button class="btn pri lg gobtn" id="hgo">${ico("play",17)}시작</button></div>`;}
+  m.innerHTML=`<div class="page fc8 pgc wzp"><header class="fc8h phd9"><div><h1>해이실</h1></div></header>
+    <div class="wzh">${wzBack(steps,cur)}<h2 class="st8"><span>${steps.indexOf(cur)+1}</span>${TT[cur]}</h2></div>${body}</div>`;
+  const go=st=>{WZ[pg]=st;hySave();hyChooser(m);window.scrollTo({top:0});};
+  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
+  on("[data-wzb]",b=>go(b.dataset.wzb));
+  on("[data-hk]",b=>{if(HY.k!==b.dataset.hk){HY.k=b.dataset.hk;HY.d=HY.k==="area"?-1:0;HY.md=HY.k==="area"?"type":"click";}go("d");});
+  on("[data-hd]",b=>{HY.d=+b.dataset.hd;go("md");});on("[data-hm]",b=>{HY.md=b.dataset.hm;go("go");});
+  const g=m.querySelector("#hgo");if(g)g.onclick=()=>{hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});};
+}
+VIEW.heisil=function(m){
+  if(!NU){m.innerHTML=`<div class="page"><div class="empty">해이실 자료를 불러오는 중이에요</div></div>`;return;}
+  if(!PGRUN.heisil)return hyChooser(m);
+  const ds=hyCurDocs(),area=HY.k==="area",key=HY.k+":"+HY.d+":"+HY.md;
+  if(HYT.key!==key)HYT={key,v:{},open:{}};
+  const title=area?(HY.d<0?"5개 영역 전체":ds[0].area.name+" 영역")+" 목표 · 내용":ds[0].title;
+  const mlab={type:area?"100% 타이핑":"빈칸 타이핑",click:"빈칸 클릭",read:"답 보며 읽기"}[HY.md];
+  m.innerHTML=`<div class="page hy9"><header class="phd9"><div><h1>${esc(title)}</h1><p>${mlab}</p></div></header>
+    <div class="hybar"><span class="hyprog" id="hyprog"></span><span class="hyact"></span></div><section id="hybody"></section></div>`;
+  addChg(m,"heisil");
+  const B=m.querySelector("#hybody"),act=m.querySelector(".hyact"),prog=m.querySelector("#hyprog");
+  if(area&&HY.md==="type")return hyTypeLines(B,act,prog,hyAreaLines(ds));
+  const secs=area?ds.flatMap(hyAreaSecs):ds[0].sections;
+  hyCloze(B,act,prog,secs,HY.md);
+};
+/* 줄 전체를 100% 똑같이 쓰기 */
+function hyTypeLines(B,act,prog,L){
+  const T=L.filter(x=>x.t!=null),V=HYT.v;
+  let i=0;B.innerHTML=L.map(x=>{if(x.h)return `<h2 class="hyh">${esc(x.h)}</h2>`;if(x.sh)return `<h3 class="hysh">${esc(x.sh)}</h3>`;const k=i++;
+    return `<div class="hyl ${x.cat?"cat":""} ${x.big?"big":""}" data-i="${k}"><span class="hyn">${esc(x.n)}</span><div class="hyw"><textarea class="hyi" rows="1" data-i="${k}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${x.cat?"내용 범주":"그대로 써 보세요"}"></textarea><div class="hyfb"></div></div><button class="iconbtn sm hyhint" data-i="${k}" title="다음 글자 힌트">💡</button></div>`;}).join("");
+  act.innerHTML=`<button class="btn sm" id="hypeek">${ico("eye",14)}정답 보기</button><button class="btn sm dangerline" id="hyrst">${ico("undo",14)}다시 하기</button>`;
+  const tas=[...B.querySelectorAll(".hyi")];
+  const grow=t=>{t.style.height="auto";t.style.height=t.scrollHeight+"px";};
+  const upd=()=>{const n=tas.filter(t=>t.closest(".hyl").classList.contains("ok")).length;prog.innerHTML=`<b class="num">${n}</b> / ${tas.length}줄 완성${n===tas.length?" 🎉":""}`;};
+  const check=(ta,comp)=>{const k=+ta.dataset.i,t=T[k].t,row=ta.closest(".hyl"),fb=row.querySelector(".hyfb");V[k]=ta.value;
+    const r=hyCmp(ta.value,t,comp);row.classList.remove("ok","ng","ing");row.classList.add(r.st);
+    if(r.st==="ng"){const v=ta.value;fb.innerHTML=`<span class="hyx">✕ 틀렸어요</span><span class="hyv"><i>${esc(v.slice(0,r.j))}</i><s>${esc(v.slice(r.j))||"&nbsp;"}</s></span>`;}
+    else if(r.st==="ok"){fb.innerHTML=`<span class="hyo">✓ 맞았어요</span>`;ta.readOnly=true;}
+    else fb.innerHTML="";
+    grow(ta);upd();return r.st;};
+  tas.forEach((ta,k)=>{if(V[k]!=null){ta.value=V[k];check(ta,false);}else grow(ta);
+    let comp=false;
+    ta.addEventListener("compositionstart",()=>comp=true);ta.addEventListener("compositionend",()=>{comp=false;check(ta,false);});
+    ta.oninput=e=>{const st=check(ta,comp||e.isComposing);if(st==="ok"){sfx("good");const nx=tas.slice(k+1).find(x=>!x.readOnly);if(nx)setTimeout(()=>nx.focus(),60);}};
+    ta.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const st=check(ta,false);if(st!=="ok"){ta.closest(".hyl").classList.add("shake9");sfx("bad");setTimeout(()=>ta.closest(".hyl").classList.remove("shake9"),400);}}};});
+  B.querySelectorAll(".hyhint").forEach(b=>b.onclick=()=>{const k=+b.dataset.i,ta=tas[k],t=hyNorm(T[k].t);if(ta.readOnly)return;
+    const v=hyNorm(ta.value);let j=0;while(j<v.length&&v[j]===t[j])j++;ta.value=t.slice(0,j+1);check(ta,false);ta.focus();});
+  act.querySelector("#hypeek").onclick=()=>{const on=B.classList.toggle("peek");B.querySelectorAll(".hyl").forEach(r=>{let p=r.querySelector(".hypk");if(on&&!p){p=document.createElement("div");p.className="hypk";p.textContent=T[+r.dataset.i].t;r.querySelector(".hyw").appendChild(p);}if(!on&&p)p.remove();});};
+  act.querySelector("#hyrst").onclick=()=>{HYT.v={};VIEW.heisil(document.getElementById("main"));};
+  upd();
+}
+/* 빈칸 클릭 · 빈칸 타이핑 · 답 보며 읽기 */
+function hyCloze(B,act,prog,secs,md){
+  let bi=0;const ANS=[];
+  const fill=s=>esc(s).replace(/\{\{([\s\S]*?)\}\}/g,(m,a)=>{const k=bi++;const ans=a.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'");ANS.push(ans);
+    if(md==="read")return `<mark class="hyk">${a}</mark>`;
+    if(md==="click")return `<button class="hyb ${HYT.open[k]?"on":""}" data-b="${k}"><span>${a}</span></button>`;
+    return `<span class="hybw"><input class="hybi" data-b="${k}" size="${Math.max(2,[...ans].length+1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></span>`;}).replace(/\n/g,"<br>");
+  B.innerHTML=secs.map((s,si)=>`<section class="hysec"><h3 class="hyq"><span class="no8">${si+1}</span><span>${fill(s.h||"")}</span></h3>
+    ${(s.lines||[]).map(l=>`<p class="hyp">${fill(l)}</p>`).join("")}
+    ${s.table&&s.table.length?`<div class="hytw"><table class="hyt">${s.table.map((r,ri)=>`<tr>${r.map(c=>ri===0?`<th>${fill(c)}</th>`:`<td>${fill(c)}</td>`).join("")}</tr>`).join("")}</table></div>`:""}</section>`).join("");
+  const N=ANS.length;
+  if(md==="read"){prog.innerHTML=`핵심어 <b class="num">${N}</b>개`;act.innerHTML="";return;}
+  if(md==="click"){
+    const upd=()=>{const n=B.querySelectorAll(".hyb.on").length;prog.innerHTML=`<b class="num">${n}</b> / ${N}개 확인`;};
+    act.innerHTML=`<button class="btn sm" id="hyall">모두 보기</button><button class="btn sm" id="hynone">모두 가리기</button>`;
+    B.querySelectorAll(".hyb").forEach(b=>b.onclick=()=>{const k=+b.dataset.b;HYT.open[k]=!HYT.open[k];b.classList.toggle("on",!!HYT.open[k]);upd();});
+    act.querySelector("#hyall").onclick=()=>{B.querySelectorAll(".hyb").forEach(b=>{b.classList.add("on");HYT.open[+b.dataset.b]=true;});upd();};
+    act.querySelector("#hynone").onclick=()=>{B.querySelectorAll(".hyb").forEach(b=>b.classList.remove("on"));HYT.open={};upd();};
+    upd();return;}
+  const ins=[...B.querySelectorAll(".hybi")],V=HYT.v;
+  const upd=()=>{const n=ins.filter(x=>x.classList.contains("ok")).length;prog.innerHTML=`<b class="num">${n}</b> / ${N}칸 맞힘${n===N&&N?" 🎉":""}`;};
+  const check=(x,comp)=>{const k=+x.dataset.b;V[k]=x.value;const r=x.value?hyCmp(x.value,ANS[k],comp):{st:""};x.classList.remove("ok","ng","ing","pk");if(r.st)x.classList.add(r.st);if(r.st==="ok")x.readOnly=true;upd();return r.st;};
+  act.innerHTML=`<button class="btn sm" id="hypk">${ico("eye",14)}이 칸 답 보기</button><button class="btn sm dangerline" id="hyrst">${ico("undo",14)}다시 하기</button>`;
+  let last=null;
+  ins.forEach((x,i)=>{if(V[i]!=null){x.value=V[i];check(x,false);}
+    let comp=false;x.addEventListener("compositionstart",()=>comp=true);x.addEventListener("compositionend",()=>{comp=false;check(x,false);});
+    x.onfocus=()=>last=x;
+    x.oninput=e=>{if(check(x,comp||e.isComposing)==="ok"){sfx("good");const nx=ins.slice(i+1).find(y=>!y.readOnly);if(nx)setTimeout(()=>nx.focus(),60);}};
+    x.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();if(check(x,false)!=="ok"){x.classList.add("ng");sfx("bad");}}};});
+  act.querySelector("#hypk").onclick=()=>{const x=last||ins.find(y=>!y.readOnly);if(!x)return;x.value=ANS[+x.dataset.b];check(x,false);x.classList.add("pk");};
+  act.querySelector("#hyrst").onclick=()=>{HYT.v={};VIEW.heisil(document.getElementById("main"));};
+  upd();
+}
 async function loadGichul(){
   try{
     let d;const r=await fetch("gichul.bin",{cache:"no-cache"});
@@ -2713,7 +2899,7 @@ async function enterFB(uid,info,raw,keep){
   else if(local){adopt(local);cloudDirty=true;}
   try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
   if(!C.length)indexData(await openBlob(await keyFromRaw(raw)));
-  renderRoute();loadGichul();loadMunpul();loadTables();setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
+  renderRoute();loadGichul();loadMunpul();loadNuri();loadTables();setSync(cloudDirty?"wait":"ok");if(cloudDirty)cloudFlush();
   toast(`${ME.id}님, 반가워요!`);
 }
 let needCodeLogin=false;
