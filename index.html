@@ -1053,7 +1053,6 @@ td.ng .cw.typ .ti{border-color:var(--bad);background:var(--bad-s)}
 /* 가리기 칸 */
 .hc9{inset:-5px -7px;border-radius:10px;border:1.5px dashed color-mix(in srgb,var(--dc,var(--pri)) 30%,var(--line-2));background:color-mix(in srgb,var(--dc,var(--pri)) 6%,var(--surface));color:color-mix(in srgb,var(--dc,var(--pri)) 55%,var(--ink-3))}
 .cw.hid:hover .hc9{border-style:solid}
-.cw.hid.on .cv{animation:czin .3s ease-out}
 
 /* 타이핑 칸: 기본 · 정답 · 오답 */
 .cw.typ .ti{inset:-5px -7px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);padding:4px 8px}
@@ -1074,6 +1073,7 @@ td.ok .cw.typ.peek::after,td.ng .cw.typ.peek::after,.tt.rev td .cw.typ::after{di
 td.ok .cw.typ .ti,td.ng .cw.typ .ti{padding-right:8px}
 td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;width:19px;height:19px;font-size:11px;box-shadow:0 0 0 2px var(--surface)}
 .cw.typ .ti{scrollbar-width:none}.cw.typ .ti::-webkit-scrollbar{display:none}
+.cw.hid .cv,.cw.hid .hc9,.cw.typ .ti{animation:none!important;transition:none!important}
 </style>
 </head>
 <body>
