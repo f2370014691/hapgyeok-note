@@ -1880,6 +1880,14 @@ body{background:var(--bg);background-image:radial-gradient(1200px 380px at 70% -
   .sbox i{width:24px;height:30px}.sbox i b{font-size:15px}.sbox i.sp{width:8px}
   .sst{gap:5px}.sst span{padding:2px 7px}
 }
+/* v57: 아이패드 손글씨 — 플래시카드·표 타이핑 */
+.ty9box.penmode .ty9bar{display:none}
+.ty9box .pentgw{margin-bottom:8px}
+.cw.tpen{position:relative;min-height:44px}
+.cw.tpen .tpc{position:absolute;inset:0;width:100%;height:100%;touch-action:none;background:repeating-linear-gradient(transparent 0 21px,color-mix(in srgb,var(--line) 70%,transparent) 21px 22px);border-radius:8px;cursor:crosshair}
+.cw.tpen .cv{visibility:hidden}
+.tbf.tbpen{gap:10px;flex-wrap:wrap}
+.tt.rev .cw.tpen .cv{visibility:visible;position:absolute;right:4px;bottom:3px;max-width:calc(100% - 8px);font-size:12px;line-height:1.35;background:color-mix(in srgb,var(--good) 14%,var(--surface));color:var(--ink);padding:2px 7px;border-radius:7px;z-index:2;pointer-events:none}
 </style>
 </head>
 <body>
@@ -2654,6 +2662,10 @@ function drawCard(){
   if(ta){ta.oninput=()=>{s.draft=ta.value;};const sub=v=>{s.typed=v;s.shown=99;s.hint=false;drawCard();};if(window.matchMedia&&matchMedia("(min-width:700px)").matches)ta.focus();
     ta.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sub(ta.value.trim());}};
     on("#tyok",()=>sub(ta.value.trim()));on("#tyskip",()=>sub(""));}
+  if(PENOK&&typing&&!sh&&!pr){const tb=box.querySelector(".ty9box");if(tb){
+    if(PENM){tb.querySelectorAll("textarea").forEach((t,k)=>{const d=document.createElement("div");d.innerHTML=penHTML("fc|"+c[0]+"|"+k,t.rows>2?3:2);t.replaceWith(d.firstElementChild);});tb.classList.add("penmode");
+      const rv=()=>{s.typed=null;s.shown=99;s.hint=false;drawCard();};on("#tyok",rv);on("#tyskip",rv);const ok=$("#tyok");if(ok)ok.textContent="정답 보기";}
+    tb.insertAdjacentHTML("afterbegin",penTg());bindPens(box,()=>drawCard());}}
   /* 휴대폰: 카드를 밀어서 채점 (답을 다 본 뒤) · 답 보기 전에는 좌우로 넘기기 */
   const canGrade=full&&!pr;
   const sc=$("#cscr");
@@ -3294,8 +3306,7 @@ function bindPens(root,rerender){
     ["touchstart","touchmove","touchend"].forEach(n=>cv.addEventListener(n,tblock,{passive:false}));
     cv.ondblclick=e=>e.preventDefault();cv.oncontextmenu=e=>e.preventDefault();
     const box=cv.closest(".pen9");
-    box.querySelector("[data-pu]").onclick=()=>{st.pop();draw();};
-    box.querySelector("[data-pc]").onclick=()=>{st.length=0;draw();};
+    if(box){box.querySelector("[data-pu]").onclick=()=>{st.pop();draw();};box.querySelector("[data-pc]").onclick=()=>{st.length=0;draw();};}
   });
 }
 const penHTML=(id,rows)=>`<div class="pen9"><canvas data-pen="${esc(id)}" style="height:${rows>2?170:120}px"></canvas><div class="penbar"><span>✍️ 여기에 써 보세요</span><button type="button" data-pu="1">되돌리기</button><button type="button" data-pc="1">지우기</button></div></div>`;
@@ -3359,10 +3370,12 @@ function tableHTML(t){
     ${t.rows.map((r,ri)=>`<tr>${t.cols.map((_,ci)=>{const v=r[ci]||"",rh=ci===0?"rh":"";
       if(md==="view"||!v||v==="-")return `<td class="${rh}"><div class="cw"><span class="cv">${fmt(v)}</span></div></td>`;
       if(md==="hide")return `<td class="${rh}"><div class="cw hid"><span class="cv">${fmt(v)}</span><button class="hc9" data-r="${ri}" data-c="${ci}" aria-label="${esc(t.cols[ci])} 답 보기">?</button></div></td>`;
+      if(PENOK&&PENM)return `<td class="${rh}"><div class="cw typ tpen"><span class="cv">${fmt(v)}</span><canvas class="tpc" data-pen="tb${t.id}|${ri}|${ci}"></canvas></div></td>`;
       return `<td class="${rh}"><div class="cw typ"><span class="cv">${fmt(v)}</span><textarea class="ti" rows="1" data-r="${ri}" data-c="${ci}" aria-label="${esc(t.cols[ci])} ${esc(plain(r[0]))}" autocomplete="off" spellcheck="false"></textarea></div></td>`;}).join("")}</tr>`).join("")}
     </tbody></table></div>
     ${md==="hide"?`<div class="tbf"><button class="btn sm" data-ta="show">모두 보기</button><button class="btn sm" data-ta="hide">모두 가리기</button></div>`:""}
     ${md==="view"?`<div class="tbf"><span class="muted small">모든 답이 보여요</span><span class="sp"></span><button class="btn sm" data-tm2="hide">가리고 연습하기</button></div>`:""}
+    ${md==="type"&&PENOK?`<div class="tbf tbpen">${penTg()}${PENM?`<span class="muted small">칸에 손으로 쓰고 '정답 보기'로 맞춰 보세요</span>`:""}</div>`:""}
     ${md==="type"?`<div class="tbf"><span class="ord9 ${tOrdered(t)?"":"free"}">${tOrdered(t)?"순서대로 채점":"줄 순서 상관없이 채점 · 같은 답 두 번은 오답"}</span><span class="tsc muted small"></span><button class="btn sm" data-ta="reset">다시</button><button class="btn sm" data-ta="reveal">정답 보기</button><button class="btn sm pri" data-ta="check">채점</button></div>`:""}</div>`;
 }
 function bindTables(m){
@@ -3372,6 +3385,7 @@ function bindTables(m){
     el.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm;redraw();});
     el.querySelectorAll("[data-tm2]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm2;redraw();});
     el.querySelectorAll(".cw.hid").forEach(w=>w.onclick=()=>w.classList.toggle("on"));
+    if(PENOK)bindPens(el,redraw);
     const ins=[...el.querySelectorAll(".ti")];
     /* 채점: 순서 있는 표는 그 줄과 비교. 순서 없는 표는 쓴 줄마다 가장 잘 맞는 실제 줄을 하나씩 짝지음(한 줄은 한 번만 → 같은 답 중복은 오답) */
     const ORD=tOrdered(t),blank=v=>!v||v==="-";
