@@ -1073,7 +1073,6 @@ td.ok .cw.typ.peek::after,td.ng .cw.typ.peek::after,.tt.rev td .cw.typ::after{di
 td.ok .cw.typ .ti,td.ng .cw.typ .ti{padding-right:8px}
 td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;width:19px;height:19px;font-size:11px;box-shadow:0 0 0 2px var(--surface)}
 .cw.typ .ti{scrollbar-width:none}.cw.typ .ti::-webkit-scrollbar{display:none}
-.cw.hid .cv,.cw.hid .hc9,.cw.typ .ti{animation:none!important;transition:none!important}
 .optbtn{display:flex;align-items:center;gap:10px;width:100%;margin:22px 0 10px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px 12px 16px;box-shadow:var(--sh);text-align:left;cursor:pointer}
 .optbtn:hover{border-color:var(--line-2)}
 .optbtn .ob1{font-weight:800;font-size:15px}
@@ -1128,6 +1127,13 @@ td.ok .cw.typ::after,td.ng .cw.typ::after{top:-12px;right:-13px;transform:none;w
 @media (max-width:899px){.tabbar{grid-template-columns:repeat(7,minmax(0,1fr))!important}.tabbar a{font-size:10.5px;white-space:nowrap;letter-spacing:-.03em;overflow:hidden}.m-type .ctl{position:static;background:none;padding-top:12px}.ty9box textarea{min-height:72px}}
 .m-type .card:not(.flip){min-height:150px}
 @media (max-width:899px){.tabbar{grid-template-columns:repeat(auto-fit,minmax(0,1fr))!important}}
+/* 표: 얌전한 펼침 — 답은 살며시 나타나고, 가리개는 살짝 줄며 사라짐 */
+.cw.hid .cv{opacity:0;transform:translateY(2px)}
+.cw.hid.on .cv{visibility:visible;opacity:1;transform:none;transition:opacity .22s ease,transform .22s ease}
+.cw.hid .hc9{display:grid!important;transition:opacity .18s ease,transform .18s ease,background .12s,border-color .12s}
+.cw.hid.on .hc9{opacity:0;transform:scale(.96);pointer-events:none}
+.cw.hid:active .hc9{transform:scale(.98)}
+@media (prefers-reduced-motion:reduce){.cw.hid .cv,.cw.hid .hc9{transition:none!important}}
 </style>
 </head>
 <body>
