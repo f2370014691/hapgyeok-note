@@ -2176,6 +2176,17 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .wmtab{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
 .wmtab .seg2 button{padding:7px 16px;font-weight:800}
 .wmtab small{font-size:12px;color:var(--ink-3)}
+/* v79: 새끼 키우기 (무한 가족) */
+.pet9c .pbaby{position:absolute;right:-8px;bottom:-4px;width:30px;height:30px}
+.famcur{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:color-mix(in srgb,#FFE066 14%,var(--sunk));border-radius:18px;padding:12px 14px}
+.famegg{flex:none}
+.famrow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px;margin-top:10px}
+.famrow .pet{flex:none}
+.fammore{font-weight:900;color:var(--pri);font-size:14px;margin-left:6px;align-self:center}
+.petsh3 small{font-size:12.5px;color:var(--ink-3);font-weight:700;margin-left:6px}
+.petline{grid-template-columns:repeat(9,minmax(0,1fr))}
+.petpopc .famrow{justify-content:center;margin:0 0 4px}
+@media (max-width:699px){.petline{grid-template-columns:repeat(5,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -3043,7 +3054,16 @@ function petSVG(st,sz=96,cls=""){
     <ellipse cx="60" cy="110" rx="30" ry="5" fill="#000" opacity=".08"/><g class="pbody">${body}</g></svg>`.replace(/pg-/g,"pg"+(++PSVGN)+"-");
 }
 /* 레벨이 오르거나 단계가 바뀌면 축하 */
-function petCheck(x0){const a=lvOf(x0).lv,b=lvOf(S.xp||0).lv;if(b<=a)return;const s0=petStage(a),s1=petStage(b);
+/* 다 자란 뒤(Lv.50 황금 왕관 닭): 그 뒤 XP로 새끼를 한 마리씩 키움. 한 마리 = 3,000 XP, 다 크면 가족이 늘고 새 알 → 끝없이 */
+const FAM_LV=50,FAM_G=3000,FAM_TH=[0,.1,.25,.4,.6,.8,.95];
+function famOf(xp){const ex=(xp||0)-lvBase(FAM_LV);if(ex<0)return null;const n=Math.floor(ex/FAM_G),cur=ex%FAM_G,f=cur/FAM_G;let st=0;FAM_TH.forEach((t,i)=>{if(f>=t)st=i;});return{n,cur,f,st,no:n+1};}
+function famRow(n,sz=40,max=24){return `<div class="famrow">${petSVG(7,sz+6,"pidle")}${Array.from({length:Math.min(n,max)},()=>petSVG(6,sz)).join("")}${n>max?`<span class="fammore">+${(n-max).toLocaleString()}</span>`:""}</div>`;}
+function famCelebrate(f){const el=document.createElement("div");el.className="petpop";
+  el.innerHTML=`<div class="petpopc">${famRow(f.n,34,12)}<b>아기 ${f.n}호가 다 자라 가족이 됐어요!</b><small>이제 가족 ${f.n+1}마리 · 새 알이 하나 생겼어요 🥚</small><button class="btn pri">좋아요</button></div>`;
+  document.body.appendChild(el);const x=()=>el.remove();el.querySelector("button").onclick=x;el.onclick=e=>{if(e.target===el)x();};sfx&&sfx("good");}
+function petCheck(x0){const a=lvOf(x0).lv,b=lvOf(S.xp||0).lv,fa=famOf(x0),fb=famOf(S.xp||0);
+  if(fa&&fb){if(fb.n>fa.n)return famCelebrate(fb);if(fb.st>fa.st)return toast(`🐣 아기 ${fb.no}호가 ${josaRo(PET_ST[fb.st].n)} 자랐어요`);if(b>a)toast(`🎉 Lv.${b} 달성!`);return;}
+  if(b<=a)return;const s0=petStage(a),s1=petStage(b);
   if(s1>s0)petCelebrate(s1);else toast(`🎉 Lv.${b} 달성! ${josaGa(petName())} 쑥 컸어요`);}
 /* 표·해이실·기출·문풀·모고 학습도 XP → 캐릭터 성장. 하루 상한이 있고, 같은 칸·물음은 그날 한 번만 */
 const XPCAP={q:300,table:150,heisil:200},XPSEEN=new Set();
@@ -3056,9 +3076,9 @@ function petCelebrate(st){const el=document.createElement("div");el.className="p
   el.innerHTML=`<div class="petpopc">${petSVG(st,150,"pjump")}<b>${esc(josaGa(petName()))} ${esc(josaRo(PET_ST[st].n))} 자랐어요!</b><small>${esc(PET_ST[st].d)}</small><button class="btn pri">좋아요</button></div>`;
   document.body.appendChild(el);const x=()=>el.remove();el.querySelector("button").onclick=x;el.onclick=e=>{if(e.target===el)x();};sfx&&sfx("good");}
 /* 홈의 캐릭터 칸 */
-function petChip(){const L=lvOf(S.xp||0),st=petStage(L.lv),f=petFood(),[mt,me]=petMood();
-  return `<button class="h9c pet9" id="petopen" aria-label="${esc(petName())} 키우기"><span class="pet9c">${petSVG(st,72,"pidle")}${f?`<i class="pfood">🌾${f}</i>`:""}</span>
-    <span class="pet9t"><span class="pet9n"><b class="pnm">${esc(petName())}</b><span class="pstg">${esc(PET_ST[st].n)}</span></span>
+function petChip(){const L=lvOf(S.xp||0),st=petStage(L.lv),f=petFood(),[mt,me]=petMood(),fm=famOf(S.xp||0);
+  return `<button class="h9c pet9" id="petopen" aria-label="${esc(petName())} 키우기"><span class="pet9c">${petSVG(st,72,"pidle")}${fm?`<span class="pbaby">${petSVG(fm.st,30,"pidle")}</span>`:""}${f?`<i class="pfood">🌾${f}</i>`:""}</span>
+    <span class="pet9t"><span class="pet9n"><b class="pnm">${esc(petName())}</b><span class="pstg">${fm?`가족 ${fm.n+1}마리`:esc(PET_ST[st].n)}</span></span>
       <span class="pet9l"><b class="num">Lv.${L.lv}</b><em>${me} ${esc(mt)}</em></span>
       <span class="xpb"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num pxp">${L.cur}/${L.need} XP</em></span></button>`;}
 /* 키우기 창 */
@@ -3070,11 +3090,15 @@ function petSheet(){
         <div class="petstage"><button class="petbig" id="petpat" aria-label="쓰다듬기">${petSVG(st,180,"pidle")}</button>
           <div class="petinfo"><span class="petst">${st+1}단계 · ${esc(PET_ST[st].n)}</span><div class="petlvr"><b class="num">Lv.${L.lv}</b><div class="petmood">${me} ${esc(mt)} · 오늘 모이 ${fedT}번 먹음</div></div><p>${esc(PET_ST[st].d)}</p>
             <div class="xpb big"><i style="width:${L.cur/L.need*100}%"></i></div><small class="num">다음 레벨까지 ${L.need-L.cur} XP · 모두 ${(S.xp||0).toLocaleString()} XP</small>
-            ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${Math.max(0,lvBase(nx.from)-(S.xp||0)).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 마지막 단계까지 다 키웠어요!</small>`}
+            ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${Math.max(0,lvBase(nx.from)-(S.xp||0)).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 다 키웠어요! 이제 XP로 새끼를 한 마리씩 키워 가족을 늘려요</small>`}
             <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>🌾 모이 주기 <b class="num">${f}</b></button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
             <small class="muted">모이는 오늘 카드·표·해이실·기출·문풀·모고를 10번 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
+        ${(()=>{const fm=famOf(S.xp||0);if(!fm)return "";return `<h3 class="petsh3">🐣 새끼 키우기 <small>가족 ${(fm.n+1).toLocaleString()}마리</small></h3>
+          <div class="famcur"><span class="famegg">${petSVG(fm.st,110,"pidle")}</span><div class="petinfo"><span class="petst">아기 ${fm.no}호 · ${esc(PET_ST[fm.st].n)}</span><p>${esc(PET_ST[fm.st].d)}</p>
+            <div class="xpb big"><i style="width:${fm.f*100}%"></i></div><small class="num">다 자라 가족이 되기까지 ${(FAM_G-fm.cur).toLocaleString()} XP · 한 마리에 ${FAM_G.toLocaleString()} XP</small></div></div>
+          ${famRow(fm.n)}`;})()}
         <h3 class="petsh3">성장 단계</h3>
-        <div class="petline">${PET_ST.map((s,k)=>`<div class="pl ${k<st?"dn":k===st?"on":""}">${k<=st?petSVG(k,54):`<span class="plq">?</span>`}<b>${k<=st?esc(s.n):"???"}</b><small>Lv.${s.from}</small></div>`).join("")}</div>
+        <div class="petline">${PET_ST.map((s,k)=>`<div class="pl ${k<st?"dn":k===st?"on":""}">${k<=st?petSVG(k,54):`<span class="plq">?</span>`}<b>${k<=st?esc(s.n):"???"}</b><small>Lv.${s.from}</small></div>`).join("")}<div class="pl ${famOf(S.xp||0)?"on":""}">${famOf(S.xp||0)?petSVG(0,54):`<span class="plq">∞</span>`}<b>새끼 키우기</b><small>Lv.${FAM_LV}~</small></div></div>
       </div></div>`;
     el.querySelector("#qclose").onclick=closeQ;
     const pat=()=>{const b=el.querySelector(".petbig");PET().pets=(PET().pets||0)+1;save();const h=document.createElement("i");h.className="pheart";h.textContent=["💛","🤍","💕","✨"][Math.floor(Math.random()*4)];h.style.left=(30+Math.random()*40)+"%";b.appendChild(h);setTimeout(()=>h.remove(),1000);
