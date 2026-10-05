@@ -2141,6 +2141,33 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 /* v75: 회차·연도·단원 카드의 '틀린 것만' 버튼은 한 줄 전체 */
 .mkb9 .mks9.ng{grid-column:1/-1;flex-direction:row;justify-content:center;gap:8px;background:color-mix(in srgb,#EF4444 7%,var(--surface))}
 .mkb9 .mks9.ng b{color:#DC2626}
+/* v76: 플래시카드·표·해이실 고르기 — 모의고사 카드 화면 */
+.mklb9{font-size:12.5px;font-weight:800;color:var(--ink-3);flex:none}
+.mkmd9{max-width:100%;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+.mkmd9::-webkit-scrollbar{display:none}
+.mkmd9 button{white-space:nowrap;padding:8px 14px;font-weight:800}
+.mkq9{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 16px}
+.mkqb9{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:18px;border:0;background:var(--surface);box-shadow:var(--sh);color:var(--ink);font:inherit;cursor:pointer;text-align:left;transition:transform .15s}
+.mkqb9:hover:not(:disabled){transform:translateY(-2px)}
+.mkqb9 svg{color:var(--pri)}
+.mkqb9 b{font-size:15px;font-weight:800}
+.mkqb9 span{margin-left:auto;font-size:18px;font-weight:900;color:var(--pri)}
+.mkqb9.ng svg,.mkqb9.ng span{color:#DC2626}
+.mkqb9:disabled{opacity:.5;cursor:default}
+.mkh2{font-size:17px;font-weight:900;margin:22px 0 12px}
+.mkh2:first-of-type{margin-top:6px}
+.mkc9.wide9 .mkn9{font-size:16px}
+.mkc9.hc0 .mkn9{background:linear-gradient(135deg,#F472B6,#EC4899)}
+.mkc9.hc1 .mkn9{background:linear-gradient(135deg,#60A5FA,#3B82F6)}
+.mkc9.hc2 .mkn9{background:linear-gradient(135deg,#34D399,#10B981)}
+.mkc9.hc3 .mkn9{background:linear-gradient(135deg,#FBBF24,#F59E0B)}
+.mkc9.hc4 .mkn9{background:linear-gradient(135deg,#A78BFA,#8B5CF6)}
+.mkc9.hc5 .mkn9{background:linear-gradient(135deg,#F87171,#EF4444)}
+.mkc9 .mkall9:disabled{opacity:.5;cursor:default}
+@media (max-width:699px){
+  .mkq9{gap:8px}.mkqb9{padding:12px}.mkqb9 b{font-size:14px}
+  .mkhd9{gap:8px}
+}
 </style>
 </head>
 <body>
@@ -2406,6 +2433,88 @@ function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=do
 let WZ={};const WZ0={fc:"ver",table:"ver",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
 const wzBack=(steps,cur)=>{const i=steps.indexOf(cur);return i>0?`<button class="btn sm wzback" data-wzb="${steps[i-1]}">${ico("left",14)}뒤로</button>`:"";};
 const wzNo=(steps,cur)=>`<span class="wzno">${steps.indexOf(cur)+1} / ${steps.length}</span>`;
+/* ---------- 플래시카드 · 표 · 해이실 고르기: 모의고사처럼 한 화면 카드 ---------- */
+function pCard(o){
+  return `<article class="mkc9 ${o.cls||""}" ${o.dc!=null?`style="--dc:${DC[o.dc]};--ds:${DCS[o.dc]}"`:""}>
+    <div class="mkt9"><span class="mkn9 num">${o.no}</span><div><b>${o.title}</b><small>${o.sub||""}</small></div>${o.tag?`<span class="mkl9">${o.tag}</span>`:""}</div>
+    ${o.p!=null?`<div class="mkp9"><i style="width:${o.p}%"></i></div>`:""}
+    <div class="mkb9">${o.btns}</div>${o.chips?`<div class="mkch9">${o.chips}</div>`:""}</article>`;}
+const pChip=(attr,label,n,unit,ok)=>`<button class="qch9 ${n?"":"off"} ${ok?"ok":""}" ${attr} ${n?"":"disabled"}><span>${esc(label)}</span><i class="num">${n}${unit||""}</i></button>`;
+const pSeg=(attr,list,cur)=>`<span class="seg2 mkw9">${list.map(([v,l])=>`<button ${attr}="${v}" aria-pressed="${String(cur)===String(v)}">${l}</button>`).join("")}</span>`;
+const pSum=list=>`<span class="mksum9">${list.map(([n,l,c])=>`<span class="${c||""}"><b class="num">${typeof n==="number"?n.toLocaleString():n}</b>${l}</span>`).join("")}</span>`;
+
+function fcChooser(m){
+  if(SC.sp)SC.sp="";if(!CH[SC.d])SC.d=0;
+  const d=SC.d,L=lvOf(S.xp||0),hasH=!!(BUNDLE&&(BUNDLE.cards2||[]).length);
+  const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length,ca=counts(ALL());
+  const OPTS=`<div class="opts9" >
+      <label class="op9"><span class="oi">📝</span><span class="ot"><b>기출 역추적</b><small>답을 본 뒤 이 내용이 나온 기출 물음을 한 줄로 보여 줘요</small></span><span class="switch"><input type="checkbox" id="ogt" ${FCO().gtrace?"checked":""}><i></i></span></label>
+      <div class="op9"><span class="oi">⏱</span><span class="ot"><b>시간 제한</b><small>정해진 시간 안에 몇 장 맞히는지 기록을 세워요</small></span><span class="seg2">${[[0,"없음"],[60,"1분"],[180,"3분"],[300,"5분"]].map(([v,l])=>`<button data-tl="${v}" aria-pressed="${(+FCO().timer||0)===v}">${l}</button>`).join("")}</span></div>
+      <label class="op9"><span class="oi">🔊</span><span class="ot"><b>효과음</b><small>맞히거나 연속으로 맞힐 때 소리가 나요</small></span><span class="switch"><input type="checkbox" id="osn" ${FCO().sound?"checked":""}><i></i></span></label>
+    </div>`;
+  const pc=c=>c.all?Math.round(c.k/c.all*100):0;
+  const dc=counts(docIdx(d));
+  const cards=[pCard({no:DLET[d],dc:d,cls:"wide9",title:`${esc(DOCS[d])} 전체`,sub:`${dc.all.toLocaleString()}장 · 외움 ${pc(dc)}%${dc.due?` · 복습 ${dc.due}`:""}`,p:pc(dc),btns:`<button class="mkall9" data-st="${d}::">${ico("play",14)} ${esc(DOCS[d])} 전체 학습</button>`}),
+    ...CH[d].map((ch,k)=>{if(!ch.idx.length)return "";const c=counts(ch.idx);
+      return pCard({no:k+1,dc:d,title:esc(ch.name),sub:`${c.all}장 · 외움 ${pc(c)}%${c.due?` · 복습 ${c.due}`:""}`,p:pc(c),
+        btns:`<button class="mkall9" data-st="${d}:${k}:">${ico("play",14)} 대주제 전체 학습</button>`,
+        chips:ch.topics.map((tp,t)=>{const x=counts(tp.idx);return tp.idx.length?pChip(`data-st="${d}:${k}:${t}"`,tp.name,tp.idx.length,"",x.all&&x.k===x.all):"";}).join("")});})].join("");
+  m.innerHTML=`<div class="page fc8 pgc mkp" style="--dc:${DC[d]};--ds:${DCS[d]}">
+    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>방식을 고르고 카드나 소주제를 누르면 바로 시작해요</p></div><span class="fchr">${pgTools("fc")}<button class="lvb big petlv" id="petopen2" title="${esc(petName())} 키우기">${petSVG(petStage(L.lv),26)}Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</button><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
+    ${OPTOPEN?`<div class="optpop9"><div class="optph"><b>옵션</b><button class="iconbtn sm" id="optx" aria-label="닫기">✕</button></div>${OPTS}</div>`:""}
+    <div class="mkhd9">${hasH?pSeg("data-ver",DECKS.map(([v,n])=>[v,esc(n)]),DECK):""}${pSum([[ca.all,"장"],[ca.k,"외움"],[due,"복습"],[wr,"틀림","ng"]])}</div>
+    <div class="mkhd9 sub"><span class="mklb9">방식</span><span class="seg2 mkw9 mkmd9">${MODES.map(([v,ic,l,sm])=>`<button data-md="${v}" aria-pressed="${fmode()===v}" title="${esc(sm)}">${ic} ${esc(l)}</button>`).join("")}</span></div>
+    <div class="mkq9"><button class="mkqb9" data-q="due" ${due?"":"disabled"}>${ico("today",18)}<b>오늘 복습</b><span class="num">${due}장</span></button><button class="mkqb9 ng" data-q="wrong" ${wr?"":"disabled"}>${ico("undo",18)}<b>틀린 카드</b><span class="num">${wr}장</span></button></div>
+    <div class="mkhd9 sub">${pSeg("data-d",DOCS.map((x,i)=>[i,esc(x)]),d)}</div>
+    <div class="mkg9 tp">${cards}</div></div>`;
+  const re=()=>{saveSC();fcChooser(m);};
+  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
+  const run=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};
+  on("[data-ver]",b=>{setDeck(b.dataset.ver);SC.k=null;SC.t=null;SC.ts=[];re();});
+  on("[data-md]",b=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();re();});
+  on("[data-d]",b=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;SC.ts=[];re();});
+  on("[data-q]",b=>{SC.sp=b.dataset.q;run();});
+  on("[data-st]",b=>{const [dd,k,t]=b.dataset.st.split(":");SC.sp="";SC.d=+dd;SC.k=k===""?null:+k;SC.t=t===""?null:+t;SC.ts=[];run();});
+  on("[data-tl]",b=>{S.fc=Object.assign(FCO(),{timer:+b.dataset.tl});save();re();});
+  bindPgTools(m,"fc",()=>fcChooser(m));{const p=m.querySelector("#petopen2");if(p)p.onclick=petSheet;}
+  {const o=m.querySelector("#optt");if(o)o.onclick=()=>{OPTOPEN=!OPTOPEN;re();};const x=m.querySelector("#optx");if(x)x.onclick=()=>{OPTOPEN=false;re();};}
+  {const o=m.querySelector("#ogt");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{gtrace:e.target.checked});save();};}
+  {const o=m.querySelector("#osn");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{sound:e.target.checked});save();if(e.target.checked)sfx("good");};}
+}
+
+function tableChooser(m){
+  loadSC();if(SC.sp)SC.sp="";if(!CH[SC.d])SC.d=0;const d=SC.d;
+  const tH=TB.some(x=>x.deck==="h26");if(!tH&&TB.length&&TDK!=="m27")TDK="m27";const n=(dd,k,t)=>tablesOf(dd,k,t).length,tot=n(d,null,null);
+  const cards=[pCard({no:DLET[d],dc:d,cls:"wide9",title:`${esc(DOCS[d])} 전체`,sub:`표 ${tot}개`,btns:`<button class="mkall9" data-st="${d}::" ${tot?"":"disabled"}>${ico("play",14)} ${esc(DOCS[d])} 표 전체 보기</button>`}),
+    ...CH[d].map((ch,k)=>{const c=n(d,k,null);if(!c)return "";
+      return pCard({no:k+1,dc:d,title:esc(ch.name),sub:`표 ${c}개`,btns:`<button class="mkall9" data-st="${d}:${k}:">${ico("play",14)} 대주제 표 전체 보기</button>`,
+        chips:ch.topics.map((tp,t)=>{const x=n(d,k,t);return x?pChip(`data-st="${d}:${k}:${t}"`,tp.name,x,"개"):"";}).join("")});})].join("");
+  m.innerHTML=`<div class="page fc8 pgc mkp" style="--dc:${DC[d]};--ds:${DCS[d]}"><header class="fc8h phd9"><div><h1>표</h1><p>카드나 소주제를 누르면 바로 표가 열려요</p></div>${pgTools("table")}</header>
+    <div class="mkhd9">${tH?pSeg("data-tv",TDKS.map(([v,nm])=>[v,esc(nm)]),TDK):""}${pSum([[TB.filter(x=>(x.deck||"m27")===TDK).length,"표"]])}</div>
+    <div class="mkhd9 sub">${pSeg("data-d",DOCS.map((x,i)=>[i,esc(x)]),d)}</div>
+    ${TB.length?`<div class="mkg9 tp">${cards}</div>`:`<div class="empty">표를 불러오는 중이에요</div>`}</div>`;
+  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
+  const re=()=>{saveSC();tableChooser(m);};
+  bindPgTools(m,"table",()=>tableChooser(m));
+  on("[data-tv]",b=>{TDK=b.dataset.tv;try{localStorage.setItem("hapgyeok-flash-v1:tdeck",TDK);}catch(e){}SC.k=null;SC.t=null;SC.ts=[];re();});
+  on("[data-d]",b=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;SC.ts=[];re();});
+  on("[data-st]",b=>{const [dd,k,t]=b.dataset.st.split(":");SC.sa=false;SC.d=+dd;SC.k=k===""?null:+k;SC.t=t===""?null:+t;SC.ts=[];saveSC();PGRUN.table=true;VIEW.table(m);window.scrollTo({top:0});});
+}
+
+function hyChooser(m){
+  const pg="heisil";if(!HYM.some(x=>x[0]===HY.md))HY.md="see";
+  const A=hyG("영역"),G=hyG("총론"),ca=hyCnt(A),cg=hyCnt(G);
+  const grid=(k,D,icon,ttl)=>`<h2 class="mkh2">${icon} ${ttl}</h2><div class="mkg9">${pCard({no:"★",cls:"wide9",title:`${ttl} 전체`,sub:`${hyCnt(D).l}줄 · 빈칸 ${hyCnt(D).b}개`,btns:`<button class="mkall9" data-hs="${k}:-1">${ico("play",14)} 전체 시작</button>`,tag:HY.k===k&&HY.d<0?"최근":""})}
+    ${D.map((x,i)=>{const c=hyCnt([x]);return pCard({no:i+1,cls:`hc${i%6} ${HY.k===k&&HY.d===i?"last":""}`,title:esc(x.title),sub:`${c.l}줄 · 빈칸 ${c.b}개`,tag:HY.k===k&&HY.d===i?"최근":"",btns:`<button class="mkall9" data-hs="${k}:${i}">${ico("play",14)} 시작</button>`});}).join("")}</div>`;
+  m.innerHTML=`<div class="page fc8 pgc mkp hyc"><header class="fc8h phd9"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문 암기 · 방식을 고르고 카드를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
+    <div class="mkhd9"><span class="mklb9">방식</span><span class="seg2 mkw9 mkmd9">${HYM.map(([v,ic,l,sm])=>`<button data-hm="${v}" aria-pressed="${HY.md===v}" title="${esc(sm)}">${ic} ${esc(l)}</button>`).join("")}</span>${pSum([[ca.l+cg.l,"줄"],[ca.b+cg.b,"빈칸"]])}</div>
+    ${grid("area",A,"🎯","영역별 목표 및 내용")}${grid("doc",G,"📘","성격 · 총론")}</div>`;
+  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
+  bindPgTools(m,pg,()=>hyChooser(m));
+  on("[data-hm]",b=>{HY.md=b.dataset.hm;hySave();hyChooser(m);});
+  on("[data-hs]",b=>{const [k,i]=b.dataset.hs.split(":");HY.k=k;HY.d=+i;hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});});
+}
+
 /* ---------- 기출 · 문제풀이 고르기: 모의고사처럼 한 화면 카드 ---------- */
 let GV="topic",GSUB="all";try{GV=localStorage.getItem(SBASE+":gv")||"topic";GSUB=localStorage.getItem(SBASE+":gsub")||"all";}catch(e){}
 const QWL={gichul:"",munpul:"",mock:""};
@@ -2535,7 +2644,7 @@ function pgChooser(m,pg){
   const g=m.querySelector("#pgo");if(g)g.onclick=()=>{saveSC();MPV="set";PGRUN[pg]=true;VIEW[pg](m);window.scrollTo({top:0});};
 }
 VIEW.table=function(m){
-  if(!PGRUN.table)return pgChooser(m,"table");
+  if(!PGRUN.table)return tableChooser(m);
   const sc=curScope(false),tbs=tablesOf(sc.d,sc.k,sc.t,sc.ts);
   m.innerHTML=`<div class="page wide2" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${pageHead("표",false,(TDKS.find(x=>x[0]===TDK)||TDKS[0])[2]+" 표 · 칸을 눌러 답을 확인하거나, 타이핑으로 채워 보세요",`표 <b class="num">${tbs.length}</b>개`,false,(d,k,t)=>tablesOf(d,k,t).length)}
     <div class="tbs">${tbs.length?tbs.map(t=>(sc.t==null?`<p class="tbsrc">${esc(t.small)}</p>`:"")+tableHTML(t)).join(""):`<div class="empty">${TB.length?"이 범위에는 표가 없어요":"표를 불러오는 중이에요"}</div>`}</div></div>`;
@@ -3341,63 +3450,6 @@ VIEW.fc=function(m){
   bindPicker(m);playerIn(m.querySelector("#pbody"),sc);
 };
 let OPTOPEN=false,FCRST=false;
-function fcChooser(m){
-  const due=ALL().filter(isDue).length,wr=ALL().filter(isWrong).length;
-  if(SC.sp)SC.sp="";
-  const d=SC.d,sc=curScope(false),L=lvOf(S.xp||0);
-  const hasH=!!(BUNDLE&&(BUNDLE.cards2||[]).length);
-  const steps=[...(hasH?["ver"]:[]),"d","k","md"];let cur=WZ.fc||steps[0];if(!steps.includes(cur))cur=steps[0];
-  const T={ver:"버전",d:"과목",k:"대주제 · 소주제",md:"방식"};
-  const sec={
-    ver:`<div class="subjpick">${DECKS.map(([v,n,sm])=>{const nn=C.filter(c=>deckOf(c)===v).length;return `<button class="sp8 ${DECK===v?"on":""}" data-ver="${v}"><span class="dl">${v==="m27"?"민":"하"}</span><b>${n}</b><small>${sm} · ${nn.toLocaleString()}장</small></button>`;}).join("")}</div>`,
-    d:`<div class="subjpick">${DOCS.map((x,i)=>{const c=counts(docIdx(i));return `<button class="sp8 ${d===i?"on":""}" data-d="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}"><span class="dl">${DLET[i]}</span><b>${esc(x)}</b><small>${c.all.toLocaleString()}장 · 외움 ${pct(c)}%</small><span class="bar"><i class="k" style="width:${pct(c)}%;background:var(--dc)"></i></span></button>`;}).join("")}</div>`,
-    k:`<div class="ktwrap"><div class="bigpick"><button class="bp ${SC.k==null?"on":""}" data-k=""><b>${esc(DOCS[d])} 전체</b><small>${docIdx(d).length.toLocaleString()}장</small></button>
-      ${CH[d].map((ch,k)=>{if(!ch.idx.length)return "";const c=counts(ch.idx);return `<button class="bp ${SC.k===k?"on":""}" data-k="${k}"><b><span class="no8">${k+1}</span>${esc(ch.name)}</b><small>${ch.idx.length}장 · 외움 ${pct(c)}%</small><span class="bar"><i class="k" style="width:${pct(c)}%;background:var(--dc)"></i></span></button>`;}).join("")}</div><div class="ktr">${SC.k!=null?`<p class="kth">${esc(CH[d][SC.k].name)}</p><p class="wzhint">여러 개를 골라도 돼요</p><div class="chips8"><button class="c8 ${SC.t==null&&!MT()?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>{if(!tp.idx.length)return "";const c=counts(tp.idx);return `<button class="c8 ${tOn(t)?"on":""}" data-t="${t}">${S.badges&&S.badges[`t:${d}:${SC.k}:${t}`]?`<i class="bdg" title="배지">🏅</i>`:""}${esc(tp.name)}<span class="num">${tp.idx.length}</span>${c.k===c.all?`<i class="okd" title="다 외움"></i>`:""}</button>`;}).join("")}</div>
-      <div class="wznext"><button class="btn pri lg" id="wzn">다음 ${ico("chev",15)}</button></div>`:`<p class="kth">${esc(DOCS[d])} 전체</p><p class="wzhint">대주제를 고르면 소주제가 여기 나와요</p><div class="wznext"><button class="btn pri lg" id="wzn">다음 ${ico("chev",15)}</button></div>`}</div></div>`,
-    md:`<div class="modes8 m4">${MODES.map(([v,ic,l,sm])=>`<button class="md8 ${fmode()===v?"on":""}" data-md="${v}"><span class="mi">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`,
-  };
-  const OPTS=`<div class="opts9" >
-      <label class="op9"><span class="oi">📝</span><span class="ot"><b>기출 역추적</b><small>답을 본 뒤 이 내용이 나온 기출 물음을 한 줄로 보여 줘요</small></span><span class="switch"><input type="checkbox" id="ogt" ${FCO().gtrace?"checked":""}><i></i></span></label>
-      <div class="op9"><span class="oi">⏱</span><span class="ot"><b>시간 제한</b><small>정해진 시간 안에 몇 장 맞히는지 기록을 세워요</small></span><span class="seg2">${[[0,"없음"],[60,"1분"],[180,"3분"],[300,"5분"]].map(([v,l])=>`<button data-tl="${v}" aria-pressed="${(+FCO().timer||0)===v}">${l}</button>`).join("")}</span></div>
-      <label class="op9"><span class="oi">🔊</span><span class="ot"><b>효과음</b><small>맞히거나 연속으로 맞힐 때 소리가 나요</small></span><span class="switch"><input type="checkbox" id="osn" ${FCO().sound?"checked":""}><i></i></span></label>
-    </div>`;
-
-  m.innerHTML=`<div class="page fc8 wzp" style="--dc:${DC[d]};--ds:${DCS[d]}">
-    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>범위와 방식을 고르면 바로 시작해요</p></div><span class="fchr">${pgTools("fc")}<button class="lvb big petlv" id="petopen2" title="${esc(petName())} 키우기">${petSVG(petStage(L.lv),26)}Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</button><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
-    ${OPTOPEN?`<div class="optpop9"><div class="optph"><b>옵션</b><button class="iconbtn sm" id="optx" aria-label="닫기">✕</button></div>${OPTS}</div>`:""}
-    <div class="quick8">
-      <button class="qk" data-q="due">${ico("today",18)}<b>오늘 복습</b><span class="num">${due}</span></button>
-      <button class="qk" data-q="wrong">${ico("undo",18)}<b>틀린 카드</b><span class="num">${wr}</span></button></div>
-    <div class="wzh">${wzBack(steps,cur)}<h2 class="st8"><span>${steps.indexOf(cur)+1}</span>${T[cur]}</h2></div>
-    ${sec[cur]}
-  </div>`;
-  {const rb=document.createElement("div");rb.className="rst8";
-    rb.innerHTML=FCRST?`<span>학습 기록을 지울까요? 되돌릴 수 없어요</span><button class="btn sm danger" id="rsS">선택한 범위만 (${sc.idx.length.toLocaleString()}장)</button><button class="btn sm danger" id="rsA">전체</button><button class="btn sm" id="rsN">취소</button>`
-      :`<button class="btn sm dangerline" id="rsO">${ico("undo",14)}<span class="hm">학습 </span>초기화</button>`;
-    (m.querySelector(".quick8")||m.querySelector(".page")).appendChild(rb);}
-  const re=()=>{saveSC();fcChooser(m);window.scrollTo({top:0});};
-  const go=st=>{WZ.fc=st;re();};
-  {const o=(id,f)=>{const b=m.querySelector(id);if(b)b.onclick=f;};
-    o("#rsO",()=>{FCRST=true;re();});o("#rsN",()=>{FCRST=false;re();});
-    o("#rsS",()=>{FCRST=false;sc.idx.forEach(i=>delete S.srs[C[i][0]]);save();SES=null;toast(`${sc.title} 학습 기록을 지웠어요`);re();});
-    o("#rsA",()=>{FCRST=false;const keep={exam:S.exam,fc:S.fc,goal:S.goal};S=blank();Object.assign(S,keep);save();SES=null;toast("학습 기록을 모두 지웠어요");re();});
-    o("#wzn",()=>go("md"));}
-  m.querySelectorAll("[data-wzb]").forEach(b=>b.onclick=()=>go(b.dataset.wzb));
-  m.querySelectorAll("[data-ver]").forEach(b=>b.onclick=()=>{setDeck(b.dataset.ver);SC.k=null;SC.t=null;SC.ts=[];go("d");});
-  m.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{SC.sp=b.dataset.q;saveSC();FCRUN=true;SES=null;VIEW.fc(m);});
-  m.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;SC.ts=[];go("k");});
-  const keep=()=>{const y=window.scrollY;saveSC();fcChooser(m);window.scrollTo({top:y});};
-  m.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];keep();if(SC.k!=null&&matchMedia("(max-width:699px)").matches){const r=m.querySelector(".ktr");if(r)scrollToEl(r);}});
-  m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tsToggle(b.dataset.t);keep();});
-  m.querySelectorAll("[data-md]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});});
-  m.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{timer:+b.dataset.tl});save();re();});
-  bindPgTools(m,"fc",()=>fcChooser(m));{const p=m.querySelector("#petopen2");if(p)p.onclick=petSheet;}
-  {const o=m.querySelector("#optt");if(o)o.onclick=()=>{OPTOPEN=!OPTOPEN;re();};const x=m.querySelector("#optx");if(x)x.onclick=()=>{OPTOPEN=false;re();};}
-  {const o=m.querySelector("#ogt");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{gtrace:e.target.checked});save();};}
-  {const o=m.querySelector("#osn");if(o)o.onchange=e=>{S.fc=Object.assign(FCO(),{sound:e.target.checked});save();if(e.target.checked)sfx("good");};}
-  {const o=m.querySelector("#start");if(o)o.onclick=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};}
-}
-
 /* ---------- 기출: 창 높이 고정 · 사진만 스크롤 · 크기 조절 · 소문항(①②)별 답안 쓰기 ---------- */
 let QPI={key:"",pos:0,open:false,typed:{},more:false};
 let QZ=100;try{QZ=+localStorage.getItem(SBASE+":qz")||100;}catch(e){}
@@ -3525,31 +3577,6 @@ function hyTitle(){const ds=hyCurDocs();return HY.d<0?(HY.k==="area"?"영역별 
 function hyLines(ds){const L=[];let lh="";ds.forEach(d=>d.lines.forEach(x=>{if(x.h){if(x.h===lh)return;lh=x.h;}L.push(x);}));return L;}
 const HYM=[["see","👀","보며 타이핑","문장을 보며 한 줄씩 따라 치기","t1"],["type","⌨️","안 보고 타이핑","안 보고 한 줄씩 그대로","t2"],["click","👆","빈칸 클릭","가려진 핵심어 눌러 확인","t4"],["fill","✏️","빈칸 채우기","핵심어를 직접 쓰기","t3"]];
 const hyCnt=ds=>{const L=hyLines(ds).filter(x=>x.t!=null);return{l:L.length,b:L.reduce((a,x)=>a+hyBlanks(x.t).length,0)};};
-function hyChooser(m){
-  const pg="heisil",steps=["k","d","md"];let cur=WZ[pg]||"k";if(!steps.includes(cur))cur="k";
-  const D=hyG(HY.k==="area"?"영역":"총론");
-  const TT={k:"무엇을 외울까요",d:HY.k==="area"?"영역 고르기":"범위 고르기",md:"방식 고르기",go:"준비 완료"};
-  if(!HYM.some(x=>x[0]===HY.md))HY.md="see";
-  let body="";
-  if(cur==="k")body=`<div class="hyt9 two">
-      <button class="hytile t1 ${HY.k==="area"?"on":""}" data-hk="area"><span class="hti">🎯</span><b>영역별 목표 및 내용</b><small>5개 영역 · 목표 · 내용 범주 · 내용</small><em>${hyCnt(hyG("영역")).l}줄</em></button>
-      <button class="hytile t2 ${HY.k==="doc"?"on":""}" data-hk="doc"><span class="hti">📘</span><b>성격 · 총론</b><small>인간상 · 목적과 목표 · 구성의 중점 · 운영</small><em>${hyCnt(hyG("총론")).l}줄</em></button></div>`;
-  else if(cur==="d")body=`<div class="hyt9">
-      <button class="hytile all ${HY.d<0?"on":""}" data-hd="-1"><span class="hti">★</span><b>${HY.k==="area"?"5개 영역 전체":"성격 · 총론 전체"}</b><em>${hyCnt(D).l}줄</em></button>
-      ${D.map((d,i)=>`<button class="hytile c${i%6} ${HY.d===i?"on":""}" data-hd="${i}"><span class="hti num">${i+1}</span><b>${esc(d.title)}</b><em>${hyCnt([d]).l}줄 · 빈칸 ${hyCnt([d]).b}</em></button>`).join("")}</div>`;
-  else if(cur==="md")body=`<div class="hyt9 four">${HYM.map(([v,ic,l,sm,c])=>`<button class="hytile ${c} ${HY.md===v?"on":""}" data-hm="${v}"><span class="hti">${ic}</span><b>${l}</b><small>${sm}</small></button>`).join("")}</div>`;
-  else{const M=HYM.find(x=>x[0]===HY.md),n=hyCnt(hyCurDocs());
-    body=`<div class="hygo"><div class="hygo1 ${M[4]}"><span class="hti">${M[1]}</span><div><small>${M[2]}</small><b>${esc(hyTitle())}</b><em>${n.l}줄 · 빈칸 ${n.b}개</em></div></div><button class="hystart" id="hgo">${ico("play",20)}시작하기</button></div>`;}
-  m.innerHTML=`<div class="page hyc"><header class="hyhd"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문 암기</p></div>${pgTools("heisil")}<div class="hydots">${steps.map((s,i)=>`<i class="${s===cur?"on":steps.indexOf(cur)>i?"dn":""}"></i>`).join("")}</div></header>
-    <div class="hyst">${wzBack(steps,cur)}<h2>${TT[cur]}</h2></div>${body}</div>`;
-  const go=st=>{WZ[pg]=st;hySave();hyChooser(m);window.scrollTo({top:0});};
-  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
-  on("[data-wzb]",b=>go(b.dataset.wzb));
-  on("[data-hk]",b=>{if(HY.k!==b.dataset.hk){HY.k=b.dataset.hk;HY.d=-1;}go("d");});
-  bindPgTools(m,"heisil",()=>hyChooser(m));
-  on("[data-hd]",b=>{HY.d=+b.dataset.hd;go("md");});on("[data-hm]",b=>{HY.md=b.dataset.hm;hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});});
-  const g=m.querySelector("#hgo");if(g)g.onclick=()=>{hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});};
-}
 VIEW.heisil=function(m){
   if(!NU||!NU.docs||!NU.docs[0]||!NU.docs[0].lines){m.innerHTML=`<div class="page"><div class="empty">해이실 자료를 불러오는 중이에요</div></div>`;return;}
   if(!PGRUN.heisil)return hyChooser(m);
