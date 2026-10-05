@@ -3167,7 +3167,7 @@ const lvNeed=lv=>R("lvA")+R("lvB")*(lv-1);
 const lvBase=lv=>R("lvA")*(lv-1)+R("lvB")*(lv-1)*(lv-2)/2;
 /* ---------- 기준(관리자가 설정 · 모든 계정 공통): config/global.rules ---------- */
 const RULE_DEF=[
-  ["모이",[["foodPer","학습 몇 번마다 모이 1알",30,"번"],["foodMax","하루 최대 모이",10,"알"],["feedXP","모이 1알 줄 때",3,"XP"]]],
+  ["모이 (0이면 그 학습은 모이에 안 셈)",[["foodFc","플래시카드 몇 장마다 1알",30,"장"],["foodQ","기출·문풀·모고 몇 물음 채점마다 1알",30,"개"],["foodTable","표 몇 번 학습마다 1알",30,"번"],["foodHeisil","해이실 몇 번 학습마다 1알",30,"번"],["foodMax","하루 최대 모이",10,"알"],["feedXP","모이 1알 줄 때",3,"XP"]]],
   ["플래시카드",[["fcKnow","알아요",5,"XP"],["fcCombo","알아요 연속 보너스 최대",5,"XP"],["fcUnsure","헷갈려요 최대",3,"XP"],["fcUnknown","몰랐어요",-5,"XP"]]],
   ["기출·문제풀이·모의고사",[["qOk","정답",10,"XP"],["qNg","오답",-5,"XP"],["capQ","하루 최대",1000,"XP"]]],
   ["표",[["tbOpen","가린 칸 열기",0.01,"XP"],["tbType","타이핑으로 맞히기",1,"XP"],["capTable","하루 최대",150,"XP"]]],
@@ -3175,7 +3175,7 @@ const RULE_DEF=[
   ["캐릭터",[["pat","쓰다듬기",0.001,"XP"],["famXP","새끼 한 마리 키우는 데",3000,"XP"]]],
   ["레벨",[["lvA","Lv.1 → 2에 필요한",100,"XP"],["lvB","레벨이 오를 때마다 더 필요한",20,"XP"]]]];
 const RULE0={};RULE_DEF.forEach(([,a])=>a.forEach(([k,,v])=>RULE0[k]=v));
-const RULE_MIN={foodPer:1,foodMax:0,lvA:1,lvB:0,famXP:1,capQ:0,capTable:0,capHeisil:0};
+const RULE_MIN={foodFc:0,foodQ:0,foodTable:0,foodHeisil:0,foodMax:0,lvA:1,lvB:0,famXP:1,capQ:0,capTable:0,capHeisil:0};
 let RULES=Object.assign({},RULE0);
 const R=k=>RULES[k];
 function setRules(o){const n=Object.assign({},RULE0);for(const k in RULE0){const v=o&&o[k];if(typeof v==="number"&&isFinite(v))n[k]=k in RULE_MIN?Math.max(RULE_MIN[k],v):v;}RULES=n;}
@@ -3196,7 +3196,12 @@ const petStage=lv=>{let i=0;PET_ST.forEach((s,k)=>{if(lv>=s.from)i=k;});return i
 const PET=()=>S.pet||(S.pet={name:"",fed:{},pets:0,born:today()});
 const petName=()=>PET().name||"삐약이";
 /* 모이: 오늘 학습 30번마다 1알 (하루 최대 10알), 준 만큼 빠짐 */
-const petFood=()=>{const p=PET(),got=Math.min(R("foodMax"),Math.floor((todayN()+((S.act||{})[today()]||0))/R("foodPer")));return Math.max(0,got-(p.fed[today()]||0));};
+/* 오늘 학습 종류별 횟수: 플래시카드는 학습한 장 수, 나머지는 S.actt에 셈 */
+const actT=()=>{const t=today();if(!S.actt||S.actt.d!==t)S.actt={d:t};return S.actt;};
+const FOODK=[["foodFc","fc","카드","장"],["foodQ","q","기출·문풀·모고","물음"],["foodTable","table","표","번"],["foodHeisil","heisil","해이실","번"]];
+/* 오늘 모은 모이(소수 포함): 학습마다 1/기준 알씩 */
+const foodProg=()=>{const a=actT();return FOODK.reduce((s,[rk,k])=>{const per=R(rk);if(!(per>0))return s;const n=k==="fc"?todayN():(a[k]||0);return s+n/per;},0);};
+const petFood=()=>{const p=PET(),got=Math.min(R("foodMax"),Math.floor(foodProg()+1e-9));return Math.max(0,got-(p.fed[today()]||0));};
 const petMood=()=>{const p=PET(),t=today();if(p.fed[t])return["신나요","😆"];const y=new Date();y.setDate(y.getDate()-1);if(p.fed[today(y)])return["조금 출출해요","🙂"];
   return Object.keys(p.fed).length?["배고파요","🥺"]:["모이를 기다려요","🐣"];};
 let PSVGN=0;
@@ -3252,13 +3257,13 @@ function petCheck(x0){const a=lvOf(x0).lv,b=lvOf(S.xp||0).lv,fa=famOf(x0),fb=fam
 const XPCAP=()=>({q:R("capQ"),table:R("capTable"),heisil:R("capHeisil")}),XPSEEN=new Set();
 function gainXP(src,n,key,quiet){if(!S||!ME||n<=0)return;const t=today();if(key){const kk=t+"|"+key;if(XPSEEN.has(kk))return;XPSEEN.add(kk);}
   const d=S.xpd&&S.xpd.d===t?S.xpd:(S.xpd={d:t});const left=(XPCAP()[src]??200)-(d[src]||0);if(left<=0)return;n=Math.min(n,left);d[src]=(d[src]||0)+n;
-  S.act=S.act||{};S.act[t]=(S.act[t]||0)+1;{const ks=Object.keys(S.act).sort();while(ks.length>40)delete S.act[ks.shift()];}
+  {const a=actT();a[src]=(a[src]||0)+1;}
   /* 0.1 XP 같은 소수도 바로 더함 (소수 첫째 자리까지) */
   const x0=S.xp||0;S.xp=r1(x0+n+(S.xpf||0));S.xpf=0;save();if(!quiet)xpFly(n);petCheck(x0);}
 /* 기출·문풀·모고 채점 XP: 맞음 +10, 틀림 -5. 같은 물음은 하루에 마지막 결과만 반영 (❌→⭕로 고치면 차이만큼 조정) */
 function qXP(tk,r){if(!S||!ME)return;const t=today();if(!S.qxp||S.qxp.d!==t)S.qxp={d:t,m:{}};
   const want=r?R("qOk"):R("qNg"),had=S.qxp.m[tk]||0,dl=want-had;if(!dl)return;S.qxp.m[tk]=want;
-  if(!had&&r){S.act=S.act||{};S.act[t]=(S.act[t]||0)+1;}
+  if(!had){const a=actT();a.q=(a.q||0)+1;}
   const x0=S.xp||0;S.xp=r1(x0+dl);save();xpFly(dl);if(dl>0)petCheck(x0);}
 function xpFly(n,x,y){const el=document.createElement("div");el.className="xpfly"+(n<0?" neg":"")+(x!=null?" at":"");if(x!=null){el.style.left=x+"px";el.style.top=y+"px";}el.textContent=`${n<0?"":"+"}${r1(n)} XP`;document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
 function petCelebrate(st){const el=document.createElement("div");el.className="petpop";
@@ -3281,7 +3286,7 @@ function petSheet(){
             <div class="xpb big"><i style="width:${Math.max(0,L.cur/L.need*100)}%"></i></div><small class="num">다음 레벨까지 ${r1(L.need-L.cur)} XP · 모두 ${(S.xp||0).toLocaleString()} XP</small>
             ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${r1(Math.max(0,lvBase(nx.from)-(S.xp||0))).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 다 키웠어요! 이제 XP로 새끼를 한 마리씩 키워 가족을 늘려요</small>`}
             <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>${f?`🌾 모이 주기 <b class="num">${f}</b>`:"🌾 모이가 없어요"}</button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
-            <small class="muted">모이는 오늘 카드·표·해이실·기출·문풀·모고를 ${R("foodPer")}번 학습할 때마다 1알씩 생겨요 (하루 ${R("foodMax")}알까지). 모이를 주면 +${R("feedXP")} XP!</small></div></div>
+            <small class="muted">모이는 ${FOODK.filter(([rk])=>R(rk)>0).map(([rk,,l,u])=>`${l} ${R(rk)}${u}`).join(" · ")||"(지금은 생기지 않아요)"}마다 1알씩 생겨요 (하루 ${R("foodMax")}알까지). 모이를 주면 +${R("feedXP")} XP!<br>오늘 모은 모이 ${Math.min(R("foodMax"),Math.floor(foodProg()+1e-9))}알 · 다음 알까지 ${Math.floor((foodProg()%1)*100)}%</small></div></div>
         ${(()=>{const fm=famOf(S.xp||0);if(!fm)return "";return `<h3 class="petsh3">🐣 새끼 키우기 <small>가족 ${(fm.n+1).toLocaleString()}마리</small></h3>
           <div class="famcur"><span class="famegg">${petSVG(fm.st,110,"pidle")}</span><div class="petinfo"><span class="petst">아기 ${fm.no}호 · ${esc(PET_ST[fm.st].n)}</span><p>${esc(PET_ST[fm.st].d)}</p>
             <div class="xpb big"><i style="width:${fm.f*100}%"></i></div><small class="num">다 자라 가족이 되기까지 ${r1(R("famXP")-fm.cur).toLocaleString()} XP · 한 마리에 ${R("famXP").toLocaleString()} XP</small></div></div>
