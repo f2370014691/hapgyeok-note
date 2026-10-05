@@ -2138,6 +2138,9 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .petlvr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .petlvr>b{font-size:28px;font-weight:900;color:var(--pri);line-height:1.1}
 .petlvr .petmood{align-self:center;font-size:12.5px;padding:5px 10px}
+/* v75: 회차·연도·단원 카드의 '틀린 것만' 버튼은 한 줄 전체 */
+.mkb9 .mks9.ng{grid-column:1/-1;flex-direction:row;justify-content:center;gap:8px;background:color-mix(in srgb,#EF4444 7%,var(--surface))}
+.mkb9 .mks9.ng b{color:#DC2626}
 </style>
 </head>
 <body>
@@ -2426,7 +2429,7 @@ function gichulChooser(m){
     const yk=y=>parseInt(y)+(String(y).includes("추")?.5:0),SO={A:0,B:1,"객관식":2,"2차A":3,"2차B":4},SL=s=>s==="A"||s==="B"?"교육과정 "+s:s;
     body=`<div class="mkg9">${Object.keys(by).sort((a,b)=>yk(b)-yk(a)).map(y=>{const ss=Object.keys(by[y]).sort((a,b)=>(SO[a]??9)-(SO[b]??9)),all=ss.flatMap(s=>by[y][s]);
       return qCard({no:String(y).slice(2),title:`${esc(y)}학년도`,st:qStat(all),
-        btns:`<button class="mkall9" data-go="y:${esc(y)}">${ico("play",14)} 전체 풀기</button>${ss.map(s=>{const x=qStat(by[y][s]);return `<button class="mks9 ${x.a&&x.g===x.a?"ok":""}" data-go="y:${esc(y)}|${esc(s)}"><b>${esc(SL(s))}</b><small>${by[y][s].length}물음${x.w?` · 틀림 ${x.w}`:""}</small></button>`;}).join("")}`});}).join("")}</div>`;
+        btns:`<button class="mkall9" data-go="y:${esc(y)}">${ico("play",14)} 전체 풀기</button>${ss.map(s=>{const x=qStat(by[y][s]);return `<button class="mks9 ${x.a&&x.g===x.a?"ok":""}" data-go="y:${esc(y)}|${esc(s)}"><b>${esc(SL(s))}</b><small>${by[y][s].length}물음${x.w?` · 틀림 ${x.w}`:""}</small></button>`;}).join("")}${(()=>{const w=qStat(all).w;return w?`<button class="mks9 ng" data-go="w:${esc(y)}"><b>❌ 틀린 것만</b><small>${w}물음</small></button>`:"";})()}`});}).join("")}</div>`;
   }else{
     const subs=`<span class="seg2 mksub9"><button data-gs="all" aria-pressed="${GSUB==="all"}">전체</button>${DOCS.map((x,i)=>`<button data-gs="${i}" aria-pressed="${GSUB===String(i)}">${esc(x)}</button>`).join("")}</span>`;
     let cards="";
@@ -2448,6 +2451,7 @@ function gichulChooser(m){
   on("[data-gs]",b=>{GSUB=b.dataset.gs;sv();gichulChooser(m);});
   on("[data-go]",b=>{const g=b.dataset.go;QWR.gichul=null;QWL.gichul="";qfSet(pg,"all");
     if(g==="all")SC.sa=true;
+    else if(g.startsWith("w:")){const y=g.slice(2);const it=ALLI.filter(([q,n])=>{if(GQ[q].y!==y)return false;const r=QR(q+"|"+n);return r&&r.r===0;});if(!it.length)return;QWR.gichul=it;QWL.gichul=`${y}학년도 · 틀린 것만`;}
     else if(g.startsWith("y:")){const [y,s]=g.slice(2).split("|");const it=ALLI.filter(([q])=>GQ[q].y===y&&(!s||GQ[q].s===s));QWR.gichul=it;QWL.gichul=`${y}학년도${s?" "+(s==="A"||s==="B"?"교육과정 "+s:s):" 전체"}`;}
     else{const [kind,...v]=g.split(":").map((x,i)=>i?+x:x);const [d,k,t]=v.slice(0);SC.sa=false;SC.d=d;SC.k=kind==="d"?null:k;SC.t=kind==="t"?t:null;SC.ts=[];}
     saveSC();PGRUN.gichul=true;VIEW.gichul(m);window.scrollTo({top:0});});
@@ -2692,7 +2696,7 @@ function mockChooser(m){
     return `<article class="mkc9 ${last?"last":""} ${t.a&&t.g===t.a?"done":""}">
       <div class="mkt9"><span class="mkn9 num">${r}</span><div><b>${r}회차</b><small>${t.a}물음${t.g?` · 푼 ${t.g}`:""}${t.w?` · <em>틀림 ${t.w}</em>`:""}</small></div>${last?`<span class="mkl9">최근</span>`:""}</div>
       <div class="mkp9"><i style="width:${p}%"></i></div>
-      <div class="mkb9"><button class="mkall9" data-kr="${r}" data-ks="all">${ico("play",14)} 전체 풀기</button>${ss.map(s=>{const x=st(y=>y.k===s.k);return `<button class="mks9 ${x.a&&x.g===x.a?"ok":""}" data-kr="${r}" data-ks="${s.ss}" title="${KSL[s.ss]} · ${x.a}물음"><b>${KSO[s.ss]+1}교시</b><small>${esc(KSL[s.ss].replace(/^\d교시\s*/,""))}</small></button>`;}).join("")}</div>
+      <div class="mkb9"><button class="mkall9" data-kr="${r}" data-ks="all">${ico("play",14)} 전체 풀기</button>${ss.map(s=>{const x=st(y=>y.k===s.k);return `<button class="mks9 ${x.a&&x.g===x.a?"ok":""}" data-kr="${r}" data-ks="${s.ss}" title="${KSL[s.ss]} · ${x.a}물음"><b>${KSO[s.ss]+1}교시</b><small>${esc(KSL[s.ss].replace(/^\d교시\s*/,""))}</small></button>`;}).join("")}${t.w?`<button class="mks9 ng" data-kwr="${r}"><b>❌ 틀린 것만</b><small>${t.w}물음</small></button>`:""}</div>
     </article>`;};
   m.innerHTML=`<div class="page fc8 pgc mkp"><header class="fc8h phd9"><div><h1>모의고사</h1><p>회차와 교시를 누르면 바로 시작해요</p></div>${pgTools("mock")}</header>
     <div class="mkhd9"><span class="seg2 mkw9">${WHO.map(w=>`<button data-kw="${esc(w)}" aria-pressed="${KW===w}">${esc(w)}</button>`).join("")}</span>
@@ -2701,6 +2705,9 @@ function mockChooser(m){
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   bindPgTools(m,pg,()=>mockChooser(m));
   on("[data-kw]",b=>{KW=b.dataset.kw;kSave();mockChooser(m);});
+  on("[data-kwr]",b=>{const r=+b.dataset.kwr,ss=KSETS.filter(s=>s.who===KW&&s.r===r).sort((a,b)=>KSO[a.ss]-KSO[b.ss]),it=[];
+    for(const s0 of ss)for(const qid of Object.keys(KQ).filter(x=>KQ[x].s===s0.k).sort((a,b)=>KQ[a].no-KQ[b].no))for(const [n] of KQ[qid].subs){const q=QR(qid+"|"+n);if(q&&q.r===0)it.push([qid,n]);}
+    if(!it.length)return;KR=r;kSave();QWR.mock=it;QWL.mock=`${KW} ${r}회차 · 틀린 것만`;qfSet("mock","all");PGRUN.mock=true;VIEW.mock(m);window.scrollTo({top:0});});
   on("[data-ks]",b=>{KR=+b.dataset.kr;KS=b.dataset.ks;kSave();PGRUN.mock=true;VIEW.mock(m);window.scrollTo({top:0});});
 }
 VIEW.mock=function(m){
