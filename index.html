@@ -4489,7 +4489,10 @@ window.addEventListener("hashchange",ddClose);
 new MutationObserver(()=>document.querySelectorAll("select:not([data-dd])").forEach(ddEnhance)).observe(document.documentElement,{childList:true,subtree:true});
 /* 카카오톡 안의 브라우저로 열면: Safari(안드로이드는 Chrome 등)로 열도록 안내 */
 (function(){
-  if(!/KAKAOTALK/i.test(navigator.userAgent))return;
+  /* 카카오톡에서 '열기'로 넘어온 Safari(?kk=…): 주소를 깨끗이 하고 한 번 새로고침해서 처음부터 제대로 그리기 */
+  if(!/KAKAOTALK/i.test(navigator.userAgent)){
+    if(/[?&]kk=/.test(location.search)){try{history.replaceState(null,"",location.pathname+location.hash);}catch(e){}location.reload();}
+    return;}
   try{if(sessionStorage.getItem("kakao-skip"))return;}catch(e){}
   const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1),br=ios?"Safari":"Chrome 등 기본 브라우저";
   const show=()=>{if(document.getElementById("kkg"))return;const el=document.createElement("div");el.id="kkg";el.className="kkg";
@@ -4499,7 +4502,7 @@ new MutationObserver(()=>document.querySelectorAll("select:not([data-dd])").forE
       <p class="kkgh">버튼이 안 되면 오른쪽 ${ios?"아래":"위"} <b>⋯</b> 메뉴 → <b>${ios?"Safari로 열기":"다른 브라우저로 열기"}</b>를 눌러 주세요.</p>
       <div class="kkgb"><button class="btn sm" id="kkcp">주소 복사</button><button class="btn sm" id="kkno">그냥 여기서 볼게요</button></div></div>`;
     document.body.appendChild(el);
-    el.querySelector("#kkgo").onclick=()=>{location.href="kakaotalk://web/openExternal?url="+encodeURIComponent(location.href);};
+    el.querySelector("#kkgo").onclick=()=>{location.href="kakaotalk://web/openExternal?url="+encodeURIComponent(location.origin+location.pathname+"?kk="+Date.now()+location.hash);};
     el.querySelector("#kkcp").onclick=async()=>{try{await navigator.clipboard.writeText(location.href);toast("주소를 복사했어요. "+br+"에 붙여 넣어 주세요");}catch(e){prompt("이 주소를 복사해 주세요",location.href);}};
     el.querySelector("#kkno").onclick=()=>{try{sessionStorage.setItem("kakao-skip","1");}catch(e){}el.remove();};};
   if(document.body)setTimeout(show,200);else document.addEventListener("DOMContentLoaded",()=>setTimeout(show,200));
