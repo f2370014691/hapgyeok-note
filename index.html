@@ -2281,6 +2281,8 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 }
 /* v89: 채점 뒤 '다음 문제' 한 줄 가득 */
 .qnext9{display:flex;width:100%;justify-content:center;align-items:center;gap:6px;margin:10px 0 4px;padding:13px 16px;font-size:16px;font-weight:800;border-radius:14px}
+/* v90: 방식 고르기 창 — 큰 화면에서는 가운데 */
+@media (min-width:700px){.mpick{align-items:center}.mpc{border-radius:24px;padding:18px 18px 20px;max-width:440px}}
 </style>
 </head>
 <body>
@@ -2584,17 +2586,16 @@ function fcChooser(m){
         btns:`<button class="mkall9" data-st="${d}:${k}:">${ico("play",14)} 대주제 전체 학습</button>`,
         chips:ch.topics.map((tp,t)=>{const x=counts(tp.idx);return tp.idx.length?pChip(`data-st="${d}:${k}:${t}"`,tp.name,tp.idx.length,"",x.all&&x.k===x.all):"";}).join("")});})].join("");
   m.innerHTML=`<div class="page fc8 pgc mkp fcp" style="--dc:${DC[d]};--ds:${DCS[d]}">
-    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>방식을 고르고 카드나 소주제를 누르면 바로 시작해요</p></div><span class="fchr">${pgTools("fc")}<button class="lvb big petlv" id="petopen2" title="${esc(petName())} 키우기">${petSVG(petStage(L.lv),26)}Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</button><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
+    <header class="fc8h phd9"><div><h1>플래시카드</h1><p>카드나 소주제를 누르고 방식을 고르면 바로 시작해요</p></div><span class="fchr">${pgTools("fc")}<button class="lvb big petlv" id="petopen2" title="${esc(petName())} 키우기">${petSVG(petStage(L.lv),26)}Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</button><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
     ${OPTOPEN?`<div class="optpop9"><div class="optph"><b>옵션</b><button class="iconbtn sm" id="optx" aria-label="닫기">✕</button></div>${OPTS}</div>`:""}
     <div class="mkhd9">${hasH?pSeg("data-ver",DECKS.map(([v,n])=>[v,esc(n)]),DECK):""}${pSum([[ca.all,"장"],[ca.k,"외움"],[due,"복습"],[wr,"틀림","ng"]])}</div>
-    <div class="mkhd9 sub"><span class="mklb9">방식</span><span class="seg2 mkw9 mkmd9">${MODES.map(([v,ic,l,sm])=>`<button data-md="${v}" aria-pressed="${fmode()===v}" title="${esc(sm)}">${ic} ${esc(l)}</button>`).join("")}</span></div>
     <div class="mkq9"><button class="mkqb9" data-q="due" ${due?"":"disabled"}>${ico("today",18)}<b>오늘 복습</b><span class="num">${due}장</span></button><button class="mkqb9 ng" data-q="wrong" ${wr?"":"disabled"}>${ico("undo",18)}<b>틀린 카드</b><span class="num">${wr}장</span></button></div>
     <div class="mkhd9 sub">${pSeg("data-d",DOCS.map((x,i)=>[i,esc(x)]),d)}</div>
     <div class="mkg9 tp">${cards}</div></div>`;
   const re=()=>{saveSC();fcChooser(m);};
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   const run0=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};
-  const run=()=>{if(!isMob())return run0();pickSheet("어떤 방식으로 학습할까요?",MODES,fmode(),v=>{S.fc=Object.assign(FCO(),{mode:v,typing:v==="type"});save();run0();});};
+  const run=()=>{pickSheet("어떤 방식으로 학습할까요?",MODES,fmode(),v=>{S.fc=Object.assign(FCO(),{mode:v,typing:v==="type"});save();run0();});};
   on("[data-ver]",b=>{setDeck(b.dataset.ver);SC.k=null;SC.t=null;SC.ts=[];re();});
   on("[data-md]",b=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();re();});
   on("[data-d]",b=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;SC.ts=[];re();});
@@ -3205,7 +3206,7 @@ function petSheet(){
           <div class="petinfo"><span class="petst">${st+1}단계 · ${esc(PET_ST[st].n)}</span><div class="petlvr"><b class="num">Lv.${L.lv}</b><div class="petmood">${me} ${esc(mt)} · 오늘 모이 ${fedT}번 먹음</div></div><p>${esc(PET_ST[st].d)}</p>
             <div class="xpb big"><i style="width:${Math.max(0,L.cur/L.need*100)}%"></i></div><small class="num">다음 레벨까지 ${r1(L.need-L.cur)} XP · 모두 ${(S.xp||0).toLocaleString()} XP</small>
             ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${r1(Math.max(0,lvBase(nx.from)-(S.xp||0))).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 다 키웠어요! 이제 XP로 새끼를 한 마리씩 키워 가족을 늘려요</small>`}
-            <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>🌾 모이 주기 <b class="num">${f}</b></button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
+            <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>${f?`🌾 모이 주기 <b class="num">${f}</b>`:"🌾 모이가 없어요"}</button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
             <small class="muted">모이는 오늘 카드·표·해이실·기출·문풀·모고를 30번 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
         ${(()=>{const fm=famOf(S.xp||0);if(!fm)return "";return `<h3 class="petsh3">🐣 새끼 키우기 <small>가족 ${(fm.n+1).toLocaleString()}마리</small></h3>
           <div class="famcur"><span class="famegg">${petSVG(fm.st,110,"pidle")}</span><div class="petinfo"><span class="petst">아기 ${fm.no}호 · ${esc(PET_ST[fm.st].n)}</span><p>${esc(PET_ST[fm.st].d)}</p>
@@ -3218,7 +3219,7 @@ function petSheet(){
     const pat=e=>{const b=el.querySelector(".petbig");PET().pets=(PET().pets||0)+1;{const x0=S.xp||0;S.xp=r1(x0+.001);const rc=(e&&e.currentTarget||b).getBoundingClientRect(),px=e&&e.clientX?e.clientX:rc.left+rc.width/2,py=e&&e.clientY?e.clientY:rc.top+rc.height/2;xpFly(.001,px,py);petCheck(x0);const L=lvOf(S.xp),sm=el.querySelector(".petinfo small.num");if(sm)sm.textContent=`다음 레벨까지 ${r1(L.need-L.cur)} XP · 모두 ${(S.xp||0).toLocaleString()} XP`;}save();const h=document.createElement("i");h.className="pheart";h.textContent=["💛","🤍","💕","✨"][Math.floor(Math.random()*4)];h.style.left=(30+Math.random()*40)+"%";b.appendChild(h);setTimeout(()=>h.remove(),1000);
       const sv=b.querySelector("svg");sv.classList.remove("pjump");void sv.getBoundingClientRect();sv.classList.add("pjump");};
     el.querySelector("#petpat").onclick=pat;el.querySelector("#petpat2").onclick=pat;
-    el.querySelector("#petfeed").onclick=()=>{if(!petFood())return;const p=PET(),t=today();p.fed[t]=(p.fed[t]||0)+1;
+    el.querySelector("#petfeed").onclick=()=>{if(!petFood())return;setTimeout(petChipRefresh,0);const p=PET(),t=today();p.fed[t]=(p.fed[t]||0)+1;
       const ks=Object.keys(p.fed).sort();while(ks.length>40)delete p.fed[ks.shift()];
       const x0=S.xp||0;S.xp=r1(x0+3);save();petCheck(x0);sfx&&sfx("good");draw();
       const b=el.querySelector(".petbig");const g=document.createElement("i");g.className="pheart";g.textContent="🌾";g.style.left="50%";b.appendChild(g);setTimeout(()=>g.remove(),1000);};
@@ -4128,7 +4129,8 @@ function bindSubWrite(el,qid,q){
     const b=box.querySelector("[data-open]");if(b)b.onclick=()=>{keep();QW[k].open=!QW[k].open;box.innerHTML=subWrite(qid,n,sub[1],sub[2]);bindSubWrite(el,qid,q);};
   });
 }
-function closeQ(){const o=document.getElementById("qsheet");if(o)o.remove();document.body.classList.remove("noscroll");}
+function closeQ(){const o=document.getElementById("qsheet");if(o)o.remove();document.body.classList.remove("noscroll");petChipRefresh();}
+function petChipRefresh(){const c=document.getElementById("petopen");if(!c||!S||!ME)return;const t=document.createElement("div");t.innerHTML=petChip();const n=t.firstElementChild;if(!n)return;n.onclick=petSheet;c.replaceWith(n);}
 ["gesturestart","gesturechange"].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
 document.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1)e.preventDefault();},{passive:false});
 document.addEventListener("keydown",e=>{if(DDOPEN)return;if(document.getElementById("qsheet")){if(e.key==="Escape")closeQ();e.stopImmediatePropagation();}},true);
