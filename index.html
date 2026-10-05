@@ -2214,6 +2214,7 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 @media (hover:none){.nk9e{opacity:.6}}
 /* v84: 고르기 카드 제목은 검정 (어두운 화면에서는 밝은 글자) */
 .mkc9 .mkt9 b{color:var(--ink)!important}
+.xpfly.neg{background:linear-gradient(90deg,#F87171,#EF4444);box-shadow:0 8px 20px rgba(239,68,68,.3)}
 </style>
 </head>
 <body>
@@ -2700,7 +2701,7 @@ VIEW.table=function(m){
 const allItems=src=>{const o=[];for(const q in src)for(const [n] of src[q].subs)o.push([q,n]);return o.sort((a,b)=>qSort(a[0],b[0])||parseInt(a[1])-parseInt(b[1])||a[1].localeCompare(b[1]));};
 /* 기출·문제풀이 정답/오답 기록: S.qres["문항|하위물음"]={r:1맞음/0틀림,d:날짜} */
 const QR=tk=>(S.qres||{})[tk];
-function setQR(tk,r){S.qres=S.qres||{};const pr=S.qres[tk];if(!pr||pr.d!==today())setTimeout(()=>gainXP("q",r?6:2,"q|"+tk),0);const o={r,d:today()},c=qCls0(tk);if(c)o.c=c;S.qres[tk]=o;save();setTimeout(qfRefresh,0);}
+function setQR(tk,r){S.qres=S.qres||{};setTimeout(()=>qXP(tk,r),0);const o={r,d:today()},c=qCls0(tk);if(c)o.c=c;S.qres[tk]=o;save();setTimeout(qfRefresh,0);}
 /* 문항 종류: MK… 모의고사, M… 문제풀이, 나머지 기출 */
 const qKind=qid=>{qid=String(qid);return qid.startsWith("MK")?"mock":qid[0]==="M"?"munpul":"gichul";};
 const qSplit=tk=>{const i=tk.lastIndexOf("|");return [tk.slice(0,i),tk.slice(i+1)];};
@@ -3093,12 +3094,19 @@ function petCheck(x0){const a=lvOf(x0).lv,b=lvOf(S.xp||0).lv,fa=famOf(x0),fb=fam
   if(b<=a)return;const s0=petStage(a),s1=petStage(b);
   if(s1>s0)petCelebrate(s1);else toast(`🎉 Lv.${b} 달성! ${josaGa(petName())} 쑥 컸어요`);}
 /* 표·해이실·기출·문풀·모고 학습도 XP → 캐릭터 성장. 하루 상한이 있고, 같은 칸·물음은 그날 한 번만 */
-const XPCAP={q:300,table:150,heisil:200},XPSEEN=new Set();
+const XPCAP={q:1000,table:150,heisil:200},XPSEEN=new Set();
 function gainXP(src,n,key){if(!S||!ME||n<=0)return;const t=today();if(key){const kk=t+"|"+key;if(XPSEEN.has(kk))return;XPSEEN.add(kk);}
   const d=S.xpd&&S.xpd.d===t?S.xpd:(S.xpd={d:t});const left=(XPCAP[src]||200)-(d[src]||0);if(left<=0)return;n=Math.min(n,left);d[src]=(d[src]||0)+n;
   S.act=S.act||{};S.act[t]=(S.act[t]||0)+1;{const ks=Object.keys(S.act).sort();while(ks.length>40)delete S.act[ks.shift()];}
-  const x0=S.xp||0;S.xp=x0+n;save();xpFly(n);petCheck(x0);}
-function xpFly(n){const el=document.createElement("div");el.className="xpfly";el.textContent=`+${n} XP`;document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
+  /* 0.1 XP 같은 소수는 따로 모았다가 1이 될 때마다 XP에 더함 (XP는 늘 정수) */
+  const tot=(S.xpf||0)+n,whole=Math.floor(tot+1e-9);S.xpf=Math.round((tot-whole)*10)/10;
+  const x0=S.xp||0;S.xp=x0+whole;save();xpFly(n);if(whole)petCheck(x0);}
+/* 기출·문풀·모고 채점 XP: 맞음 +10, 틀림 -5. 같은 물음은 하루에 마지막 결과만 반영 (❌→⭕로 고치면 차이만큼 조정) */
+function qXP(tk,r){if(!S||!ME)return;const t=today();if(!S.qxp||S.qxp.d!==t)S.qxp={d:t,m:{}};
+  const want=r?10:-5,had=S.qxp.m[tk]||0,dl=want-had;if(!dl)return;S.qxp.m[tk]=want;
+  if(!had&&r){S.act=S.act||{};S.act[t]=(S.act[t]||0)+1;}
+  const x0=S.xp||0;S.xp=Math.max(0,x0+dl);save();xpFly(dl);if(dl>0)petCheck(x0);}
+function xpFly(n){const el=document.createElement("div");el.className="xpfly"+(n<0?" neg":"");el.textContent=`${n<0?"":"+"}${Math.round(n*10)/10} XP`;document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
 function petCelebrate(st){const el=document.createElement("div");el.className="petpop";
   el.innerHTML=`<div class="petpopc">${petSVG(st,150,"pjump")}<b>${esc(josaGa(petName()))} ${esc(josaRo(PET_ST[st].n))} 자랐어요!</b><small>${esc(PET_ST[st].d)}</small><button class="btn pri">좋아요</button></div>`;
   document.body.appendChild(el);const x=()=>el.remove();el.querySelector("button").onclick=x;el.onclick=e=>{if(e.target===el)x();};sfx&&sfx("good");}
@@ -4084,7 +4092,7 @@ function bindTables(m){
     const redraw=()=>{el.outerHTML=tableHTML(t);bindTables(m);};
     el.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm;redraw();});
     el.querySelectorAll("[data-tm2]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm2;redraw();});
-    el.querySelectorAll(".cw.hid").forEach((w,wi)=>w.onclick=()=>{w.classList.toggle("on");if(w.classList.contains("on"))gainXP("table",1,"tr|"+t.id+"|"+wi);});
+    el.querySelectorAll(".cw.hid").forEach((w,wi)=>w.onclick=()=>{w.classList.toggle("on");if(w.classList.contains("on"))gainXP("table",.1,"tr|"+t.id+"|"+wi);});
     if(PENOK)bindPens(el,redraw);
     const ins=[...el.querySelectorAll(".ti")];
     /* 채점: 순서 있는 표는 그 줄과 비교. 순서 없는 표는 쓴 줄마다 가장 잘 맞는 실제 줄을 하나씩 짝지음(한 줄은 한 번만 → 같은 답 중복은 오답) */
@@ -4100,7 +4108,7 @@ function bindTables(m){
         const used=new Set();for(const [,,r,a] of pr){if(r in as||used.has(a))continue;as[r]=a;used.add(a);}
         typed.forEach(r=>{if(!(r in as))as[r]=-1;});
       }
-      ins.forEach(i=>{const td=i.closest("td");td.classList.remove("ok","ng");if(!i.value.trim())return;const a=as[+i.dataset.r];const ok=a>=0&&cellOk(i.value,t.rows[a][+i.dataset.c]);td.classList.add(ok?"ok":"ng");if(ok)gainXP("table",2,"tt|"+t.id+"|"+i.dataset.r+"|"+i.dataset.c);});
+      ins.forEach(i=>{const td=i.closest("td");td.classList.remove("ok","ng");if(!i.value.trim())return;const a=as[+i.dataset.r];const ok=a>=0&&cellOk(i.value,t.rows[a][+i.dataset.c]);td.classList.add(ok?"ok":"ng");if(ok)gainXP("table",1,"tt|"+t.id+"|"+i.dataset.r+"|"+i.dataset.c);});
     };
     const check=()=>grade();
     ins.forEach(inp=>{const w=inp.parentElement;inp.addEventListener("focus",()=>w.classList.remove("peek"));});
