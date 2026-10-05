@@ -3386,10 +3386,12 @@ function listIn(box,sc){
 
 /* 홈 */
 /* 약점 지도: 소주제마다 본 카드 중 틀린 적 있는 비율로 색칠 */
-function weakMap(){const QS=qTopicStats();return DOCS.map((dn0,d)=>`<div class="wm" style="--dc:${DC[d]}"><b>${esc(dn0)}</b><div class="wmg">${CH[d].map((ch,k)=>ch.topics.map((tp,t)=>{let seen=0,lap=0;for(const i of tp.idx){const x=ss(i);if(x){seen++;if(x[2])lap++;}}
-  const [qa,qw]=QS[d+","+k+","+t]||[0,0],all=seen+qa,bad=lap+qw;
+/* 약점 지도: 소주제마다 민쌤·하쌤 카드(두 버전 모두) + 기출·문풀·모고 채점 기록을 합쳐 틀린 비율로 색칠 */
+function weakAgg(){const A={};C.forEach((c,i)=>{const x=S.srs[c[0]],p=POS[i];if(!x||!p)return;const k=p.join(","),a=A[k]||(A[k]={m:[0,0],h:[0,0]}),dk=deckOf(c)==="h26"?a.h:a.m;dk[0]++;if(x[2])dk[1]++;});return A;}
+function weakMap(){const QS=qTopicStats(),A=weakAgg();return DOCS.map((dn0,d)=>`<div class="wm" style="--dc:${DC[d]}"><b>${esc(dn0)}</b><div class="wmg">${CH[d].map((ch,k)=>ch.topics.map((tp,t)=>{
+  const key=d+","+k+","+t,a=A[key]||{m:[0,0],h:[0,0]},[qa,qw]=QS[key]||[0,0],all=a.m[0]+a.h[0]+qa,bad=a.m[1]+a.h[1]+qw;
   const r=all?bad/all:0,st=all<3?"n":r>=.3?"w3":r>=.15?"w2":"w1";
-  const tip=[seen?`본 카드 ${seen}장 · 틀린 적 ${lap}장`:"",qa?`기출·문풀·모고 채점 ${qa}개 · 틀림 ${qw}개`:""].filter(Boolean).join(" / ")||"아직 안 봄";
+  const tip=[a.m[0]?`민쌤 카드 ${a.m[0]}장 · 틀린 적 ${a.m[1]}장`:"",a.h[0]?`하쌤 카드 ${a.h[0]}장 · 틀린 적 ${a.h[1]}장`:"",qa?`기출·문풀·모고 채점 ${qa}개 · 틀림 ${qw}개`:""].filter(Boolean).join(" / ")||"아직 안 봄";
   return `<button class="wt ${st}" data-w="${d},${k},${t}" title="${esc(ch.name)} › ${esc(tp.name)} · ${tip}"><span>${esc(tp.name)}</span>${all>=3?`<em class="num">${Math.round((1-r)*100)}%</em>`:""}${qw?`<i class="wq9">❌${qw}</i>`:""}</button>`;}).join("")).join("")}</div></div>`).join("");}
 let WMOPEN=false;
 VIEW.home=function(m){
@@ -3418,14 +3420,14 @@ VIEW.home=function(m){
       <span class="s9t"><b>${esc(d)}</b><small class="num">${c.k.toLocaleString()} / ${c.all.toLocaleString()}장 외움</small>
         <span class="s9bar"><i class="k" style="width:${c.k/(c.all||1)*100}%"></i><i class="l" style="width:${c.l/(c.all||1)*100}%"></i></span>
         <small class="s9m">대주제 ${CH[i].length}개${c.due?` · 복습 ${c.due}장`:""}</small></span>${ico("chev",18)}</a>`;}).join("")}</section>
-    <button class="optbtn wmbtn ${WMOPEN?"open":""}" id="wmt" aria-expanded="${WMOPEN}"><span class="ob1">약점 지도</span><span class="ob2">카드와 기출·문제풀이·모의고사 채점을 합쳐 소주제별로 자주 틀리는 곳을 색으로 보여 줘요</span><span class="obc">${ico("chev",16)}</span></button>
+    <button class="optbtn wmbtn ${WMOPEN?"open":""}" id="wmt" aria-expanded="${WMOPEN}"><span class="ob1">약점 지도</span><span class="ob2">민쌤·하쌤 카드와 기출·문제풀이·모의고사 채점을 합쳐 소주제별로 자주 틀리는 곳을 색으로 보여 줘요</span><span class="obc">${ico("chev",16)}</span></button>
     ${WMOPEN?`<div class="h9sec wmleg"><span class="wleg"><i class="w3"></i>자주 틀림<i class="w2"></i>가끔 틀림<i class="w1"></i>잘함<i class="n"></i>아직</span></div>
     <section class="wmap">${weakMap()}</section>`:""}
   </div>`;
   const hd=m.querySelector("#hdue");if(hd)hd.onclick=e=>{e.preventDefault();loadSC();SC.sp="due";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   const hp=m.querySelector("#hplan");if(hp)hp.onclick=e=>{e.preventDefault();loadSC();SC.sp="plan";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   {const p=m.querySelector("#petopen");if(p)p.onclick=petSheet;}
-  m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const [d,k,t]=b.dataset.w.split(",").map(Number);loadSC();SC.sp="";SC.d=d;SC.k=k;SC.t=t;saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");});
+  m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const [d,k,t]=b.dataset.w.split(",").map(Number);loadSC();{const tp=CH[d][k].topics[t];if(tp&&!tp.idx.length){const o=DECK==="h26"?"m27":"h26";if(C.some((c,i)=>deckOf(c)===o&&POS[i]&&POS[i][0]===d&&POS[i][1]===k&&POS[i][2]===t))setDeck(o);}}SC.sp="";SC.d=d;SC.k=k;SC.t=t;saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");});
   m.querySelector("#wmt").onclick=()=>{WMOPEN=!WMOPEN;const y=window.scrollY;VIEW.home(m);window.scrollTo({top:y});};
   const hw=m.querySelector("#hwr");if(hw)hw.onclick=e=>{e.preventDefault();loadSC();SC.sp="wrong";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   const hx=m.querySelector("#hdd");if(hx)hx.onclick=()=>go("#/set");
