@@ -3471,7 +3471,7 @@ VIEW.home=function(m){
   const nq=GQ?Object.keys(GQ).length:0,nt=TB.length,pl=planInfo();
   m.innerHTML=`<div class="page home9">
     <header class="h9top">
-      <div class="h9hi"><p class="h9date">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</p><h1><button class="nick9" id="nick9" title="눌러서 부를 이름 바꾸기">${esc(S.nick||ME.id)}<span class="nk9e" aria-hidden="true">✏️</span></button>님, 반가워요</h1><p class="h9sub">오늘도 한 장씩 쌓아 볼까요?</p></div>
+      <div class="h9hi"><p class="h9date">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</p><h1><button class="nick9" id="nick9" title="눌러서 부를 이름 바꾸기">${esc(S.nick||ME.id)}</button>님, 반가워요</h1><p class="h9sub">오늘도 한 장씩 쌓아 볼까요?</p></div>
       <div class="h9chips">
         ${dd!=null?`<div class="h9c dd9"><small>시험까지</small><b class="num">${dlabel(dd)}</b></div>`:`<button class="h9c dd9 ghost" id="hdd"><small>시험일</small><b>정하기</b></button>`}
         ${petChip()}
