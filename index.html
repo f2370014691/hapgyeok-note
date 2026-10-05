@@ -2193,6 +2193,9 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .tmbub{position:absolute;right:0;top:calc(100% + 10px);z-index:60;white-space:nowrap;padding:8px 12px;border-radius:12px;background:var(--ink);color:var(--surface);font-size:12.5px;font-weight:700;box-shadow:0 10px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .15s,transform .15s}
 .tmbub::before{content:"";position:absolute;right:18px;top:-6px;border:6px solid transparent;border-top:0;border-bottom-color:var(--ink)}
 .tbmd .tmtip:hover .tmbub,.tbmd .tmtip:focus-visible .tmbub{opacity:1;transform:translateY(0)}
+/* v81: 약점 지도 범례를 안내 줄 오른쪽 끝으로 */
+.wmtab .wleg{margin-left:auto;display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
+@media (max-width:699px){.wmtab .wleg{margin-left:0;width:100%}}
 </style>
 </head>
 <body>
@@ -3471,8 +3474,8 @@ VIEW.home=function(m){
         <span class="s9bar"><i class="k" style="width:${c.k/(c.all||1)*100}%"></i><i class="l" style="width:${c.l/(c.all||1)*100}%"></i></span>
         <small class="s9m">대주제 ${CH[i].length}개${c.due?` · 복습 ${c.due}장`:""}</small></span>${ico("chev",18)}</a>`;}).join("")}</section>
     <button class="optbtn wmbtn ${WMOPEN?"open":""}" id="wmt" aria-expanded="${WMOPEN}"><span class="ob1">약점 지도</span><span class="ob2">민쌤·하쌤 카드와 기출·문제풀이·모의고사 채점을 합쳐 소주제별로 자주 틀리는 곳을 색으로 보여 줘요</span><span class="obc">${ico("chev",16)}</span></button>
-    ${WMOPEN?`<div class="h9sec wmleg"><span class="wleg"><i class="w3"></i>자주 틀림<i class="w2"></i>가끔 틀림<i class="w1"></i>잘함<i class="n"></i>아직</span></div>
-    <section class="wmap">${(BUNDLE&&(BUNDLE.cards2||[]).length)?`<div class="wmtab"><span class="seg2">${DECKS.map(([v,n])=>`<button data-wmd="${v}" aria-pressed="${WMDK===v}">${esc(n)}</button>`).join("")}</span><small>칸을 누르면 이 버전의 그 소주제 플래시카드가 바로 열려요</small></div>`:""}${weakMap((BUNDLE&&(BUNDLE.cards2||[]).length)?WMDK:"m27")}</section>`:""}
+    ${WMOPEN?`
+    <section class="wmap"><div class="wmtab">${(BUNDLE&&(BUNDLE.cards2||[]).length)?`<span class="seg2">${DECKS.map(([v,n])=>`<button data-wmd="${v}" aria-pressed="${WMDK===v}">${esc(n)}</button>`).join("")}</span>`:""}<small>칸을 누르면 이 버전의 그 소주제 플래시카드가 바로 열려요</small><span class="wleg"><i class="w3"></i>자주 틀림<i class="w2"></i>가끔 틀림<i class="w1"></i>잘함<i class="n"></i>아직</span></div>${weakMap((BUNDLE&&(BUNDLE.cards2||[]).length)?WMDK:"m27")}</section>`:""}
   </div>`;
   const hd=m.querySelector("#hdue");if(hd)hd.onclick=e=>{e.preventDefault();loadSC();SC.sp="due";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   const hp=m.querySelector("#hplan");if(hp)hp.onclick=e=>{e.preventDefault();loadSC();SC.sp="plan";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
