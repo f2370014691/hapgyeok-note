@@ -2206,6 +2206,14 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .as-ng .asb{color:#B91C1C;background:color-mix(in srgb,#EF4444 12%,transparent)}
 .autog{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 4px;padding:9px 12px;border-radius:12px;background:var(--sunk);font-size:12.5px;color:var(--ink-3)}
 .autog b{font-size:14px}.autog b.ok{color:#059669}.autog b.ng{color:#DC2626}
+/* v83: 홈 인사말 이름 바꾸기 */
+.nick9{font:inherit;color:inherit;background:none;border:0;padding:0 2px;margin:0 -2px;cursor:pointer;border-radius:8px;letter-spacing:inherit;display:inline-flex;align-items:center;gap:4px}
+.nick9:hover{background:rgba(255,255,255,.14)}
+.nk9e{font-size:.5em;opacity:0;transition:opacity .15s}
+.nick9:hover .nk9e,.nick9:focus-visible .nk9e{opacity:.85}
+@media (hover:none){.nk9e{opacity:.6}}
+/* v84: 고르기 카드 제목은 검정 (어두운 화면에서는 밝은 글자) */
+.mkc9 .mkt9 b{color:var(--ink)!important}
 </style>
 </head>
 <body>
@@ -2924,7 +2932,7 @@ function admStats(st){
     const qr=S.qres||{},grp={g:[0,0],m:[0,0],k:[0,0]};
     for(const t in qr){const id=t.split("|")[0],g=id.startsWith("MK")?"k":id[0]==="M"?"m":"g";if(qr[t]&&qr[t].r!=null){grp[g][0]++;if(qr[t].r===1)grp[g][1]++;}}
     const log=S.log||{},days=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=today(d);days.push([k,log[k]||0]);}
-    return{m27:deck("m27"),h26:deck("h26"),xp:S.xp||0,lv:lvOf(S.xp||0).lv,q:grp,days,total:Object.values(log).reduce((a,b)=>a+(+b||0),0),act:Object.keys(log).filter(k=>log[k]>0).length,exam:S.exam||"",upd:S.updatedAt||0};
+    return{m27:deck("m27"),h26:deck("h26"),xp:S.xp||0,lv:lvOf(S.xp||0).lv,q:grp,days,total:Object.values(log).reduce((a,b)=>a+(+b||0),0),act:Object.keys(log).filter(k=>log[k]>0).length,exam:S.exam||"",nick:S.nick||"",upd:S.updatedAt||0};
   }finally{S=S0;}
 }
 async function admLoad(){
@@ -2949,7 +2957,7 @@ VIEW.admin=function(m){
       <form id="admidf" autocomplete="off"><input type="text" id="admid" class="field" placeholder="비울 아이디" maxlength="20" required><button class="btn sm" type="submit">비우기</button></form></section>
     <div class="admnote">🔒 비밀번호는 Firebase가 되돌릴 수 없는 형태로만 보관해서 관리자도 볼 수 없어요. 잊은 비밀번호는 새로 정해 주세요(컴퓨터의 reset_admin_pw.py에서 아이디를 바꿔 실행).</div>
     <div class="admtw"><table class="admt"><thead><tr><th>아이디</th><th>가입</th><th>마지막 학습</th><th>최근 접속<br><small>기기 · IP</small></th><th>레벨</th><th>민쌤 카드<br><small>외움/학습/전체</small></th><th>하쌤 카드<br><small>외움/학습/전체</small></th><th>기출 정답</th><th>문제풀이 정답</th><th>모의고사 정답</th><th>최근 14일</th></tr></thead><tbody>
-    ${ADM.map(u=>{const s=u.s,mx=Math.max(1,...s.days.map(d=>d[1]));return `<tr class="${u.uid===ADMSEL?"on":""}" data-u="${u.uid}"><td><b>${esc(u.id)}</b>${u.uid===ADMIN_UID?` <span class="admme">관리자</span>`:""}</td><td>${dt(u.t)}</td><td>${dt(s.upd)}</td><td>${(()=>{const a=(u.acc||[])[0];if(!a)return "—";const nd=new Set(u.acc.map(x=>x.dv)).size;return `${dt(a.t)}<br><small>${esc(a.os)} · ${esc(a.br)}${a.ip?" · "+esc(a.ip):""}${nd>1?` <span class="admdv">기기 ${nd}대</span>`:""}</small>`;})()}</td><td>Lv.${s.lv}<br><small>${s.xp.toLocaleString()} XP</small></td>
+    ${ADM.map(u=>{const s=u.s,mx=Math.max(1,...s.days.map(d=>d[1]));return `<tr class="${u.uid===ADMSEL?"on":""}" data-u="${u.uid}"><td><b>${esc(u.id)}</b>${s.nick?`<br><small>${esc(s.nick)}</small>`:""}${u.uid===ADMIN_UID?` <span class="admme">관리자</span>`:""}</td><td>${dt(u.t)}</td><td>${dt(s.upd)}</td><td>${(()=>{const a=(u.acc||[])[0];if(!a)return "—";const nd=new Set(u.acc.map(x=>x.dv)).size;return `${dt(a.t)}<br><small>${esc(a.os)} · ${esc(a.br)}${a.ip?" · "+esc(a.ip):""}${nd>1?` <span class="admdv">기기 ${nd}대</span>`:""}</small>`;})()}</td><td>Lv.${s.lv}<br><small>${s.xp.toLocaleString()} XP</small></td>
       <td class="num">${s.m27.k}/${s.m27.k+s.m27.l}/${s.m27.all.toLocaleString()}</td><td class="num">${s.h26.k}/${s.h26.k+s.h26.l}/${s.h26.all.toLocaleString()}</td>
       <td>${qcell(s.q.g)}</td><td>${qcell(s.q.m)}</td><td>${qcell(s.q.k)}</td>
       <td><span class="admspark">${s.days.map(d=>`<i style="height:${Math.round(d[1]/mx*100)}%" title="${d[0]} · ${d[1]}장"></i>`).join("")}</span></td></tr>`;}).join("")}</tbody></table></div>
@@ -3463,7 +3471,7 @@ VIEW.home=function(m){
   const nq=GQ?Object.keys(GQ).length:0,nt=TB.length,pl=planInfo();
   m.innerHTML=`<div class="page home9">
     <header class="h9top">
-      <div class="h9hi"><p class="h9date">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</p><h1>${esc(ME.id)}님, 반가워요</h1><p class="h9sub">오늘도 한 장씩 쌓아 볼까요?</p></div>
+      <div class="h9hi"><p class="h9date">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</p><h1><button class="nick9" id="nick9" title="눌러서 부를 이름 바꾸기">${esc(S.nick||ME.id)}<span class="nk9e" aria-hidden="true">✏️</span></button>님, 반가워요</h1><p class="h9sub">오늘도 한 장씩 쌓아 볼까요?</p></div>
       <div class="h9chips">
         ${dd!=null?`<div class="h9c dd9"><small>시험까지</small><b class="num">${dlabel(dd)}</b></div>`:`<button class="h9c dd9 ghost" id="hdd"><small>시험일</small><b>정하기</b></button>`}
         ${petChip()}
@@ -3492,6 +3500,7 @@ VIEW.home=function(m){
   {const p=m.querySelector("#petopen");if(p)p.onclick=petSheet;}
   m.querySelectorAll("[data-wmd]").forEach(b=>b.onclick=()=>{WMDK=b.dataset.wmd;try{localStorage.setItem(SBASE+":wmdk",WMDK);}catch(e){}const y=window.scrollY;VIEW.home(m);window.scrollTo({top:y});});
   m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const [d,k,t]=b.dataset.w.split(",").map(Number),dk=b.dataset.wd||DECK;if(dk!==DECK)setDeck(dk);loadSC();SC.sp="";SC.sa=false;SC.d=d;SC.k=k;SC.t=t;SC.ts=[];saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");});
+  {const b=m.querySelector("#nick9");if(b)b.onclick=()=>{const v=prompt("홈에서 부를 이름을 정해 주세요 (12자까지) · 비워 두면 아이디로 불러요",S.nick||ME.id);if(v==null)return;const t=v.trim().slice(0,12);S.nick=t&&t!==ME.id?t:"";save();VIEW.home(m);};}
   m.querySelector("#wmt").onclick=()=>{WMOPEN=!WMOPEN;const y=window.scrollY;VIEW.home(m);window.scrollTo({top:y});};
   const hw=m.querySelector("#hwr");if(hw)hw.onclick=e=>{e.preventDefault();loadSC();SC.sp="wrong";saveSC();FCRUN=true;FCKEEP=true;SES=null;go("#/fc");};
   const hx=m.querySelector("#hdd");if(hx)hx.onclick=()=>go("#/set");
