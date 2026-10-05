@@ -3308,7 +3308,7 @@ function petSheet(){
 }
 
 const fmode=()=>{const o=FCO();return o.mode||(o.typing?"type":"click");};
-const MODES=[["click","👆","클릭으로","눌러서 답 보고 스스로 채점"],["type","⌨️","타이핑으로","답을 써 보고 핵심어로 채점"],["cloze","🧩","빈칸 채우기","핵심어만 빈칸 · 초성 힌트"],["pair","⚖️","헷갈리는 짝 고르기","설명을 보고 두 질문 중 고르기"]];
+const MODES=[["click","👆","클릭으로","눌러서 답 보고 스스로 채점"],["type","⌨️","타이핑으로","답을 써 보고 핵심어로 채점"],["kw","🔑","핵심어로","핵심 단어만 써서 맞히기 · 순서 상관없음"],["cloze","🧩","빈칸 채우기","핵심어만 빈칸 · 초성 힌트"],["pair","⚖️","헷갈리는 짝 고르기","설명을 보고 두 질문 중 고르기"]];
 /* 빈칸: **굵은 핵심어**를 빈칸으로, 첫 글자 초성 힌트 */
 const CHO="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
 const cho=ch=>{const c=(ch||"").charCodeAt(0)-0xAC00;return c>=0&&c<11172?CHO[Math.floor(c/588)]:(ch||"");};
@@ -3475,10 +3475,12 @@ function drawCard(){
   /* 타이핑: 비교 카드는 비교표 모양 칸 (이름별 칸 / 줄마다 A·B 칸) */
   const tcells=mode==="type"?(vs?vs.map(x=>({lab:plainA(x.l),key:x.body})):vr&&vr.rows?vr.rows.flatMap((r,k)=>r.c!=null?[]:[{row:k,lab:r.lab||"",side:0,key:r.l},{row:k,lab:r.lab||"",side:1,key:r.r}]):null):null;
   const cellLab=cl=>vr&&vr.rows?`${cl.side?vr.B:vr.A}${cl.lab?" · "+cl.lab:""}`:cl.lab;
-  const mres=Array.isArray(s.typed)?(tcells&&s.typed.length===tcells.length?(()=>{const rows=tcells.map((cl,k)=>{const v=String(s.typed[k]||"");return{v,lab:cellLab(cl),keys:ansKeys(cl.key).map(kk=>({k:kk,ok:!!v.trim()&&cellOk(v,kk)}))};});return{rows,flat:rows.flatMap(r=>r.keys),cmp:true};})():multiScore(s.typed,c[6])):null,tr=mres?mres.flat:s.typed!=null?typeScore(s.typed,c[6]):null,tok=tr?tr.filter(y=>y.ok).length:0;
+  /* 핵심어로 답하기: 문제에 이미 나온 핵심어는 빼고 채점 (다 빠지면 전부) */
+  const kwK=mode==="kw"?(()=>{const q=String(c[5]),a=ansKeys(c[6]),b=a.filter(k=>!q.includes(k));if(b.length)return b;const p=kwFromText(plainA(c[6]),q);return p.length?p:a;})():null;
+  const mres=Array.isArray(s.typed)?(tcells&&s.typed.length===tcells.length?(()=>{const rows=tcells.map((cl,k)=>{const v=String(s.typed[k]||"");return{v,lab:cellLab(cl),keys:ansKeys(cl.key).map(kk=>({k:kk,ok:!!v.trim()&&cellOk(v,kk)}))};});return{rows,flat:rows.flatMap(r=>r.keys),cmp:true};})():multiScore(s.typed,c[6])):null,tr=mres?mres.flat:s.typed!=null?(kwK?kwK.map(k=>({k,ok:!!String(s.typed).trim()&&cellOk(s.typed,k)})):typeScore(s.typed,c[6])):null,tok=tr?tr.filter(y=>y.ok).length:0;
   s.rate=tr&&tr.length?tok/tr.length:null;
   const fl=s.flash;s.flash=null;
-  const typing=mode==="type",kws=typing?ansKeys(c[6]):[],multi=typing&&(!!tcells||its.length>1);
+  const kwm=mode==="kw",typing=mode==="type"||kwm,kws=kwm?kwK:typing?ansKeys(c[6]):[],multi=!kwm&&typing&&(!!tcells||its.length>1);
   if(!same){s.hint=false;s.draft="";s.draftA=[];s.hintUsed=false;}
   let ga="";if(full&&gq.length&&o.gtrace){const g0=gOf(i).slice().sort((a,b)=>qSort(a[0],b[0]))[0],sub=GQ[g0[0]].subs.find(y=>y[0]===g0[1]);if(sub)ga=`<p class="gtr"><b>${esc(qLabel(g0[0]))} ${esc(g0[1])}</b> ${esc(sub[1].length>160?sub[1].slice(0,160)+"…":sub[1])}</p>`;}
   const st={k:0,n:sh,fresh:same};
@@ -3526,7 +3528,7 @@ function drawCard(){
           <div class="ty9box ${multi?"multi":""} ${tcells?"cmp":""} ${s.hint?"hinton":""}">${tcells?(vs?`<div class="tyv n${tcells.length}">${tcells.map((cl,k)=>`${k?`<span class="vsb">VS</span>`:""}<label class="tyvc"><b>${esc(cl.lab)}</b><textarea class="tyai" data-k="${k}" rows="2" placeholder="${esc(s.hint?ansKeys(cl.key).map(hintTxt).join(" · "):cl.lab)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}</div>`
               :`<div class="tyvh"><b>${esc(vr.A)}</b><span class="vsb">VS</span><b>${esc(vr.B)}</b></div>${(()=>{let o="";for(let k=0;k<tcells.length;k+=2){const cl=tcells[k];o+=`<div class="tyvr">${cl.lab?`<div class="vlab">${esc(cl.lab)}</div>`:""}<textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k].key).map(hintTxt).join(" · "):vr.A)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea><textarea class="tyai" data-k="${k+1}" rows="1" placeholder="${esc(s.hint?ansKeys(tcells[k+1].key).map(hintTxt).join(" · "):vr.B)}" spellcheck="false">${esc((s.draftA||[])[k+1]||"")}</textarea></div>`;}return o;})()}`)
             :multi?`<p class="ty9cap">답이 <b>${its.length}개</b>예요 · 순서는 상관없어요</p>${its.map((t,k)=>`<label class="ty9row"><span class="ty9n">${k+1}</span><textarea class="tyai" data-k="${k}" rows="1" placeholder="${esc(s.hint?ansKeys(t).map(hintTxt).join(" · "):`${k+1}번째 답`)}" spellcheck="false">${esc((s.draftA||[])[k]||"")}</textarea></label>`).join("")}`
-            :`<textarea id="tya" rows="3" placeholder="${esc(s.hint?kws.map(hintTxt).join(" · "):"떠오르는 답을 써 보세요")}" spellcheck="false">${esc(s.draft||"")}</textarea>`}
+            :`${kwm?`<p class="ty9cap">🔑 핵심어 <b>${kws.length}개</b>만 써 보세요 · 순서·조사 상관없어요</p>`:""}<textarea id="tya" rows="${kwm?2:3}" placeholder="${esc(s.hint?kws.map(hintTxt).join(" · "):kwm?"핵심 단어를 쉼표나 띄어쓰기로 (예: 성장, 성숙, 학습)":"떠오르는 답을 써 보세요")}" spellcheck="false">${esc(s.draft||"")}</textarea>`}
             <div class="ty9bar"><button class="ty9hint ${s.hint?"on":""}" id="tyhint" type="button">💡 첫 글자 힌트${kws.length?`<span class="num">${kws.length}</span>`:""}</button><span class="ty9k"><kbd>Enter</kbd> ${multi?"다음 칸":"확인"} · <kbd>Shift</kbd>+<kbd>Enter</kbd> 줄바꿈</span></div></div>
           ${false?`<div class="ty9hints">${tcells?tcells.map((cl,j)=>`<span><em>${esc(cellLab(cl))}</em>${ansKeys(cl.key).map(hintOf).join(" · ")}</span>`).join(""):multi?its.map((t,j)=>`<span><em>${j+1}</em>${ansKeys(t).map(hintOf).join(" · ")}</span>`).join(""):kws.map((k,j)=>`<span><em>${j+1}</em>${hintOf(k)}</span>`).join("")}</div>`:""}
           <div class="ty9act"><button class="btn ty9skip" id="tyskip">모르겠어요</button><button class="showbtn" id="tyok">확인</button></div></div>`
@@ -4319,6 +4321,14 @@ function bindTables(m){
 
 /* ---------- 타이핑: 핵심어 채점 ---------- */
 const plainA=s=>String(s||"").replace(/\*\*/g,"");
+/* 설명 글에서 핵심 낱말 뽑기 (핵심어로 답하기에서 굵은 핵심어가 문제에 이미 다 나올 때): '용어:' 뒤 설명에서 조사를 떼고 중요한 낱말 최대 4개 */
+function kwFromText(t,q){
+  const STOP=new Set(["통한","통해","비교적","측면","의한","위한","대한","따른","있는","하는","되는","않는","그리고","또는","예시","예를","들어","가장","매우","다른","같은","모든","각각","정도","경우","상태","과정","내용","것을","것이","관련","통하여","대해","대하여","다양한","여러","위해","따라","함께","자신","스스로","이러한","그러한","어떤","통한다"]);
+  const body=String(t||"").split("\n").map(l=>l.replace(/^[^:：]{1,14}[:：]\s*/,"")).join(" ").replace(/\([^()]*\)/g," ").replace(/\[[^\]]*\]/g," ");
+  const out=[];for(let w of body.split(/[\s,·/、\-–]+|및/)){w=w.replace(/[^가-힣A-Za-z0-9]/g,"").replace(/(으로써|으로서|에서는|이라는|이란|이나|으로|에서|에게|에는|하고|하여|하는|하며|되어|되는|이며|이다|였다|한다|된다|이고|에|의|을|를|이|가|은|는|와|과|로|도|만|인|적인|란|나)$/,"");
+    if([...w].length<2||STOP.has(w)||q.includes(w)||out.includes(w)||/(한|된|던|려|게|고|며|면|어|아|다|지|요|서|니|함|됨|짐|음)$/.test(w))continue;out.push(w);if(out.length>=4)break;}
+  return out;
+}
 function ansKeys(a){
   const b=[...String(a||"").matchAll(/\*\*(.+?)\*\*/g)].map(x=>x[1].trim()).filter(Boolean);
   if(b.length)return [...new Set(b)];
