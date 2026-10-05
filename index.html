@@ -2168,6 +2168,10 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
   .mkq9{gap:8px}.mkqb9{padding:12px}.mkqb9 b{font-size:14px}
   .mkhd9{gap:8px}
 }
+/* v77: 다른 페이지 학습 XP 알림 */
+.xpfly{position:fixed;right:18px;bottom:90px;z-index:400;padding:6px 12px;border-radius:999px;background:linear-gradient(90deg,#FCC419,#FF922B);color:#fff;font-weight:900;font-size:14px;box-shadow:0 8px 20px rgba(255,146,43,.35);pointer-events:none;animation:xpfly 1.1s ease-out forwards}
+@keyframes xpfly{0%{opacity:0;transform:translateY(10px) scale(.8)}15%{opacity:1;transform:translateY(0) scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(-24px)}}
+@media (max-width:699px){.xpfly{bottom:calc(var(--tbh,60px) + 16px)}}
 </style>
 </head>
 <body>
@@ -2654,7 +2658,7 @@ VIEW.table=function(m){
 const allItems=src=>{const o=[];for(const q in src)for(const [n] of src[q].subs)o.push([q,n]);return o.sort((a,b)=>qSort(a[0],b[0])||parseInt(a[1])-parseInt(b[1])||a[1].localeCompare(b[1]));};
 /* 기출·문제풀이 정답/오답 기록: S.qres["문항|하위물음"]={r:1맞음/0틀림,d:날짜} */
 const QR=tk=>(S.qres||{})[tk];
-function setQR(tk,r){S.qres=S.qres||{};const o={r,d:today()},c=qCls0(tk);if(c)o.c=c;S.qres[tk]=o;save();setTimeout(qfRefresh,0);}
+function setQR(tk,r){S.qres=S.qres||{};const pr=S.qres[tk];if(!pr||pr.d!==today())setTimeout(()=>gainXP("q",r?6:2,"q|"+tk),0);const o={r,d:today()},c=qCls0(tk);if(c)o.c=c;S.qres[tk]=o;save();setTimeout(qfRefresh,0);}
 /* 문항 종류: MK… 모의고사, M… 문제풀이, 나머지 기출 */
 const qKind=qid=>{qid=String(qid);return qid.startsWith("MK")?"mock":qid[0]==="M"?"munpul":"gichul";};
 const qSplit=tk=>{const i=tk.lastIndexOf("|");return [tk.slice(0,i),tk.slice(i+1)];};
@@ -2994,7 +2998,7 @@ const petStage=lv=>{let i=0;PET_ST.forEach((s,k)=>{if(lv>=s.from)i=k;});return i
 const PET=()=>S.pet||(S.pet={name:"",fed:{},pets:0,born:today()});
 const petName=()=>PET().name||"삐약이";
 /* 모이: 오늘 카드 10장마다 1알 (하루 최대 10알), 준 만큼 빠짐 */
-const petFood=()=>{const p=PET(),got=Math.min(10,Math.floor(todayN()/10));return Math.max(0,got-(p.fed[today()]||0));};
+const petFood=()=>{const p=PET(),got=Math.min(10,Math.floor((todayN()+((S.act||{})[today()]||0))/10));return Math.max(0,got-(p.fed[today()]||0));};
 const petMood=()=>{const p=PET(),t=today();if(p.fed[t])return["신나요","😆"];const y=new Date();y.setDate(y.getDate()-1);if(p.fed[today(y)])return["조금 출출해요","🙂"];
   return Object.keys(p.fed).length?["배고파요","🥺"]:["모이를 기다려요","🐣"];};
 let PSVGN=0;
@@ -3037,6 +3041,13 @@ function petSVG(st,sz=96,cls=""){
 /* 레벨이 오르거나 단계가 바뀌면 축하 */
 function petCheck(x0){const a=lvOf(x0).lv,b=lvOf(S.xp||0).lv;if(b<=a)return;const s0=petStage(a),s1=petStage(b);
   if(s1>s0)petCelebrate(s1);else toast(`🎉 Lv.${b} 달성! ${josaGa(petName())} 쑥 컸어요`);}
+/* 표·해이실·기출·문풀·모고 학습도 XP → 캐릭터 성장. 하루 상한이 있고, 같은 칸·물음은 그날 한 번만 */
+const XPCAP={q:300,table:150,heisil:200},XPSEEN=new Set();
+function gainXP(src,n,key){if(!S||!ME||n<=0)return;const t=today();if(key){const kk=t+"|"+key;if(XPSEEN.has(kk))return;XPSEEN.add(kk);}
+  const d=S.xpd&&S.xpd.d===t?S.xpd:(S.xpd={d:t});const left=(XPCAP[src]||200)-(d[src]||0);if(left<=0)return;n=Math.min(n,left);d[src]=(d[src]||0)+n;
+  S.act=S.act||{};S.act[t]=(S.act[t]||0)+1;{const ks=Object.keys(S.act).sort();while(ks.length>40)delete S.act[ks.shift()];}
+  const x0=S.xp||0;S.xp=x0+n;save();xpFly(n);petCheck(x0);}
+function xpFly(n){const el=document.createElement("div");el.className="xpfly";el.textContent=`+${n} XP`;document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
 function petCelebrate(st){const el=document.createElement("div");el.className="petpop";
   el.innerHTML=`<div class="petpopc">${petSVG(st,150,"pjump")}<b>${esc(josaGa(petName()))} ${esc(josaRo(PET_ST[st].n))} 자랐어요!</b><small>${esc(PET_ST[st].d)}</small><button class="btn pri">좋아요</button></div>`;
   document.body.appendChild(el);const x=()=>el.remove();el.querySelector("button").onclick=x;el.onclick=e=>{if(e.target===el)x();};sfx&&sfx("good");}
@@ -3057,7 +3068,7 @@ function petSheet(){
             <div class="xpb big"><i style="width:${L.cur/L.need*100}%"></i></div><small class="num">다음 레벨까지 ${L.need-L.cur} XP · 모두 ${(S.xp||0).toLocaleString()} XP</small>
             ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${Math.max(0,lvBase(nx.from)-(S.xp||0)).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 마지막 단계까지 다 키웠어요!</small>`}
             <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>🌾 모이 주기 <b class="num">${f}</b></button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
-            <small class="muted">모이는 오늘 카드 10장을 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
+            <small class="muted">모이는 오늘 카드·표·해이실·기출·문풀·모고를 10번 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
         <h3 class="petsh3">성장 단계</h3>
         <div class="petline">${PET_ST.map((s,k)=>`<div class="pl ${k<st?"dn":k===st?"on":""}">${k<=st?petSVG(k,54):`<span class="plq">?</span>`}<b>${k<=st?esc(s.n):"???"}</b><small>Lv.${s.from}</small></div>`).join("")}</div>
       </div></div>`;
@@ -3654,7 +3665,7 @@ function hySee(B,L){
     const sc=Math.min(1,b.width/a.width);
     requestAnimationFrame(()=>{g.style.transform=`translate(${b.left-a.left}px,${b.top-a.top}px) scale(${sc})`;g.style.opacity=".15";});
     setTimeout(()=>{g.remove();done();},520);};
-  const finish=()=>{if(busy)return;busy=true;const x=T[S.pos],i=S.pos;if(t0){S.ms+=Date.now()-t0;t0=null;}S.jamo+=hyJamo(x.t);S.keys+=hyJamo(x.t);S.errs+=errs;sfx("good");
+  const finish=()=>{if(busy)return;busy=true;const x=T[S.pos],i=S.pos;gainXP("heisil",3,"hs|"+HYT.key+"|"+i);if(t0){S.ms+=Date.now()-t0;t0=null;}S.jamo+=hyJamo(x.t);S.keys+=hyJamo(x.t);S.errs+=errs;sfx("good");
     fly(i,()=>{S.done[i]=1;rows[i].classList.add("s-pop");setTimeout(()=>rows[i]&&rows[i].classList.remove("s-pop"),900);
       const nx=T.findIndex((_,k)=>k>i&&!S.done[k]),any=T.findIndex((_,k)=>!S.done[k]);busy=false;go(nx>=0?nx:any>=0?any:T.length);});};
   inp.addEventListener("compositionstart",()=>comp=true);
@@ -3677,7 +3688,7 @@ function hyTypeLines(B,act,prog,L,see){   // see: 보며 타이핑 (문장을 �
   const grow=t=>{t.style.height="auto";t.style.height=t.scrollHeight+"px";};
   const upd=()=>{const n=tas.filter(t=>t.closest(".hyl").classList.contains("ok")).length;prog.innerHTML=`<b class="num">${n}</b> / ${tas.length}줄 완성${n===tas.length?" 🎉":""}`;};
   const check=(ta,comp)=>{const k=+ta.dataset.i,t=T[k].t,row=ta.closest(".hyl"),fb=row.querySelector(".hyfb");V[k]=ta.value;
-    const r=hyCmp(ta.value,t,comp);row.classList.remove("ok","ng","ing");row.classList.add(r.st);
+    const r=hyCmp(ta.value,t,comp);row.classList.remove("ok","ng","ing");row.classList.add(r.st);if(r.st==="ok")gainXP("heisil",3,"ht|"+HYT.key+"|"+k);
     if(see){const v=hyNorm(ta.value),tt=hyNorm(t);row.querySelectorAll(".hyref i").forEach((el,j)=>{el.className=j<v.length?(v[j]===tt[j]?"g":(j===v.length-1&&r.st==="ing"?"c":"b")):(j===v.length?"cur":"");});}
     if(r.st==="ng"){const v=ta.value;fb.innerHTML=`<span class="hyx">✕ 틀렸어요</span><span class="hyv"><i>${esc(v.slice(0,r.j))}</i><s>${esc(v.slice(r.j))||"&nbsp;"}</s></span>`;}
     else if(r.st==="ok"){fb.innerHTML=`<span class="hyo">✓ 맞았어요</span>`;ta.readOnly=true;}
@@ -3707,13 +3718,13 @@ function hyCloze(B,act,prog,secs,md){   // secs = 줄 목록 (h·sh·{n,t})
   if(md==="click"){
     const upd=()=>{const n=B.querySelectorAll(".hyb.on").length;prog.innerHTML=`<b class="num">${n}</b> / ${N}개 확인`;};
     act.innerHTML=`<button class="btn sm" id="hyall">모두 보기</button><button class="btn sm" id="hynone">모두 가리기</button>`;
-    B.querySelectorAll(".hyb").forEach(b=>b.onclick=()=>{const k=+b.dataset.b;HYT.open[k]=!HYT.open[k];b.classList.toggle("on",!!HYT.open[k]);upd();});
+    B.querySelectorAll(".hyb").forEach(b=>b.onclick=()=>{const k=+b.dataset.b;HYT.open[k]=!HYT.open[k];b.classList.toggle("on",!!HYT.open[k]);if(HYT.open[k])gainXP("heisil",1,"hc|"+HYT.key+"|"+k);upd();});
     act.querySelector("#hyall").onclick=()=>{B.querySelectorAll(".hyb").forEach(b=>{b.classList.add("on");HYT.open[+b.dataset.b]=true;});upd();};
     act.querySelector("#hynone").onclick=()=>{B.querySelectorAll(".hyb").forEach(b=>b.classList.remove("on"));HYT.open={};upd();};
     upd();return;}
   const ins=[...B.querySelectorAll(".hybi")],V=HYT.v;
   const upd=()=>{const n=ins.filter(x=>x.classList.contains("ok")).length;prog.innerHTML=`<b class="num">${n}</b> / ${N}칸 맞힘${n===N&&N?" 🎉":""}`;};
-  const check=(x,comp)=>{const k=+x.dataset.b;V[k]=x.value;const r=x.value?hyCmp(x.value,ANS[k],comp):{st:""};x.classList.remove("ok","ng","ing","pk");if(r.st)x.classList.add(r.st);if(r.st==="ok")x.readOnly=true;upd();return r.st;};
+  const check=(x,comp)=>{const k=+x.dataset.b;V[k]=x.value;const r=x.value?hyCmp(x.value,ANS[k],comp):{st:""};x.classList.remove("ok","ng","ing","pk");if(r.st)x.classList.add(r.st);if(r.st==="ok"){x.readOnly=true;gainXP("heisil",2,"hf|"+HYT.key+"|"+k);}upd();return r.st;};
   act.innerHTML=`<button class="btn sm" id="hypk">${ico("eye",14)}이 칸 답 보기</button><button class="btn sm dangerline" id="hyrst">${ico("undo",14)}다시 하기</button>`;
   let last=null;
   ins.forEach((x,i)=>{if(V[i]!=null){x.value=V[i];check(x,false);}
@@ -3949,7 +3960,7 @@ function bindTables(m){
     const redraw=()=>{el.outerHTML=tableHTML(t);bindTables(m);};
     el.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm;redraw();});
     el.querySelectorAll("[data-tm2]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm2;redraw();});
-    el.querySelectorAll(".cw.hid").forEach(w=>w.onclick=()=>w.classList.toggle("on"));
+    el.querySelectorAll(".cw.hid").forEach((w,wi)=>w.onclick=()=>{w.classList.toggle("on");if(w.classList.contains("on"))gainXP("table",1,"tr|"+t.id+"|"+wi);});
     if(PENOK)bindPens(el,redraw);
     const ins=[...el.querySelectorAll(".ti")];
     /* 채점: 순서 있는 표는 그 줄과 비교. 순서 없는 표는 쓴 줄마다 가장 잘 맞는 실제 줄을 하나씩 짝지음(한 줄은 한 번만 → 같은 답 중복은 오답) */
@@ -3965,7 +3976,7 @@ function bindTables(m){
         const used=new Set();for(const [,,r,a] of pr){if(r in as||used.has(a))continue;as[r]=a;used.add(a);}
         typed.forEach(r=>{if(!(r in as))as[r]=-1;});
       }
-      ins.forEach(i=>{const td=i.closest("td");td.classList.remove("ok","ng");if(!i.value.trim())return;const a=as[+i.dataset.r];td.classList.add(a>=0&&cellOk(i.value,t.rows[a][+i.dataset.c])?"ok":"ng");});
+      ins.forEach(i=>{const td=i.closest("td");td.classList.remove("ok","ng");if(!i.value.trim())return;const a=as[+i.dataset.r];const ok=a>=0&&cellOk(i.value,t.rows[a][+i.dataset.c]);td.classList.add(ok?"ok":"ng");if(ok)gainXP("table",2,"tt|"+t.id+"|"+i.dataset.r+"|"+i.dataset.c);});
     };
     const check=()=>grade();
     ins.forEach(inp=>{const w=inp.parentElement;inp.addEventListener("focus",()=>w.classList.remove("peek"));});
