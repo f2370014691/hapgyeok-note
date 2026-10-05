@@ -2187,6 +2187,12 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .petline{grid-template-columns:repeat(9,minmax(0,1fr))}
 .petpopc .famrow{justify-content:center;margin:0 0 4px}
 @media (max-width:699px){.petline{grid-template-columns:repeat(5,minmax(0,1fr))}}
+/* v80: 표 보기·가리기·타이핑 + 타이핑 도움말 말풍선 */
+.tbh{overflow:visible}
+.tbmd .tmtip{position:relative}
+.tmbub{position:absolute;right:0;top:calc(100% + 10px);z-index:60;white-space:nowrap;padding:8px 12px;border-radius:12px;background:var(--ink);color:var(--surface);font-size:12.5px;font-weight:700;box-shadow:0 10px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .15s,transform .15s}
+.tmbub::before{content:"";position:absolute;right:18px;top:-6px;border:6px solid transparent;border-top:0;border-bottom-color:var(--ink)}
+.tbmd .tmtip:hover .tmbub,.tbmd .tmtip:focus-visible .tmbub{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
@@ -3975,7 +3981,7 @@ function cellOk(input,cell){const a=nrm(input);if(!a)return false;
 const tOrdered=t=>/단계|순서|절차|과정|시기|전개|흐름|연도|연대|시대|세기|발달 순|위계|수준/.test(t.title+" "+t.cols.join(" "))||t.rows.filter(r=>/^\s*(\d+[.)단]|[①-⑩]|제\s*\d)/.test(plain(r[0]||""))).length>=2;
 function tableHTML(t){
   const md=TBM[t.id]||"hide";
-  return `<div class="tb" data-tb="${t.id}"><div class="tbh"><b>${esc(t.title)}</b><span class="seg2">${[["hide","가리기"],["type","타이핑"],["view","보기"]].map(([v,l])=>`<button data-tm="${v}" aria-pressed="${md===v}">${l}</button>`).join("")}</span></div>
+  return `<div class="tb" data-tb="${t.id}"><div class="tbh"><b>${esc(t.title)}</b><span class="seg2 tbmd">${[["view","보기"],["hide","가리기"],["type","타이핑"]].map(([v,l])=>`<button data-tm="${v}" aria-pressed="${md===v}"${v==="type"?` class="tmtip" data-tip="더블 클릭하면 정답이 보여요." aria-describedby="tmtip-${t.id}"`:""}>${l}${v==="type"?`<span class="tmbub" id="tmtip-${t.id}" role="tooltip">더블 클릭하면 정답이 보여요.</span>`:""}</button>`).join("")}</span></div>
     <div class="tbw"><table class="tt ${md}"><thead><tr>${t.cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>
     ${t.rows.map((r,ri)=>`<tr>${t.cols.map((_,ci)=>{const v=r[ci]||"",rh=ci===0?"rh":"";
       if(md==="view"||!v||v==="-")return `<td class="${rh}"><div class="cw"><span class="cv">${fmt(v)}</span></div></td>`;
