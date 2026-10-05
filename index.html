@@ -2134,6 +2134,10 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
   .fc8h .fchr{width:100%;justify-content:flex-end}
   .mkg9.tp{grid-template-columns:1fr}
 }
+/* v74: 키우기 창 기분 칸을 레벨 옆으로 */
+.petlvr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.petlvr>b{font-size:28px;font-weight:900;color:var(--pri);line-height:1.1}
+.petlvr .petmood{align-self:center;font-size:12.5px;padding:5px 10px}
 </style>
 </head>
 <body>
@@ -2933,10 +2937,9 @@ function petSheet(){
     el.innerHTML=`<div class="sheet petsh" role="dialog" aria-modal="true" aria-label="캐릭터 키우기"><div class="shd"><div><span class="ytag">키우기</span><h2>${esc(petName())} <button class="iconbtn sm" id="petren" aria-label="이름 바꾸기" title="이름 바꾸기">✏️</button></h2></div><button class="iconbtn" id="qclose" aria-label="닫기">${ico("x")}</button></div>
       <div class="sbd">
         <div class="petstage"><button class="petbig" id="petpat" aria-label="쓰다듬기">${petSVG(st,180,"pidle")}</button>
-          <div class="petinfo"><span class="petst">${st+1}단계 · ${esc(PET_ST[st].n)}</span><b class="num">Lv.${L.lv}</b><p>${esc(PET_ST[st].d)}</p>
+          <div class="petinfo"><span class="petst">${st+1}단계 · ${esc(PET_ST[st].n)}</span><div class="petlvr"><b class="num">Lv.${L.lv}</b><div class="petmood">${me} ${esc(mt)} · 오늘 모이 ${fedT}번 먹음</div></div><p>${esc(PET_ST[st].d)}</p>
             <div class="xpb big"><i style="width:${L.cur/L.need*100}%"></i></div><small class="num">다음 레벨까지 ${L.need-L.cur} XP · 모두 ${(S.xp||0).toLocaleString()} XP</small>
             ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${Math.max(0,lvBase(nx.from)-(S.xp||0)).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 마지막 단계까지 다 키웠어요!</small>`}
-            <div class="petmood">${me} ${esc(mt)} · 오늘 모이 ${fedT}번 먹음</div>
             <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>🌾 모이 주기 <b class="num">${f}</b></button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
             <small class="muted">모이는 오늘 카드 10장을 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
         <h3 class="petsh3">성장 단계</h3>
