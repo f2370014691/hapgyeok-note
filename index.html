@@ -2106,6 +2106,9 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 /* v71: 키우기 창 이름 옆 연필 버튼 */
 .petsh .shd h2{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
 .petsh .shd h2 #petren{display:inline-grid;place-items:center;flex:none;width:30px;height:30px;font-size:15px}
+/* v72: 소주제 칸으로 내려왔을 때 살짝 반짝 */
+.ktr.ktpulse{animation:ktpulse .9s ease .25s}
+@keyframes ktpulse{0%{box-shadow:var(--sh),0 0 0 0 color-mix(in srgb,var(--pri) 45%,transparent)}60%{box-shadow:var(--sh),0 0 0 8px color-mix(in srgb,var(--pri) 0%,transparent)}100%{box-shadow:var(--sh)}}
 </style>
 </head>
 <body>
@@ -2371,6 +2374,14 @@ function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=do
 let WZ={};const WZ0={fc:"ver",table:"ver",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
 const wzBack=(steps,cur)=>{const i=steps.indexOf(cur);return i>0?`<button class="btn sm wzback" data-wzb="${steps[i-1]}">${ico("left",14)}뒤로</button>`:"";};
 const wzNo=(steps,cur)=>`<span class="wzno">${steps.indexOf(cur)+1} / ${steps.length}</span>`;
+/* 부드럽게 내려가기 (모바일 대주제 → 소주제). 화면이 안 그려지는 상황이면 바로 이동 */
+function scrollToEl(el,off=10,ms=520){
+  const y0=window.scrollY,max=document.documentElement.scrollHeight-window.innerHeight,y1=Math.max(0,Math.min(max,el.getBoundingClientRect().top+y0-off)),dy=y1-y0;
+  el.classList.remove("ktpulse");void el.offsetWidth;el.classList.add("ktpulse");
+  if(Math.abs(dy)<2)return;let t0=null,done=false;
+  const step=t=>{if(t0==null)t0=t;const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3);window.scrollTo(0,y0+dy*e);if(k<1)requestAnimationFrame(step);else done=true;};
+  requestAnimationFrame(step);setTimeout(()=>{if(!done&&t0==null)window.scrollTo(0,y1);},ms+400);
+}
 function pgChooser(m,pg){
   loadSC();if(SC.sp)SC.sp="";
   const T={table:["표","표 보기","개"],gichul:["기출","기출 풀기","물음"],munpul:["문제풀이","문제 풀기","물음"]}[pg];
@@ -2414,7 +2425,7 @@ function pgChooser(m,pg){
   on("[data-tv]",b=>{TDK=b.dataset.tv;try{localStorage.setItem("hapgyeok-flash-v1:tdeck",TDK);}catch(e){}SC.k=null;SC.t=null;SC.ts=[];go("d");});on("[data-src]",b=>{MSRC=b.dataset.src;MPS=-1;go("grp");});on("[data-mg]",b=>{MPG=b.dataset.mg;MPS=-1;try{localStorage.setItem(SBASE+":mpg",MPG);}catch(e){}go("set");});on("[data-ms]",b=>{MPS=+b.dataset.ms;go("go");});
   on("[data-sd]",b=>{if(b.dataset.sd==="all"){SC.sa=true;go("go");}else{SC.sa=false;SC.d=+b.dataset.sd;SC.k=null;SC.t=null;SC.ts=[];go("k");}});
   const keep=()=>{const y=window.scrollY;saveSC();pgChooser(m,pg);window.scrollTo({top:y});};
-  on("[data-k]",b=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];keep();if(SC.k!=null&&matchMedia("(max-width:699px)").matches){const r=m.querySelector(".ktr");if(r){const y=r.getBoundingClientRect().top+window.scrollY-10;window.scrollTo({top:y});}}});
+  on("[data-k]",b=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];keep();if(SC.k!=null&&matchMedia("(max-width:699px)").matches){const r=m.querySelector(".ktr");if(r)scrollToEl(r);}});
   on("[data-t]",b=>{tsToggle(b.dataset.t);keep();});
   {const n=m.querySelector("#wzn");if(n)n.onclick=()=>go("go");}
   const g=m.querySelector("#pgo");if(g)g.onclick=()=>{saveSC();MPV="set";PGRUN[pg]=true;VIEW[pg](m);window.scrollTo({top:0});};
@@ -3270,7 +3281,7 @@ function fcChooser(m){
   m.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{SC.sp=b.dataset.q;saveSC();FCRUN=true;SES=null;VIEW.fc(m);});
   m.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;SC.ts=[];go("k");});
   const keep=()=>{const y=window.scrollY;saveSC();fcChooser(m);window.scrollTo({top:y});};
-  m.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];keep();if(SC.k!=null&&matchMedia("(max-width:699px)").matches){const r=m.querySelector(".ktr");if(r){const y=r.getBoundingClientRect().top+window.scrollY-10;window.scrollTo({top:y});}}});
+  m.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];keep();if(SC.k!=null&&matchMedia("(max-width:699px)").matches){const r=m.querySelector(".ktr");if(r)scrollToEl(r);}});
   m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tsToggle(b.dataset.t);keep();});
   m.querySelectorAll("[data-md]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});});
   m.querySelectorAll("[data-tl]").forEach(b=>b.onclick=()=>{S.fc=Object.assign(FCO(),{timer:+b.dataset.tl});save();re();});
