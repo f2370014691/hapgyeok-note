@@ -3485,8 +3485,8 @@ function answer(g){
   const before=todayN();
   grade(i,g);s.done++;s.tally[g]++;
   if(g<2){if(s.boss)s.bossFail=true;else s.wrongs.add(i);}
-  const x0=S.xp||0;S.xp=r1(x0+ptsOf(g,s.rate,s.combo));const pts=S.xp-x0;setTimeout(()=>petCheck(x0),400);
-  s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score+=pts;s.xp+=pts;
+  const x0=S.xp||0;S.xp=r1(x0+ptsOf(g,s.rate,s.combo));const pts=r1(S.xp-x0);setTimeout(()=>petCheck(x0),400);
+  s.combo=g===2?s.combo+1:0;s.best=Math.max(s.best,s.combo);s.score=r1(s.score+pts);s.xp=r1(s.xp+pts);
   s.flash={g,pts,combo:s.combo};
   {const R=RV(),nn=g===0?R.again:g===1?R.hardN:R.goodN;   // 같은 학습에서 n장 뒤 다시
     if(nn>0&&(s.again[i]||0)<3){s.again[i]=(s.again[i]||0)+1;s.q.splice(Math.min(s.q.length,s.pos+nn),0,i);}}
@@ -3839,8 +3839,13 @@ function hySee(B,L){
     fly(i,()=>{S.done[i]=1;rows[i].classList.add("s-pop");setTimeout(()=>rows[i]&&rows[i].classList.remove("s-pop"),900);
       const nx=T.findIndex((_,k)=>k>i&&!S.done[k]),any=T.findIndex((_,k)=>!S.done[k]);busy=false;go(nx>=0?nx:any>=0?any:T.length);});};
   inp.addEventListener("compositionstart",()=>comp=true);
-  inp.addEventListener("compositionend",()=>{comp=false;if(paint()==="ok")finish();});
-  inp.oninput=e=>{if(S.pos>=T.length||busy)return;if(!t0){t0=Date.now();if(!timer)timer=setInterval(stats,500);}comp=comp||e.isComposing;if(paint()==="ok"&&!comp)finish();};
+  /* 마침표 없이 한글로 끝나는 줄(내용 범주 등)은 마지막 글자가 '조합 중'이라 끝을 알 수 없으므로, 줄이 다 맞으면 조합 중이어도 넘어감.
+     넘어간 뒤 앞 줄의 마지막 글자가 입력칸에 남아 들어오면 지움 */
+  let stale=null;
+  const unstale=()=>{if(!stale)return;const v=inp.value,nx=S.pos<T.length?hyNorm(T[S.pos].t):"";if(v&&v[0]===stale&&nx[0]!==stale){inp.value=v.slice(1);}stale=null;};
+  inp.addEventListener("compositionend",()=>{comp=false;if(busy)return;unstale();if(paint()==="ok")finish();});
+  inp.oninput=e=>{if(S.pos>=T.length||busy)return;if(!t0){t0=Date.now();if(!timer)timer=setInterval(stats,500);}comp=comp||e.isComposing;if(!comp)unstale();
+    if(paint()==="ok"){if(comp){const t=hyNorm(T[S.pos].t);stale=t[t.length-1]||null;}finish();}};
   inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();comp=false;if(paint()==="ok")finish();else{box.classList.remove("shake9");void box.offsetWidth;box.classList.add("shake9");sfx("bad");}}};
   rows.forEach((r,i)=>r.onclick=()=>{go(i);inp.focus();});
   box.onclick=()=>inp.focus();
