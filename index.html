@@ -3957,7 +3957,7 @@ function hyCloze(B,act,prog,secs,md){   // secs = 줄 목록 (h·sh·{n,t})
   if(md==="click"){
     const upd=()=>{const n=B.querySelectorAll(".hyb.on").length;prog.innerHTML=`<b class="num">${n}</b> / ${N}개 확인`;};
     act.innerHTML=`<button class="btn sm" id="hyall">모두 보기</button><button class="btn sm" id="hynone">모두 가리기</button>`;
-    B.querySelectorAll(".hyb").forEach(b=>b.onclick=()=>{const k=+b.dataset.b;HYT.open[k]=!HYT.open[k];b.classList.toggle("on",!!HYT.open[k]);if(HYT.open[k])gainXP("heisil",1,"hc|"+HYT.key+"|"+k);upd();});
+    B.querySelectorAll(".hyb").forEach(b=>b.onclick=()=>{const k=+b.dataset.b;HYT.open[k]=!HYT.open[k];b.classList.toggle("on",!!HYT.open[k]);if(HYT.open[k])gainXP("heisil",.01,"hc|"+HYT.key+"|"+k,true);upd();});
     act.querySelector("#hyall").onclick=()=>{B.querySelectorAll(".hyb").forEach(b=>{b.classList.add("on");HYT.open[+b.dataset.b]=true;});upd();};
     act.querySelector("#hynone").onclick=()=>{B.querySelectorAll(".hyb").forEach(b=>b.classList.remove("on"));HYT.open={};upd();};
     upd();return;}
@@ -4239,7 +4239,7 @@ function bindTables(m){
     const redraw=()=>{el.outerHTML=tableHTML(t);bindTables(m);};
     el.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm;redraw();});
     el.querySelectorAll("[data-tm2]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm2;redraw();});
-    el.querySelectorAll(".cw.hid").forEach((w,wi)=>w.onclick=()=>{w.classList.toggle("on");if(w.classList.contains("on"))gainXP("table",.1,"tr|"+t.id+"|"+wi,true);});
+    el.querySelectorAll(".cw.hid").forEach((w,wi)=>w.onclick=()=>{w.classList.toggle("on");if(w.classList.contains("on"))gainXP("table",.01,"tr|"+t.id+"|"+wi,true);});
     if(PENOK)bindPens(el,redraw);
     const ins=[...el.querySelectorAll(".ti")];
     /* 채점: 순서 있는 표는 그 줄과 비교. 순서 없는 표는 쓴 줄마다 가장 잘 맞는 실제 줄을 하나씩 짝지음(한 줄은 한 번만 → 같은 답 중복은 오답) */
