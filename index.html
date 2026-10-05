@@ -2224,6 +2224,43 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .kkgc .kkgh{font-size:12.5px;color:var(--ink-3,#8B8FA8)}
 .kkgc .btn.lg{width:100%}
 .kkgb{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+/* v86: 모바일 고르기 화면 정리 */
+.mpick{position:fixed;inset:0;z-index:450;background:rgba(18,20,40,.45);display:flex;align-items:flex-end;justify-content:center;animation:fadein .15s}
+.mpc{background:var(--surface);width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:14px 14px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(0,0,0,.2);animation:mpup .22s ease}
+@keyframes mpup{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.mph9{display:flex;align-items:center;justify-content:space-between;margin:2px 4px 10px}
+.mph9 b{font-size:17px;font-weight:900}
+.mpl{display:grid;gap:8px}
+.mpb{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.mpb.on{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 8%,var(--surface))}
+.mpb .mpi{font-size:24px;flex:none;width:34px;text-align:center}
+.mpb span{display:flex;flex-direction:column;gap:2px}
+.mpb b{font-size:15px;font-weight:800}
+.mpb small{font-size:12px;color:var(--ink-3)}
+@media (max-width:699px){
+  .mkp .fc8h{display:flex!important;flex-wrap:nowrap!important;align-items:center;gap:8px}
+  .mkp .fc8h>div:first-child{flex:none;min-width:0}
+  .mkp .fc8h>div:first-child p{display:none}
+  .mkp .fc8h h1{font-size:22px;white-space:nowrap;margin:0}
+  .mkp .fc8h .pgt9,.mkp .fc8h .fchr{margin-left:auto!important;width:auto!important;flex-wrap:nowrap;gap:5px;justify-content:flex-end}
+  .mkp .fc8h .fchr .pgt9{margin-left:0!important}
+  .mkp .pgt9 .btn{padding:6px 9px;font-size:12px;white-space:nowrap}
+  .mkp .hm9{display:none}
+  .fcp .lvb.petlv{font-size:11.5px;padding:2px 9px 2px 4px;white-space:nowrap}
+  .fcp .lvb.petlv .pet{width:22px;height:22px}
+  .fcp .gear9{width:34px;height:34px;flex:none}
+  .fcp .mkhd9:first-of-type{flex-wrap:nowrap}
+  .fcp .mkhd9 .mkw9 button{padding:7px 10px;font-size:12.5px;white-space:nowrap}
+  .fcp .mksum9{flex-wrap:nowrap;gap:4px;margin-left:auto}
+  .fcp .mksum9>span{padding:4px 7px;font-size:10.5px;white-space:nowrap}
+  .fcp .mksum9 b{font-size:12.5px}
+  .fcp .mkmd9,.fcp .mklb9,.hyp .mkmd9,.hyp .mklb9{display:none!important}
+  .hyp .mksum9,.mpp .mksum9,.mkq .mksum9{display:none!important}
+  .gcp .mksub9{display:none!important}
+  .gcp .mkhd9.sub{display:none}
+}
+@media (max-width:699px){.hyp .mkhd9{display:none}.fcp .mkhd9{flex-wrap:nowrap}}
+@media (max-width:699px){.fcp .mkhd9.sub:has(.mkmd9){display:none}}
 </style>
 </head>
 <body>
@@ -2499,6 +2536,17 @@ const pChip=(attr,label,n,unit,ok)=>`<button class="qch9 ${n?"":"off"} ${ok?"ok"
 const pSeg=(attr,list,cur)=>`<span class="seg2 mkw9">${list.map(([v,l])=>`<button ${attr}="${v}" aria-pressed="${String(cur)===String(v)}">${l}</button>`).join("")}</span>`;
 const pSum=list=>`<span class="mksum9">${list.map(([n,l,c])=>`<span class="${c||""}"><b class="num">${typeof n==="number"?n.toLocaleString():n}</b>${l}</span>`).join("")}</span>`;
 
+const isMob=()=>matchMedia("(max-width:699px)").matches;
+/* 모바일: 시작 버튼을 누르면 방식을 고르는 아래 창 */
+function pickSheet(title,items,cur,onPick){
+  document.getElementById("mpick")?.remove();const el=document.createElement("div");el.id="mpick";el.className="mpick";
+  el.innerHTML=`<div class="mpc" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="mph9"><b>${esc(title)}</b><button class="iconbtn sm" data-x="1" aria-label="닫기">✕</button></div>
+    <div class="mpl">${items.map(([v,ic,l,sm])=>`<button class="mpb ${v===cur?"on":""}" data-v="${v}"><span class="mpi">${ic}</span><span><b>${esc(l)}</b><small>${esc(sm||"")}</small></span></button>`).join("")}</div></div>`;
+  document.body.appendChild(el);document.body.classList.add("noscroll");
+  const close=()=>{el.remove();document.body.classList.remove("noscroll");};
+  el.onclick=e=>{if(e.target===el||e.target.closest("[data-x]"))close();};
+  el.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{close();onPick(b.dataset.v);});
+}
 function fcChooser(m){
   if(SC.sp)SC.sp="";if(!CH[SC.d])SC.d=0;
   const d=SC.d,L=lvOf(S.xp||0),hasH=!!(BUNDLE&&(BUNDLE.cards2||[]).length);
@@ -2515,7 +2563,7 @@ function fcChooser(m){
       return pCard({no:k+1,dc:d,title:esc(ch.name),sub:`${c.all}장 · 외움 ${pc(c)}%${c.due?` · 복습 ${c.due}`:""}`,p:pc(c),
         btns:`<button class="mkall9" data-st="${d}:${k}:">${ico("play",14)} 대주제 전체 학습</button>`,
         chips:ch.topics.map((tp,t)=>{const x=counts(tp.idx);return tp.idx.length?pChip(`data-st="${d}:${k}:${t}"`,tp.name,tp.idx.length,"",x.all&&x.k===x.all):"";}).join("")});})].join("");
-  m.innerHTML=`<div class="page fc8 pgc mkp" style="--dc:${DC[d]};--ds:${DCS[d]}">
+  m.innerHTML=`<div class="page fc8 pgc mkp fcp" style="--dc:${DC[d]};--ds:${DCS[d]}">
     <header class="fc8h phd9"><div><h1>플래시카드</h1><p>방식을 고르고 카드나 소주제를 누르면 바로 시작해요</p></div><span class="fchr">${pgTools("fc")}<button class="lvb big petlv" id="petopen2" title="${esc(petName())} 키우기">${petSVG(petStage(L.lv),26)}Lv.${L.lv} · ${(S.xp||0).toLocaleString()} XP</button><button class="iconbtn gear9 ${OPTOPEN?"on":""}" id="optt" title="옵션" aria-label="옵션" aria-expanded="${OPTOPEN}">${ico("gear",20)}</button></span></header>
     ${OPTOPEN?`<div class="optpop9"><div class="optph"><b>옵션</b><button class="iconbtn sm" id="optx" aria-label="닫기">✕</button></div>${OPTS}</div>`:""}
     <div class="mkhd9">${hasH?pSeg("data-ver",DECKS.map(([v,n])=>[v,esc(n)]),DECK):""}${pSum([[ca.all,"장"],[ca.k,"외움"],[due,"복습"],[wr,"틀림","ng"]])}</div>
@@ -2525,7 +2573,8 @@ function fcChooser(m){
     <div class="mkg9 tp">${cards}</div></div>`;
   const re=()=>{saveSC();fcChooser(m);};
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
-  const run=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};
+  const run0=()=>{saveSC();FCRUN=true;SES=null;VIEW.fc(m);window.scrollTo({top:0});};
+  const run=()=>{if(!isMob())return run0();pickSheet("어떤 방식으로 학습할까요?",MODES,fmode(),v=>{S.fc=Object.assign(FCO(),{mode:v,typing:v==="type"});save();run0();});};
   on("[data-ver]",b=>{setDeck(b.dataset.ver);SC.k=null;SC.t=null;SC.ts=[];re();});
   on("[data-md]",b=>{S.fc=Object.assign(FCO(),{mode:b.dataset.md,typing:b.dataset.md==="type"});save();re();});
   on("[data-d]",b=>{SC.d=+b.dataset.d;SC.k=null;SC.t=null;SC.ts=[];re();});
@@ -2545,7 +2594,7 @@ function tableChooser(m){
     ...CH[d].map((ch,k)=>{const c=n(d,k,null);if(!c)return "";
       return pCard({no:k+1,dc:d,title:esc(ch.name),sub:`표 ${c}개`,btns:`<button class="mkall9" data-st="${d}:${k}:">${ico("play",14)} 대주제 표 전체 보기</button>`,
         chips:ch.topics.map((tp,t)=>{const x=n(d,k,t);return x?pChip(`data-st="${d}:${k}:${t}"`,tp.name,x,"개"):"";}).join("")});})].join("");
-  m.innerHTML=`<div class="page fc8 pgc mkp" style="--dc:${DC[d]};--ds:${DCS[d]}"><header class="fc8h phd9"><div><h1>표</h1><p>카드나 소주제를 누르면 바로 표가 열려요</p></div>${pgTools("table")}</header>
+  m.innerHTML=`<div class="page fc8 pgc mkp tbp" style="--dc:${DC[d]};--ds:${DCS[d]}"><header class="fc8h phd9"><div><h1>표</h1><p>카드나 소주제를 누르면 바로 표가 열려요</p></div>${pgTools("table")}</header>
     <div class="mkhd9">${tH?pSeg("data-tv",TDKS.map(([v,nm])=>[v,esc(nm)]),TDK):""}${pSum([[TB.filter(x=>(x.deck||"m27")===TDK).length,"표"]])}</div>
     <div class="mkhd9 sub">${pSeg("data-d",DOCS.map((x,i)=>[i,esc(x)]),d)}</div>
     ${TB.length?`<div class="mkg9 tp">${cards}</div>`:`<div class="empty">표를 불러오는 중이에요</div>`}</div>`;
@@ -2562,13 +2611,14 @@ function hyChooser(m){
   const A=hyG("영역"),G=hyG("총론"),ca=hyCnt(A),cg=hyCnt(G);
   const grid=(k,D,icon,ttl)=>`<h2 class="mkh2">${icon} ${ttl}</h2><div class="mkg9">${pCard({no:"★",cls:"wide9",title:`${ttl} 전체`,sub:`${hyCnt(D).l}줄 · 빈칸 ${hyCnt(D).b}개`,btns:`<button class="mkall9" data-hs="${k}:-1">${ico("play",14)} 전체 시작</button>`,tag:HY.k===k&&HY.d<0?"최근":""})}
     ${D.map((x,i)=>{const c=hyCnt([x]);return pCard({no:i+1,cls:`hc${i%6} ${HY.k===k&&HY.d===i?"last":""}`,title:esc(x.title),sub:`${c.l}줄 · 빈칸 ${c.b}개`,tag:HY.k===k&&HY.d===i?"최근":"",btns:`<button class="mkall9" data-hs="${k}:${i}">${ico("play",14)} 시작</button>`});}).join("")}</div>`;
-  m.innerHTML=`<div class="page fc8 pgc mkp hyc"><header class="fc8h phd9"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문 암기 · 방식을 고르고 카드를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
+  m.innerHTML=`<div class="page fc8 pgc mkp hyc hyp"><header class="fc8h phd9"><div><h1>해이실</h1><p>2019 개정 누리과정 고시문 암기 · 방식을 고르고 카드를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
     <div class="mkhd9"><span class="mklb9">방식</span><span class="seg2 mkw9 mkmd9">${HYM.map(([v,ic,l,sm])=>`<button data-hm="${v}" aria-pressed="${HY.md===v}" title="${esc(sm)}">${ic} ${esc(l)}</button>`).join("")}</span>${pSum([[ca.l+cg.l,"줄"],[ca.b+cg.b,"빈칸"]])}</div>
     ${grid("area",A,"🎯","영역별 목표 및 내용")}${grid("doc",G,"📘","성격 · 총론")}</div>`;
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   bindPgTools(m,pg,()=>hyChooser(m));
   on("[data-hm]",b=>{HY.md=b.dataset.hm;hySave();hyChooser(m);});
-  on("[data-hs]",b=>{const [k,i]=b.dataset.hs.split(":");HY.k=k;HY.d=+i;hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});});
+  on("[data-hs]",b=>{const [k,i]=b.dataset.hs.split(":");const go=()=>{HY.k=k;HY.d=+i;hySave();PGRUN.heisil=true;VIEW.heisil(m);window.scrollTo({top:0});};
+    if(!isMob())return go();pickSheet("어떤 방식으로 외울까요?",HYM,HY.md,v=>{HY.md=v;go();});});
 }
 
 /* ---------- 기출 · 문제풀이 고르기: 모의고사처럼 한 화면 카드 ---------- */
@@ -2587,7 +2637,7 @@ const qSum=t=>`<span class="mksum9"><span><b class="num">${t.a}</b>물음</span>
 function gichulChooser(m){
   const pg="gichul";loadSC();if(SC.sp)SC.sp="";
   if(!GQ){m.innerHTML=`<div class="page"><div class="empty">기출을 불러오는 중이에요</div></div>`;return;}
-  const ALLI=allItems(GQ),tot=qStat(ALLI);let body="";
+  const ALLI=allItems(GQ),tot=qStat(ALLI);let body="";if(isMob())GSUB="all";
   const gi=(d,k,t)=>gItems({d,k,t,idx:idxOf(d,k,t)});
   if(GV==="year"){
     const by={};for(const it of ALLI){const q=GQ[it[0]];(by[q.y]||(by[q.y]={}))[q.s]=(by[q.y][q.s]||[]);by[q.y][q.s].push(it);}
@@ -2607,7 +2657,7 @@ function gichulChooser(m){
         chips:ch.topics.map((tp,t)=>qChip(`t:${d}:${k}:${t}`,tp.name,qStat(gi(d,k,t)))).join("")});}).join("");}
     body=`<div class="mkhd9 sub">${subs}</div><div class="mkg9 tp">${cards}</div>`;
   }
-  m.innerHTML=`<div class="page fc8 pgc mkp"><header class="fc8h phd9"><div><h1>기출</h1><p>2009~2026학년도 기출 · 카드나 소주제를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
+  m.innerHTML=`<div class="page fc8 pgc mkp gcp"><header class="fc8h phd9"><div><h1>기출</h1><p>2009~2026학년도 기출 · 카드나 소주제를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
     <div class="mkhd9"><span class="seg2 mkw9"><button data-gv="topic" aria-pressed="${GV!=="year"}">주제별</button><button data-gv="year" aria-pressed="${GV==="year"}">연도별</button></span>${qSum(tot)}</div>${body}</div>`;
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
   const sv=()=>{try{localStorage.setItem(SBASE+":gv",GV);localStorage.setItem(SBASE+":gsub",GSUB);}catch(e){}};
@@ -2631,7 +2681,7 @@ function munpulChooser(m){
   const wrongBtn=(i,st)=>st.w?`<button class="mks9 ng" data-mw="${i}"><b>틀린 것만</b><small>${st.w}물음</small></button>`:"";
   const cards=[qCard({no:"전",title:`${mpGL()} 전체 단원`,st:tot,cls:"wide9",btns:`<button class="mkall9" data-ms="-1">${ico("play",14)} 전체 풀기</button>${wrongBtn(-1,tot)}`}),
     ...SETS_.map(([k,t],i)=>{const st=qStat(per[i]);return qCard({no:i+1,title:esc(t),st,tag:i===MPS?"최근":"",cls:i===MPS?"last":"",btns:`<button class="mkall9" data-ms="${i}">${ico("play",14)} 풀기</button>${wrongBtn(i,st)}`});})].join("");
-  m.innerHTML=`<div class="page fc8 pgc mkp"><header class="fc8h phd9"><div><h1>문제풀이</h1><p>단원 카드를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
+  m.innerHTML=`<div class="page fc8 pgc mkp mpp"><header class="fc8h phd9"><div><h1>문제풀이</h1><p>단원 카드를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
     <div class="mkhd9"><span class="seg2 mkw9">${SRCS.map(x=>`<button data-src="${esc(x.id)}" aria-pressed="${x.id===MSRC}">${esc(x.name)}</button>`).join("")}</span>
       <span class="seg2 mkw9"><button data-mg="g" aria-pressed="${MPG!=="k"}">개론</button><button data-mg="k" aria-pressed="${MPG==="k"}">각론</button></span>${qSum(tot)}</div>
     <div class="mkg9">${cards}</div></div>`;
@@ -2725,7 +2775,7 @@ function qTopicStats(){const o={};for(const tk in S.qres||{}){const cl=qCls(tk);
 /* 페이지 머리의 '틀린 문제 · 학습 초기화' 버튼 */
 const PGN={fc:"플래시카드",table:"표",heisil:"해이실",gichul:"기출",munpul:"문제풀이",mock:"모의고사"};
 function pgTools(pg){const q=pg==="gichul"||pg==="munpul"||pg==="mock",w=q?wrongAll(pg).length:0;
-  return `<span class="pgt9">${q?`<button class="btn sm wrb9" id="pgwr" ${w?"":"disabled"} title="채점에서 ❌ 틀렸어요로 표시한 물음만 모아 풀어요">❌ 틀린 문제 <b class="num">${w}</b></button>`:""}<button class="btn sm rsb9" id="pgrs" title="이 페이지의 학습 기록을 지워요">${ico("undo",14)} 학습 초기화</button></span>`;}
+  return `<span class="pgt9">${q?`<button class="btn sm wrb9" id="pgwr" ${w?"":"disabled"} title="채점에서 ❌ 틀렸어요로 표시한 물음만 모아 풀어요">❌ 틀린 문제 <b class="num">${w}</b></button>`:""}<button class="btn sm rsb9" id="pgrs" title="이 페이지의 학습 기록을 지워요">${ico("undo",14)}<span class="hm9"> 학습</span> 초기화</button></span>`;}
 function pgReset(pg){
   if(pg==="gichul"||pg==="munpul"||pg==="mock"){const ks=Object.keys(S.qres||{}).filter(tk=>qKind(qSplit(tk)[0])===pg);
     if(!ks.length){toast("지울 채점 기록이 없어요");return false;}
@@ -2863,7 +2913,7 @@ function mockChooser(m){
       <div class="mkp9"><i style="width:${p}%"></i></div>
       <div class="mkb9"><button class="mkall9" data-kr="${r}" data-ks="all">${ico("play",14)} 전체 풀기</button>${ss.map(s=>{const x=st(y=>y.k===s.k);return `<button class="mks9 ${x.a&&x.g===x.a?"ok":""}" data-kr="${r}" data-ks="${s.ss}" title="${KSL[s.ss]} · ${x.a}물음"><b>${KSO[s.ss]+1}교시</b><small>${esc(KSL[s.ss].replace(/^\d교시\s*/,""))}</small></button>`;}).join("")}${t.w?`<button class="mks9 ng" data-kwr="${r}"><b>❌ 틀린 것만</b><small>${t.w}물음</small></button>`:""}</div>
     </article>`;};
-  m.innerHTML=`<div class="page fc8 pgc mkp"><header class="fc8h phd9"><div><h1>모의고사</h1><p>회차와 교시를 누르면 바로 시작해요</p></div>${pgTools("mock")}</header>
+  m.innerHTML=`<div class="page fc8 pgc mkp mkq"><header class="fc8h phd9"><div><h1>모의고사</h1><p>회차와 교시를 누르면 바로 시작해요</p></div>${pgTools("mock")}</header>
     <div class="mkhd9"><span class="seg2 mkw9">${WHO.map(w=>`<button data-kw="${esc(w)}" aria-pressed="${KW===w}">${esc(w)}</button>`).join("")}</span>
       <span class="mksum9"><span><b class="num">${RS.length}</b>회</span><span><b class="num">${tot.a}</b>물음</span><span><b class="num">${tot.g}</b>채점</span><span class="ng"><b class="num">${tot.w}</b>틀림</span></span></div>
     ${RS.length?`<div class="mkg9">${RS.map(card).join("")}</div>`:`<div class="empty">모의고사가 없어요</div>`}</div>`;
