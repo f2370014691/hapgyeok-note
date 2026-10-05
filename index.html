@@ -4310,7 +4310,7 @@ function showLock(mode){
       <label class="fl"><span>비밀번호</span><input type="password" id="pw" class="field" autocomplete="current-password" required></label>
       ${needCodeLogin?`<div class="adm"><b>확인 코드</b><small>학습 자료가 갱신되어 한 번만 다시 필요해요.</small><input type="password" id="lcode" class="field" inputmode="numeric" autocomplete="off" required aria-label="확인 코드"></div>`:""}`
     :`
-      <label class="fl"><span>새 아이디</span><input type="text" id="nid" class="field" autocomplete="username" maxlength="20" required autofocus></label>
+      <label class="fl"><span>새 아이디</span><input type="text" id="nid" class="field" autocomplete="username" maxlength="20" placeholder="한글도 가능해요!" required autofocus></label>
       <label class="fl"><span>새 비밀번호 (6자 이상)</span><input type="password" id="npw" class="field" autocomplete="new-password" minlength="6" required></label>
       <label class="fl"><span>새 비밀번호 확인</span><input type="password" id="npw2" class="field" autocomplete="new-password" minlength="6" required></label>
       ${needCode?`<div class="adm"><b>확인 코드</b><small>이 기기에서 처음 가입할 때만 필요해요.</small><input type="password" id="vcode" class="field" inputmode="numeric" autocomplete="off" required aria-label="확인 코드"></div>`:`<p class="muted small">인증된 기기라 바로 가입할 수 있어요.</p>`}`}
