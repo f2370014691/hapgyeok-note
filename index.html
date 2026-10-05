@@ -2333,6 +2333,25 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 #admrf em{font-style:normal;font-size:12px;color:var(--ink-3);width:22px}
 #admrf .dflt{width:100%;text-align:right;font-size:11px;color:#B45309}
 .admrb{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end}
+
+/* 내가 고른 핵심어·핵심 문장 */
+.mykw9{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;cursor:default}
+.mykw9 .mkl{font-size:12.5px;font-weight:700;color:var(--ink-3);margin-right:2px}
+.mykw9 .mkc{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#fff3b0;color:#6b4e00;font-size:13.5px;font-weight:650;line-height:1.35}
+.mykw9 .mkc button{border:0;background:transparent;color:#8a6a00;font-size:15px;font-weight:800;padding:0 0 0 2px;line-height:1;cursor:pointer}
+.mykw9 .mkb{margin-left:auto;border:1px dashed var(--line-2);background:transparent;color:var(--ink-2);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.mykw9 .mkb:hover{background:var(--hover)}
+.mykw9.on{flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px;border-radius:16px;border:1.5px solid #f2d24b;background:color-mix(in srgb,#fff3b0 35%,var(--surface))}
+.mykw9 .mkh{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.mykw9 .mkcs{display:flex;flex-wrap:wrap;gap:6px}
+.mykw9 .mke{font-size:13px;color:var(--ink-3)}
+.mykw9 .mka{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.cscroll .a.kwpick,.cscroll .a.kwpick *,html.ipad body.grun main .cscroll .a.kwpick,html.ipad body.grun main .cscroll .a.kwpick *{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
+.cscroll .a.kwpick{cursor:text;outline:2px dashed #f2d24b;outline-offset:6px;border-radius:8px}
+.cscroll .a.kwpick .ait{cursor:text}
+mark.mkm{background:#fff3b0;color:inherit;border-radius:4px;padding:0 2px;box-shadow:inset 0 -2px 0 #f2c94c}
+html[data-theme="dark"] .mykw9 .mkc,html[data-theme="dark"] mark.mkm{background:#5c4a00;color:#ffe9a0}
+@media (prefers-color-scheme:dark){html:not([data-theme="light"]) .mykw9 .mkc,html:not([data-theme="light"]) mark.mkm{background:#5c4a00;color:#ffe9a0}}
 </style>
 </head>
 <body>
@@ -3476,8 +3495,9 @@ function drawCard(){
   const tcells=mode==="type"?(vs?vs.map(x=>({lab:plainA(x.l),key:x.body})):vr&&vr.rows?vr.rows.flatMap((r,k)=>r.c!=null?[]:[{row:k,lab:r.lab||"",side:0,key:r.l},{row:k,lab:r.lab||"",side:1,key:r.r}]):null):null;
   const cellLab=cl=>vr&&vr.rows?`${cl.side?vr.B:vr.A}${cl.lab?" · "+cl.lab:""}`:cl.lab;
   /* 핵심어로 답하기: 문제에 이미 나온 핵심어는 빼고 채점 (다 빠지면 전부) */
-  const kwK=mode==="kw"?(()=>{const q=String(c[5]),a=ansKeys(c[6]),b=a.filter(k=>!q.includes(k));if(b.length)return b;const p=kwFromText(plainA(c[6]),q);return p.length?p:a;})():null;
-  const mres=Array.isArray(s.typed)?(tcells&&s.typed.length===tcells.length?(()=>{const rows=tcells.map((cl,k)=>{const v=String(s.typed[k]||"");return{v,lab:cellLab(cl),keys:ansKeys(cl.key).map(kk=>({k:kk,ok:!!v.trim()&&cellOk(v,kk)}))};});return{rows,flat:rows.flatMap(r=>r.keys),cmp:true};})():multiScore(s.typed,c[6])):null,tr=mres?mres.flat:s.typed!=null?(kwK?kwK.map(k=>({k,ok:!!String(s.typed).trim()&&cellOk(s.typed,k)})):typeScore(s.typed,c[6])):null,tok=tr?tr.filter(y=>y.ok).length:0;
+  const mine=myKw(c);
+  const kwK=mode==="kw"?(()=>{if(mine)return mine;const q=String(c[5]),a=ansKeys(c[6]),b=a.filter(k=>!nrm(q).includes(nrm(k)));if(b.length)return b;const p=itemKws(c[6],q);return p.length?p:a;})():null;
+  const mres=Array.isArray(s.typed)?(tcells&&s.typed.length===tcells.length?(()=>{const rows=tcells.map((cl,k)=>{const v=String(s.typed[k]||"");return{v,lab:cellLab(cl),keys:[kwHit(v,itemKws(cl.key,c[5],mine))]};});return{rows,flat:rows.flatMap(r=>r.keys),cmp:true};})():multiScore(s.typed,c[6],c[5],mine)):null,tr=mres?mres.flat:s.typed!=null?(kwK?[kwHit(s.typed,kwK)]:typeScore(s.typed,c[6],c[5],mine)):null,tok=tr?tr.filter(y=>y.ok).length:0;
   s.rate=tr&&tr.length?tok/tr.length:null;
   const fl=s.flash;s.flash=null;
   const kwm=mode==="kw",typing=mode==="type"||kwm,kws=kwm?kwK:typing?ansKeys(c[6]):[],multi=!kwm&&typing&&(!!tcells||its.length>1);
@@ -3506,10 +3526,10 @@ function drawCard(){
       <div class="cmeta"><span class="cpath">${esc(c[4])}</span>${!x?`<span class="tag new">NEW</span>`:x[2]?`<span class="tag lapse">틀림 ${x[2]}</span>`:x[0]>=4?`<span class="tag ok">외움</span>`:""}
         ${gq.length?`<button class="tag gtag" id="gq" title="이 카드가 나온 기출">기출 ${gq.length}</button>`:""}<span class="pg">${c[2]}쪽</span></div>
       ${pr?`<div class="pq">이 설명에 맞는 질문은?</div><div class="cscroll" id="cscr"><div class="a pa">${its.map(t=>`<div class="ait on">${fmt(t)}</div>`).join("")}</div>`
-        :`<div class="q">${cz&&!full?czQ(c[5],c[6]):sh?fmt(c[5]):qMask(c[5],c[6])}</div><div class="cscroll" id="cscr"><div class="a">${aBody}</div>`}
+        :`<div class="q">${cz&&!full?czQ(c[5],c[6]):sh?fmt(c[5]):qMask(c[5],c[6])}</div><div class="cscroll" id="cscr"><div class="a ${s.kwpick&&full?"kwpick":""}">${aBody}</div>${full?myKwBox(c,s.kwpick):""}`}
       ${tr?(()=>{const L=tr.length,p=L?Math.round(tok/L*100):0,cl=tok>=L*.8?"good":tok>=L*.5?"mid":"bad";
         return `<div class="ty9res ${cl}"><div class="ty9rh"><span class="ty9ring" style="--p:${p}"><b class="num">${tok}<small>/${L}</small></b></span>
-          <div><b>${tok===L&&L?"완벽해요!":cl==="good"?"거의 다 맞았어요":cl==="mid"?"절반쯤 맞았어요":"다시 확인해 봐요"}</b><small>핵심어 ${tok}개 맞음${s.hintUsed?" · 💡 힌트 사용":""}</small></div></div>
+          <div><b>${tok===L&&L?"완벽해요!":cl==="good"?"거의 다 맞았어요":cl==="mid"?"절반쯤 맞았어요":"다시 확인해 봐요"}</b><small>${L>1?`${L}개 중 ${tok}개 맞음 · `:""}핵심어가 들어 있으면 정답${s.hintUsed?" · 💡 힌트 사용":""}</small></div></div>
           ${mres?`<div class="ty9my multi"><small>${mres.cmp?"내 답 (칸마다 그 자리 정답과 비교)":"내 답 (칸 순서와 상관없이 맞는 항목과 짝지어 채점)"}</small>${mres.rows.map((r,k)=>`<div class="ty9mr"><span class="ty9n ${r.lab?"lb":""}">${r.lab?esc(r.lab):k+1}</span><div><p>${esc(r.v)||"(비워 둠)"}</p><div class="tyk">${r.keys.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}</div></div></div>`).join("")}</div>`
           :`<div class="ty9my"><small>내 답</small><p>${esc(s.typed)||"(비워 둠)"}</p></div>
           <div class="tyk">${tr.map(y=>`<span class="${y.ok?"ok":"ng"}">${y.ok?"✓":"✗"} ${esc(y.k)}</span>`).join("")}</div>`}</div>`;})():""}
@@ -3536,8 +3556,9 @@ function drawCard(){
       <p class="keys"><kbd>Space</kbd> 답 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 채점 <kbd>←</kbd><kbd>→</kbd> 이동 <kbd>Z</kbd> 되돌리기 · 휴대폰: ← 알아요 · ↓ 몰랐어요 · ↑ 헷갈려요 · → 직전 카드</p></div></div>`;
   const $=q=>box.querySelector(q),on=(q,f)=>{const b=$(q);if(b)b.onclick=f;};
   const cd=$("#card");
-  cd.onclick=e=>{if(cd._sw){cd._sw=false;return;}const qm=e.target.closest(".qmask");if(qm){qm.classList.toggle("on");return;}if(e.target.closest("button"))return;if(!pr)flipCard();};
+  cd.onclick=e=>{if(s.kwpick&&full)return;if(cd._sw){cd._sw=false;return;}const qm=e.target.closest(".qmask");if(qm){qm.classList.toggle("on");return;}if(e.target.closest("button"))return;if(!pr)flipCard();};
   on("#show",flipCard);on("#showall",showAll);on("#undo",undo);
+  if(full&&!pr)bindMyKw(box,c,s);
   on("#prev",()=>step(-1));on("#next",()=>step(1));
   on("#gq",()=>openQ(gq[0],gOf(i).filter(y=>y[0]===gq[0]).map(y=>y[1]),gq));
   on("#gq2",()=>openQ(gq[0],gOf(i).filter(y=>y[0]===gq[0]).map(y=>y[1]),gq));
@@ -3569,7 +3590,7 @@ function drawCard(){
   const canGrade=full&&!pr;
   const sc=$("#cscr");
   let t0=null;
-  cd.addEventListener("touchstart",e=>{if(e.touches.length!==1||e.target.closest("button,textarea,input")){t0=null;return;}
+  cd.addEventListener("touchstart",e=>{if(s.kwpick&&full){t0=null;return;}if(e.touches.length!==1||e.target.closest("button,textarea,input")){t0=null;return;}
     const t=e.touches[0],inS=sc&&sc.contains(e.target)&&sc.scrollHeight>sc.clientHeight+2;
     t0={x:t.clientX,y:t.clientY,up:!inS||sc.scrollTop+sc.clientHeight>=sc.scrollHeight-2,down:!inS||sc.scrollTop<=1,inS,mv:false};},{passive:true});
   cd.addEventListener("touchmove",e=>{if(!t0)return;const t=e.touches[0],dx=t.clientX-t0.x,dy=t.clientY-t0.y;
@@ -3615,6 +3636,8 @@ function undo(){
 const inPlayer=()=>route.v==="fc"&&SES&&PBOX&&PBOX.isConnected&&!document.getElementById("qsheet");
 document.addEventListener("keydown",e=>{
   if(!inPlayer()||DDOPEN||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+  if(SES.kwpick&&e.key!=="Escape"&&e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;
+  if(SES.kwpick&&e.key==="Escape"){e.preventDefault();SES.kwpick=false;drawCard();return;}
   const full=SES.pos<SES.q.length&&SES.shown>=curN(),pr=fmode()==="pair"&&SES.pair&&!SES.pair.none&&SES.pair.pos===SES.pos?SES.pair:null;
   if(pr){const k={"1":0,"a":0,"A":0,"2":1,"b":1,"B":1}[e.key];
     if(k!=null&&pr.pick==null){e.preventDefault();const b=PBOX.querySelector(`[data-po="${k}"]`);if(b)b.click();return;}
@@ -4182,7 +4205,7 @@ const slotLab=(ap,mk)=>ap.num?`${mk}번째 답`:mk?`${mk}의 답`:"답안";
 const IPAD=/iPad/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const PENOK=IPAD;   // 손글씨는 아이패드에서만
 if(IPAD)document.documentElement.classList.add("ipad");
-if(IPAD)document.addEventListener("selectstart",e=>{if(document.body.classList.contains("grun")&&!(e.target.closest&&e.target.closest("input,textarea"))&&!(e.target.parentElement&&e.target.parentElement.closest("input,textarea")))e.preventDefault();},true);
+if(IPAD)document.addEventListener("selectstart",e=>{if(document.body.classList.contains("grun")&&!(e.target.closest&&e.target.closest("input,textarea"))&&!(e.target.parentElement&&e.target.parentElement.closest("input,textarea,.kwpick"))&&!(e.target.closest&&e.target.closest(".kwpick")))e.preventDefault();},true);
 let PENM=IPAD,PENONLY=true;try{const v=localStorage.getItem(SBASE+":pen");if(v!=null)PENM=v==="1";PENONLY=localStorage.getItem(SBASE+":penonly")!=="0";}catch(e){}
 const PENS={};
 const penTg=id=>PENOK?`<div class="pentgw"><button type="button" class="pentg ${PENM?"on":""}" data-pentg="1">✍️ ${PENM?"손글씨 쓰는 중":"손글씨로 쓰기"}</button>${PENM?`<label class="penonly"><input type="checkbox" ${PENONLY?"checked":""} data-penonly="1">펜으로만 쓰기</label>`:""}</div>`:"";
@@ -4319,14 +4342,67 @@ function bindTables(m){
   });
 }
 
+/* ---------- 내가 고른 핵심어·핵심 문장 (S.mk[카드id] = [...], 서버에 함께 저장) ---------- */
+const myKw=c=>{const m=S.mk&&S.mk[c[0]];return m&&m.length?m:null;};
+function setMyKw(c,list){S.mk=S.mk||{};list=[...new Set(list.map(x=>String(x).replace(/\s+/g," ").trim()).filter(x=>x.length>=2))].slice(0,20);
+  if(list.length)S.mk[c[0]]=list;else delete S.mk[c[0]];save();}
+function myKwBox(c,pick){
+  const m=myKw(c)||[];
+  if(!pick)return `<div class="mykw9">${m.length?`<span class="mkl">🖍 내 핵심어</span>${m.map(k=>`<span class="mkc">${esc(k)}</span>`).join("")}`:""}<button class="mkb" id="mkon" type="button">🖍 ${m.length?"핵심어 고치기":"핵심어 고르기"}</button></div>`;
+  return `<div class="mykw9 on"><p class="mkh">답에서 <b>낱말을 누르거나</b>, <b>문장을 드래그</b>해서 고르세요 · 타이핑 채점은 이 핵심어로 해요</p>
+    <div class="mkcs">${m.length?m.map((k,j)=>`<span class="mkc">${esc(k)}<button type="button" data-mkx="${j}" aria-label="${esc(k)} 빼기">×</button></span>`).join(""):`<span class="mke">아직 고른 핵심어가 없어요</span>`}</div>
+    <div class="mka"><button class="btn sm" id="mkadd" type="button">드래그한 부분 넣기</button>${m.length?`<button class="btn sm" id="mkclr" type="button">모두 지우기</button>`:""}<button class="btn sm pri" id="mkoff" type="button">완료</button></div></div>`;
+}
+/* 누른 곳의 낱말 (조사는 떼고) */
+function wordAtPoint(x,y){
+  let node,off;
+  if(document.caretPositionFromPoint){const p=document.caretPositionFromPoint(x,y);if(!p)return "";node=p.offsetNode;off=p.offset;}
+  else if(document.caretRangeFromPoint){const r=document.caretRangeFromPoint(x,y);if(!r)return "";node=r.startContainer;off=r.startOffset;}
+  if(!node||node.nodeType!==3)return "";
+  const t=node.textContent,isW=ch=>/[가-힣A-Za-z0-9]/.test(ch);let a=off,b=off;
+  while(a>0&&isW(t[a-1]))a--;while(b<t.length&&isW(t[b]))b++;
+  const w=t.slice(a,b);if(!w)return "";const k=kwToks(w);return k.length?k[0]:w;
+}
+function bindMyKw(box,c,s){
+  const a=box.querySelector(".cscroll .a");
+  // 내 핵심어를 답 글에서 형광펜으로
+  const m=myKw(c);if(a&&m){const re=new RegExp(m.slice().sort((x,y)=>y.length-x.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"g");
+    const walk=document.createTreeWalker(a,NodeFilter.SHOW_TEXT),ns=[];while(walk.nextNode())ns.push(walk.currentNode);
+    ns.forEach(n=>{const t=n.textContent;if(!re.test(t))return;re.lastIndex=0;const f=document.createDocumentFragment();let last=0;
+      t.replace(re,(mm,i)=>{f.append(t.slice(last,i));const k=document.createElement("mark");k.className="mkm";k.textContent=mm;f.append(k);last=i+mm.length;return mm;});
+      f.append(t.slice(last));n.replaceWith(f);});}
+  const on=(q,fn)=>{const b=box.querySelector(q);if(b)b.onclick=e=>{e.stopPropagation();fn();};};
+  on("#mkon",()=>{s.kwpick=true;drawCard();});
+  on("#mkoff",()=>{s.kwpick=false;drawCard();toast(myKw(c)?"내 핵심어를 저장했어요":"핵심어를 비웠어요 · 자동으로 골라 채점해요");});
+  on("#mkclr",()=>{setMyKw(c,[]);drawCard();});
+  box.querySelectorAll("[data-mkx]").forEach(b=>b.onclick=e=>{e.stopPropagation();const l=(myKw(c)||[]).slice();l.splice(+b.dataset.mkx,1);setMyKw(c,l);drawCard();});
+  if(!s.kwpick||!a)return;
+  let down=null,lastSel="";
+  // 휴대폰은 길게 눌러 고른 뒤 [드래그한 부분 넣기]로 넣기
+  const selNow=()=>{const sel=window.getSelection();return sel&&!sel.isCollapsed&&a.contains(sel.anchorNode)?sel.toString().replace(/\s+/g," ").trim():"";};
+  document.onselectionchange=()=>{if(!a.isConnected){document.onselectionchange=null;return;}const t=selNow();if(t)lastSel=t;};
+  const addBtn=box.querySelector("#mkadd");if(addBtn){addBtn.onpointerdown=e=>e.preventDefault();addBtn.onclick=e=>{e.stopPropagation();const t=(selNow()||lastSel).slice(0,80);
+    if(t.length<2){toast("답에서 넣을 부분을 먼저 드래그해 주세요");return;}const l=(myKw(c)||[]).slice();if(!l.some(z=>nrm(z)===nrm(t)))l.push(t);window.getSelection().removeAllRanges();setMyKw(c,l);drawCard();};}
+  const done=(x,y)=>{
+    const sel=window.getSelection(),txt=sel&&!sel.isCollapsed&&a.contains(sel.anchorNode)?sel.toString().replace(/\s+/g," ").trim():"";
+    let add=txt;if(!add){if(!down||Math.abs(x-down[0])>8||Math.abs(y-down[1])>8)return;add=wordAtPoint(x,y);}
+    if(!add||add.length<2)return;if(add.length>80)add=add.slice(0,80);
+    const l=(myKw(c)||[]).slice(),k=l.findIndex(z=>nrm(z)===nrm(add));
+    if(k>=0&&!txt)l.splice(k,1);else if(k<0)l.push(add);   // 낱말을 다시 누르면 빼기
+    if(sel)sel.removeAllRanges();setMyKw(c,l);drawCard();
+  };
+  a.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY];});
+  a.addEventListener("pointerup",e=>{const x=e.clientX,y=e.clientY;setTimeout(()=>done(x,y),e.pointerType==="touch"?250:0);});
+}
+
 /* ---------- 타이핑: 핵심어 채점 ---------- */
 const plainA=s=>String(s||"").replace(/\*\*/g,"");
 /* 설명 글에서 핵심 낱말 뽑기 (핵심어로 답하기에서 굵은 핵심어가 문제에 이미 다 나올 때): '용어:' 뒤 설명에서 조사를 떼고 중요한 낱말 최대 4개 */
-function kwFromText(t,q){
+function kwFromText(t,q,max=4){
   const STOP=new Set(["통한","통해","비교적","측면","의한","위한","대한","따른","있는","하는","되는","않는","그리고","또는","예시","예를","들어","가장","매우","다른","같은","모든","각각","정도","경우","상태","과정","내용","것을","것이","관련","통하여","대해","대하여","다양한","여러","위해","따라","함께","자신","스스로","이러한","그러한","어떤","통한다"]);
   const body=String(t||"").split("\n").map(l=>l.replace(/^[^:：]{1,14}[:：]\s*/,"")).join(" ").replace(/\([^()]*\)/g," ").replace(/\[[^\]]*\]/g," ");
   const out=[];for(let w of body.split(/[\s,·/、\-–]+|및/)){w=w.replace(/[^가-힣A-Za-z0-9]/g,"").replace(/(으로써|으로서|에서는|이라는|이란|이나|으로|에서|에게|에는|하고|하여|하는|하며|되어|되는|이며|이다|였다|한다|된다|이고|에|의|을|를|이|가|은|는|와|과|로|도|만|인|적인|란|나)$/,"");
-    if([...w].length<2||STOP.has(w)||q.includes(w)||out.includes(w)||/(한|된|던|려|게|고|며|면|어|아|다|지|요|서|니|함|됨|짐|음)$/.test(w))continue;out.push(w);if(out.length>=4)break;}
+    if([...w].length<2||STOP.has(w)||(q&&q.includes(w))||out.includes(w)||/(한|된|던|려|게|고|며|면|어|아|다|지|요|서|니|함|됨|짐|음)$/.test(w))continue;out.push(w);if(out.length>=max)break;}
   return out;
 }
 function ansKeys(a){
@@ -4336,16 +4412,75 @@ function ansKeys(a){
 }
 const hintTxt=k=>{const ch=[...plainA(k)];return (ch[0]||"")+ch.slice(1).map(c=>/\s/.test(c)?" ":/[·,()\-/]/.test(c)?c:"○").join("");};
 const hintOf=k=>{const ch=[...plainA(k)];return `<b>${esc(ch[0]||"")}</b>`+ch.slice(1).map(c=>/\s/.test(c)?" ":/[·,()\-/]/.test(c)?esc(c):"○").join("");};
-function multiScore(arr,a){
-  const its=ansItems(a),K=its.map(t=>ansKeys(t)),N=arr.length,pr=[];
-  arr.forEach((v,i)=>{if(!String(v||"").trim())return;K.forEach((ks,j)=>{const m=ks.filter(k=>cellOk(v,k)).length;if(m)pr.push([m,i===j?1:0,i,j]);});});
+/* 플래시카드 타이핑: 모범답안(항목 하나)에서 핵심 낱말을 여러 개 뽑고, 내 답에 그중 하나라도 들어 있으면 그 항목은 일단 정답 */
+/* 문제에 이미 나온 말(예: '성장이란?'의 '성장')·흔한 말은 핵심어에서 빼고, 짧은 답(예: '구체적 조작기')은 쪼개지 않고 통째로 봅니다 */
+// 서술어(~다·~며·~고·~면·~게·~임·~함…)와 부사는 핵심어가 아님
+const KW_VERB=/(다|며|고|면|서|게|아|어|여|임|음|함|됨|짐|지|니|요|할|될|한|된|던|운|러|려|하|되|해|께|는|을|를|거나|키|도록|하기|해야|하여|되어|으며|으면|으나|지만|뿐만|일)$/;
+const KW_ADV=new Set(["다시","결국","보다","비교적","혼자서","스스로","서로","함께","가장","매우","특히","주로","항상","모두","각자","점차","계속","이미","직접","간접","먼저","이후","이전","동안","때문","통해","위해","따라","대한","관한"]);
+const KW_WEAK=new Set(["수준","사이","영역","정도","의미","개념","정의","특징","특성","방법","내용","요소","단계","시기","과정","관계","능력","활동","상황","기능","역할","목적","목표","원리","원칙","유형","종류","형태","측면","부분","전체","결과","행동","경험","유아","아동","교사","사람","자신","타인","하나","이상","이하","기준","방식"]);
+/* 낱말 나누기: 조사·어미를 떼고 2글자 이상 낱말만 */
+function kwToks(t){
+  const out=[];for(let w of String(t||"").replace(/\([^()]*\)/g," ").replace(/\[[^\]]*\]/g," ").split(/[\s,·/、\-–:：]+|및/)){
+    const J=/(으로써|으로서|에서는|이라는|이란|이나|으로|에서|에게|에는|이며|이고|에|의|을|를|이|가|은|는|와|과|로|도|만|란)$/;
+    w=w.replace(/[^가-힣A-Za-z0-9]/g,"");for(let k=0;k<2;k++){const v=w.replace(J,"");if([...v].length>=2)w=v;}
+    if([...w].length>=2)out.push(w);}
+  return out;
+}
+/* 모든 카드 답에서 낱말이 몇 장에 나오는지(흔한 말일수록 핵심어가 아님) */
+let KWDF=null,KWN=0;
+function kwDF(){
+  if(KWDF&&KWN===C.length)return KWDF;
+  KWDF=new Map();KWN=C.length;
+  C.forEach(c=>{new Set(kwToks(plainA(c[6])).map(nrm)).forEach(w=>KWDF.set(w,(KWDF.get(w)||0)+1));});
+  return KWDF;
+}
+/* 핵심어 고르기: 위치가 아니라 '이 카드에서 얼마나 중요한 말인지'로 고릅니다.
+   - 문제에 이미 나온 말(예: '성장이란?'의 '성장')은 뺌
+   - 여러 카드에 흔히 나오는 말(유아·교사·영역·수준…)은 낮게, 이 카드에만 나오는 개념어는 높게
+   - 굵게 표시된 말은 가산점, 서술어(~할·~하게)는 뺌
+   - 짧은 답(예: '구체적 조작기')은 쪼개지 않고 통째로 */
+function itemKws(t,q="",mine=null){
+  if(mine&&mine.length){const T=nrm(plainA(t)),m=mine.filter(k=>T.includes(nrm(k)));if(m.length)return m;}
+  const raw=String(t||""),Q=nrm(plainA(q));
+  const inQ=w=>{const x=nrm(w);return !!Q&&x.length>0&&Q.includes(x);};
+  const p=plainA(raw).replace(BUL,"").trim(),bold=[...raw.matchAll(/\*\*(.+?)\*\*/g)].map(x=>x[1].trim()).filter(x=>!inQ(x));
+  if(!bold.length&&!/[:：]/.test(p)&&[...p.replace(/\s/g,"")].length<=14&&!inQ(p))return [p];
+  const df=kwDF(),N=Math.max(KWN,1),idf=w=>Math.log(N/(1+(df.get(nrm(w))||0)));
+  const boldW=new Set(bold.flatMap(x=>kwToks(x)).map(nrm));
+  const cand=new Map();
+  const quo=[...p.matchAll(/['‘“"]([^'’”"]{2,24})['’”"]/g)].map(x=>x[1].trim()).filter(x=>!inQ(x));
+  const quoW=new Set(quo.flatMap(x=>kwToks(x)).map(nrm));
+  kwToks(p).forEach(w=>{const x=nrm(w);if(inQ(w)||KW_WEAK.has(w)||KW_ADV.has(w)||KW_VERB.test(w))return;
+    const sc=idf(w)+(boldW.has(x)?3:0)+(quoW.has(x)?2:0);if(!cand.has(x)||cand.get(x).sc<sc)cand.set(x,{w,sc});});
+  const ranked=[...cand.values()].filter(v=>v.sc>=Math.log(30)||boldW.has(nrm(v.w))).sort((a,b)=>b.sc-a.sc).map(v=>v.w);
+  const out=[];const add=w=>{const x=nrm(w);if(x.length>=2&&!out.some(y=>nrm(y)===x))out.push(w);};
+  bold.filter(x=>[...x.replace(/\s/g,"")].length<=14).forEach(add);
+  quo.filter(x=>[...x.replace(/\s/g,"")].length<=12).slice(0,3).forEach(add);
+  ranked.slice(0,4).forEach(add);
+  if(!out.length){const r=[...cand.values()].sort((a,b)=>b.sc-a.sc).map(v=>v.w).slice(0,3);r.forEach(add);}
+  if(!out.length&&p&&!inQ(p))out.push(p);
+  return out;
+}
+function kwOk(input,k){
+  const a=nrm(input),b=nrm(k);if(!a||!b)return false;if(a.includes(b))return true;
+  const tk=kwToks(k);if(tk.length>=3){const hit=tk.filter(w=>a.includes(nrm(w))).length;return hit/tk.length>=.6;}
+  if(b.length<3)return false;
+  return String(input).split(/[\s,·/]+/).some(w=>{const x=nrm(w);return x.length>=2&&1-lev(x,b)/Math.max(x.length,b.length)>=.75;});
+}
+function kwHit(v,ks){
+  const hit=String(v||"").trim()?ks.find(k=>kwOk(v,k)):null;
+  return{k:hit||ks.slice(0,3).join(" · "),ok:!!hit};
+}
+function multiScore(arr,a,q="",mine=null){
+  const its=ansItems(a),K=its.map(t=>itemKws(t,q,mine)),N=arr.length,pr=[];
+  arr.forEach((v,i)=>{if(!String(v||"").trim())return;K.forEach((ks,j)=>{const m=ks.filter(k=>kwOk(v,k)).length;if(m)pr.push([m,i===j?1:0,i,j]);});});
   pr.sort((x,y)=>y[0]-x[0]||y[1]-x[1]);const as={},used=new Set();
   for(const [,,i,j] of pr){if(i in as||used.has(j))continue;as[i]=j;used.add(j);}
   const free=K.map((_,j)=>j).filter(j=>!used.has(j));for(let i=0;i<N;i++)if(!(i in as))as[i]=free.shift();
-  const rows=arr.map((v,i)=>{const j=as[i],ks=j!=null?K[j]:[];return{v,j,keys:ks.map(k=>({k,ok:!!String(v||"").trim()&&cellOk(v,k)}))};});
+  const rows=arr.map((v,i)=>{const j=as[i],ks=j!=null?K[j]:[];return{v,j,keys:ks.length?[kwHit(v,ks)]:[]};});
   return{rows,flat:rows.flatMap(r=>r.keys)};
 }
-function typeScore(input,a){return ansKeys(a).map(k=>({k,ok:cellOk(input,k)}));}
+function typeScore(input,a,q="",mine=null){const its=ansItems(a);if(mine&&mine.length&&its.length===1)return [kwHit(input,mine)];return its.map(t=>kwHit(input,itemKws(t,q,mine)));}
 /* 문제(기출·문풀·모고) 채점: 괄호 속 영어·다른 이름은 없어도 되고, 괄호 속 말로 써도 맞게. [해설]·※·(?)는 빼고 비교 */
 function qScore(input,part){
   let main=String(part||"").split(/\n?\s*\[해설\]/)[0].replace(/※[\s\S]*$/,"").replace(/\(\?\)/g,"");
