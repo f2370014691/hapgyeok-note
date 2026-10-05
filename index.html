@@ -2215,6 +2215,15 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 /* v84: 고르기 카드 제목은 검정 (어두운 화면에서는 밝은 글자) */
 .mkc9 .mkt9 b{color:var(--ink)!important}
 .xpfly.neg{background:linear-gradient(90deg,#F87171,#EF4444);box-shadow:0 8px 20px rgba(239,68,68,.3)}
+/* v85: 카카오톡 안 브라우저 안내 */
+.kkg{position:fixed;inset:0;z-index:500;background:rgba(18,20,40,.55);display:grid;place-items:center;padding:16px}
+.kkgc{background:var(--surface,#fff);color:var(--ink,#121428);border-radius:24px;padding:24px 22px 18px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:10px;align-items:center}
+.kkgi{font-size:40px;line-height:1}
+.kkgc>b{font-size:19px;font-weight:900}
+.kkgc p{margin:0;font-size:14px;line-height:1.6;color:var(--ink-2,var(--ink))}
+.kkgc .kkgh{font-size:12.5px;color:var(--ink-3,#8B8FA8)}
+.kkgc .btn.lg{width:100%}
+.kkgb{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -4428,6 +4437,23 @@ window.addEventListener("resize",()=>{if(DDOPEN&&innerWidth>=600)ddClose();});
 document.addEventListener("scroll",e=>{if(DDOPEN&&!DDOPEN.pop.contains(e.target))ddClose();},true);
 window.addEventListener("hashchange",ddClose);
 new MutationObserver(()=>document.querySelectorAll("select:not([data-dd])").forEach(ddEnhance)).observe(document.documentElement,{childList:true,subtree:true});
+/* 카카오톡 안의 브라우저로 열면: Safari(안드로이드는 Chrome 등)로 열도록 안내 */
+(function(){
+  if(!/KAKAOTALK/i.test(navigator.userAgent))return;
+  try{if(sessionStorage.getItem("kakao-skip"))return;}catch(e){}
+  const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1),br=ios?"Safari":"Chrome 등 기본 브라우저";
+  const show=()=>{if(document.getElementById("kkg"))return;const el=document.createElement("div");el.id="kkg";el.className="kkg";
+    el.innerHTML=`<div class="kkgc" role="dialog" aria-modal="true" aria-label="브라우저 안내"><div class="kkgi">🧭</div><b>${br}에서 열어 주세요</b>
+      <p>카카오톡 안에서는 로그인 유지·손글씨·소리 같은 기능이 제대로 안 될 수 있어요. 최적화를 위해 <b>${br}</b>로 들어와 주세요.</p>
+      <button class="btn pri lg" id="kkgo">${ios?"Safari":"다른 브라우저"}로 열기</button>
+      <p class="kkgh">버튼이 안 되면 오른쪽 ${ios?"아래":"위"} <b>⋯</b> 메뉴 → <b>${ios?"Safari로 열기":"다른 브라우저로 열기"}</b>를 눌러 주세요.</p>
+      <div class="kkgb"><button class="btn sm" id="kkcp">주소 복사</button><button class="btn sm" id="kkno">그냥 여기서 볼게요</button></div></div>`;
+    document.body.appendChild(el);
+    el.querySelector("#kkgo").onclick=()=>{location.href="kakaotalk://web/openExternal?url="+encodeURIComponent(location.href);};
+    el.querySelector("#kkcp").onclick=async()=>{try{await navigator.clipboard.writeText(location.href);toast("주소를 복사했어요. "+br+"에 붙여 넣어 주세요");}catch(e){prompt("이 주소를 복사해 주세요",location.href);}};
+    el.querySelector("#kkno").onclick=()=>{try{sessionStorage.setItem("kakao-skip","1");}catch(e){}el.remove();};};
+  if(document.body)setTimeout(show,200);else document.addEventListener("DOMContentLoaded",()=>setTimeout(show,200));
+})();
 </script>
 </body>
 </html>
