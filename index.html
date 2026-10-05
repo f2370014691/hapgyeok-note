@@ -3100,8 +3100,8 @@ const josaGa=w=>w+(jong(w)?"이":"가"),josaRo=w=>{const j=jong(w);return w+(j&&
 const petStage=lv=>{let i=0;PET_ST.forEach((s,k)=>{if(lv>=s.from)i=k;});return i;};
 const PET=()=>S.pet||(S.pet={name:"",fed:{},pets:0,born:today()});
 const petName=()=>PET().name||"삐약이";
-/* 모이: 오늘 카드 10장마다 1알 (하루 최대 10알), 준 만큼 빠짐 */
-const petFood=()=>{const p=PET(),got=Math.min(10,Math.floor((todayN()+((S.act||{})[today()]||0))/10));return Math.max(0,got-(p.fed[today()]||0));};
+/* 모이: 오늘 학습 30번마다 1알 (하루 최대 10알), 준 만큼 빠짐 */
+const petFood=()=>{const p=PET(),got=Math.min(10,Math.floor((todayN()+((S.act||{})[today()]||0))/30));return Math.max(0,got-(p.fed[today()]||0));};
 const petMood=()=>{const p=PET(),t=today();if(p.fed[t])return["신나요","😆"];const y=new Date();y.setDate(y.getDate()-1);if(p.fed[today(y)])return["조금 출출해요","🙂"];
   return Object.keys(p.fed).length?["배고파요","🥺"]:["모이를 기다려요","🐣"];};
 let PSVGN=0;
@@ -3186,7 +3186,7 @@ function petSheet(){
             <div class="xpb big"><i style="width:${Math.max(0,L.cur/L.need*100)}%"></i></div><small class="num">다음 레벨까지 ${r1(L.need-L.cur)} XP · 모두 ${(S.xp||0).toLocaleString()} XP</small>
             ${nx?`<small class="petnx">Lv.${nx.from}이 되면 <b>${esc(josaRo(nx.n))}</b> 자라요 (${r1(Math.max(0,lvBase(nx.from)-(S.xp||0))).toLocaleString()} XP 남음)</small>`:`<small class="petnx">🏆 다 키웠어요! 이제 XP로 새끼를 한 마리씩 키워 가족을 늘려요</small>`}
             <div class="petbtns"><button class="btn pri" id="petfeed" ${f?"":"disabled"}>🌾 모이 주기 <b class="num">${f}</b></button><button class="btn" id="petpat2">🤍 쓰다듬기</button></div>
-            <small class="muted">모이는 오늘 카드·표·해이실·기출·문풀·모고를 10번 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
+            <small class="muted">모이는 오늘 카드·표·해이실·기출·문풀·모고를 30번 학습할 때마다 1알씩 생겨요 (하루 10알까지). 모이를 주면 +3 XP!</small></div></div>
         ${(()=>{const fm=famOf(S.xp||0);if(!fm)return "";return `<h3 class="petsh3">🐣 새끼 키우기 <small>가족 ${(fm.n+1).toLocaleString()}마리</small></h3>
           <div class="famcur"><span class="famegg">${petSVG(fm.st,110,"pidle")}</span><div class="petinfo"><span class="petst">아기 ${fm.no}호 · ${esc(PET_ST[fm.st].n)}</span><p>${esc(PET_ST[fm.st].d)}</p>
             <div class="xpb big"><i style="width:${fm.f*100}%"></i></div><small class="num">다 자라 가족이 되기까지 ${r1(FAM_G-fm.cur).toLocaleString()} XP · 한 마리에 ${FAM_G.toLocaleString()} XP</small></div></div>
