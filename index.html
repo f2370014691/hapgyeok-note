@@ -2279,6 +2279,9 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
   .spanel .sbox i b{font-size:19px}
   .spanel .sbox i.spc{width:10px}
 }
+
+/* 채점(⭕/❌) 뒤 다음 문제 버튼: 한 줄 가득 */
+.qnxfull{display:flex;width:100%;justify-content:center;align-items:center;gap:6px;margin-top:10px;min-height:46px;font-size:15px;font-weight:800}
 </style>
 </head>
 <body>
@@ -3173,11 +3176,11 @@ function petCheck(x0){const a=lvOf(x0).lv,b=lvOf(S.xp||0).lv,fa=famOf(x0),fb=fam
   if(s1>s0)petCelebrate(s1);else toast(`🎉 Lv.${b} 달성! ${josaGa(petName())} 쑥 컸어요`);}
 /* 표·해이실·기출·문풀·모고 학습도 XP → 캐릭터 성장. 하루 상한이 있고, 같은 칸·물음은 그날 한 번만 */
 const XPCAP={q:1000,table:150,heisil:200},XPSEEN=new Set();
-function gainXP(src,n,key){if(!S||!ME||n<=0)return;const t=today();if(key){const kk=t+"|"+key;if(XPSEEN.has(kk))return;XPSEEN.add(kk);}
+function gainXP(src,n,key,quiet){if(!S||!ME||n<=0)return;const t=today();if(key){const kk=t+"|"+key;if(XPSEEN.has(kk))return;XPSEEN.add(kk);}
   const d=S.xpd&&S.xpd.d===t?S.xpd:(S.xpd={d:t});const left=(XPCAP[src]||200)-(d[src]||0);if(left<=0)return;n=Math.min(n,left);d[src]=(d[src]||0)+n;
   S.act=S.act||{};S.act[t]=(S.act[t]||0)+1;{const ks=Object.keys(S.act).sort();while(ks.length>40)delete S.act[ks.shift()];}
   /* 0.1 XP 같은 소수도 바로 더함 (소수 첫째 자리까지) */
-  const x0=S.xp||0;S.xp=r1(x0+n+(S.xpf||0));S.xpf=0;save();xpFly(n);petCheck(x0);}
+  const x0=S.xp||0;S.xp=r1(x0+n+(S.xpf||0));S.xpf=0;save();if(!quiet)xpFly(n);petCheck(x0);}
 /* 기출·문풀·모고 채점 XP: 맞음 +10, 틀림 -5. 같은 물음은 하루에 마지막 결과만 반영 (❌→⭕로 고치면 차이만큼 조정) */
 function qXP(tk,r){if(!S||!ME)return;const t=today();if(!S.qxp||S.qxp.d!==t)S.qxp={d:t,m:{}};
   const want=r?10:-5,had=S.qxp.m[tk]||0,dl=want-had;if(!dl)return;S.qxp.m[tk]=want;
@@ -3653,8 +3656,8 @@ function gichulIn(box,sc,items){
         ${ap.slots.length>1&&!q.mc?`<p class="slotcap">답 ${ap.slots.length}개를 쓰는 물음이에요${ap.free?" · 순서는 상관없어요":""}</p>`:""}
         ${q.mc?mcHTML(q,sub[2],s.pick[tk],s.open):(()=>{const ev=s.open?evalSlots(ap,my):null;return penTg()+ap.slots.map((mk,k)=>slotHTML(ap,mk,k,my[k],s.open,ev,AL,"data-k",ap.slots.length>1?2:4,tk)).join("");})()}
         ${s.open&&!q.mc?(()=>{const ev=evalSlots(ap,my);let tt=0,oo=0;ev.forEach(e=>{if(e.tr){tt+=e.tr.length;oo+=e.tr.filter(y=>y.ok).length;}});const sug=tt?(oo/tt>=.8?1:0):null,cur=QR(tk);
-          return `<div class="qgr"><span>채점</span><button class="qgb ok ${cur&&cur.r===1?"on":""} ${!cur&&sug===1?"sug":""}" data-qr="1">⭕ 맞았어요</button><button class="qgb ng ${cur&&cur.r===0?"on":""} ${!cur&&sug===0?"sug":""}" data-qr="0">❌ 틀렸어요</button><button class="btn pri sm" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button></div>`;})():""}
-        <div class="qbtns">${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 ${cards.length}개 더보기${(()=>{const h=cards.filter(i=>deckOf(C[i])==="h26").length,mm=cards.length-h;return h&&mm?` (민쌤 ${mm} · 하쌤 ${h})`:h?" (하쌤)":" (민쌤)";})()}`}</button>`:""}<span class="qbr">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button>${q.mc?`<button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button>`:""}`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진":"📖 해설"}</button>`:""}</span></div>
+          return `<div class="qgr"><span>채점</span><button class="qgb ok ${cur&&cur.r===1?"on":""} ${!cur&&sug===1?"sug":""}" data-qr="1">⭕ 맞았어요</button><button class="qgb ng ${cur&&cur.r===0?"on":""} ${!cur&&sug===0?"sug":""}" data-qr="0">❌ 틀렸어요</button>${cur?"":`<button class="btn pri sm" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button>`}</div>${cur?`<button class="btn pri qnxfull" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 문제 ${ico("chev",16)}</button>`:""}`;})():""}
+        <div class="qbtns">${cards.length?`<button class="morebtn" id="qmore">${s.more?"연결된 카드 접기":`연결된 카드 보기(${cards.length})`}</button>`:""}<span class="qbr">${s.open?`<button class="btn" id="qhide">${AL} 가리기</button>${q.mc?`<button class="btn pri" id="qpnx" ${s.pos<items.length-1?"":"disabled"}>다음 ${ico("chev",14)}</button>`:""}`:`<button class="btn pri" id="qpo">${AL} 보기</button>`}<button class="btn" id="qpall">문항 전체</button>${exN?`<button class="btn" id="qex">${exOn?"문제 사진":"📖 해설"}</button>`:""}</span></div>
         ${cards.length?`
           ${s.more?cards.map(i=>`<div class="qpcard ${deckOf(C[i])}"><span class="dkb">${deckOf(C[i])==="h26"?"하쌤":"민쌤"}</span><b>${fmt(C[i][5])}</b><div>${fmt(C[i][6])}</div></div>`).join(""):""}`:""}
       </div>
@@ -4174,7 +4177,7 @@ function bindTables(m){
     const redraw=()=>{el.outerHTML=tableHTML(t);bindTables(m);};
     el.querySelectorAll("[data-tm]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm;redraw();});
     el.querySelectorAll("[data-tm2]").forEach(b=>b.onclick=()=>{TBM[t.id]=b.dataset.tm2;redraw();});
-    el.querySelectorAll(".cw.hid").forEach((w,wi)=>w.onclick=()=>{w.classList.toggle("on");if(w.classList.contains("on"))gainXP("table",.1,"tr|"+t.id+"|"+wi);});
+    el.querySelectorAll(".cw.hid").forEach((w,wi)=>w.onclick=()=>{w.classList.toggle("on");if(w.classList.contains("on"))gainXP("table",.1,"tr|"+t.id+"|"+wi,true);/* 표 가리기: +0.1 XP 애니메이션은 띄우지 않음 */});
     if(PENOK)bindPens(el,redraw);
     const ins=[...el.querySelectorAll(".ti")];
     /* 채점: 순서 있는 표는 그 줄과 비교. 순서 없는 표는 쓴 줄마다 가장 잘 맞는 실제 줄을 하나씩 짝지음(한 줄은 한 번만 → 같은 답 중복은 오답) */
