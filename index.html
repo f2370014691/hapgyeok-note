@@ -4494,7 +4494,7 @@ new MutationObserver(()=>document.querySelectorAll("select:not([data-dd])").forE
   const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1),br=ios?"Safari":"Chrome 등 기본 브라우저";
   const show=()=>{if(document.getElementById("kkg"))return;const el=document.createElement("div");el.id="kkg";el.className="kkg";
     el.innerHTML=`<div class="kkgc" role="dialog" aria-modal="true" aria-label="브라우저 안내"><div class="kkgi">🧭</div><b>${br}에서 열어 주세요</b>
-      <p>카카오톡 안에서는 로그인 유지·손글씨·소리 같은 기능이 제대로 안 될 수 있어요. 최적화를 위해 <b>${br}</b>로 들어와 주세요.</p>
+      <p>카카오톡 안에서는 화면 잘림, 손글씨 인식 오류, 일부 메뉴 사라짐 등의 오류가 발생할 수 있어요. 최적화를 위해 <b>${br}</b>로 들어와주세요.</p>
       <button class="btn pri lg" id="kkgo">${ios?"Safari":"다른 브라우저"}로 열기</button>
       <p class="kkgh">버튼이 안 되면 오른쪽 ${ios?"아래":"위"} <b>⋯</b> 메뉴 → <b>${ios?"Safari로 열기":"다른 브라우저로 열기"}</b>를 눌러 주세요.</p>
       <div class="kkgb"><button class="btn sm" id="kkcp">주소 복사</button><button class="btn sm" id="kkno">그냥 여기서 볼게요</button></div></div>`;
