@@ -3087,7 +3087,7 @@ const ptsOf=(g,rate,combo)=>g===2?5+Math.min(combo||0,5):g===1?(rate==null?2:Mat
 /* 레벨 n → n+1 에 필요한 XP: 100, 120, 140 … (낮은 레벨은 빨리, 높을수록 천천히) */
 const lvNeed=lv=>100+20*(lv-1);
 const lvBase=lv=>100*(lv-1)+10*(lv-1)*(lv-2);
-const r1=x=>Math.round((+x||0)*1000)/1000;   // XP는 소수 셋째 자리까지
+const r1=x=>{x=+x||0;return Math.sign(x)*Math.floor(Math.abs(x)*1000+1e-6)/1000;};   // XP는 소수 셋째 자리까지, 그 아래는 버림
 const lvOf=xp=>{let lv=1;while(lvBase(lv+1)<=xp)lv++;return{lv,cur:r1(xp-lvBase(lv)),need:lvNeed(lv)};};
 const PET_ST=[
   {from:1, n:"달걀",       d:"따뜻하게 품는 중이에요. 공부할수록 알이 꿈틀거려요"},
