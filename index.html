@@ -2261,6 +2261,9 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 }
 @media (max-width:699px){.hyp .mkhd9{display:none}.fcp .mkhd9{flex-wrap:nowrap}}
 @media (max-width:699px){.fcp .mkhd9.sub:has(.mkmd9){display:none}}
+/* v87: 쓰다듬은 자리에서 XP 떠오르기 */
+.xpfly.at{right:auto;bottom:auto;transform:translate(-50%,-50%);animation:xpat .9s ease-out forwards;font-size:13px;padding:4px 10px}
+@keyframes xpat{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}20%{opacity:1;transform:translate(-50%,-80%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-260%) scale(.95)}}
 </style>
 </head>
 <body>
@@ -3165,7 +3168,7 @@ function qXP(tk,r){if(!S||!ME)return;const t=today();if(!S.qxp||S.qxp.d!==t)S.qx
   const want=r?10:-5,had=S.qxp.m[tk]||0,dl=want-had;if(!dl)return;S.qxp.m[tk]=want;
   if(!had&&r){S.act=S.act||{};S.act[t]=(S.act[t]||0)+1;}
   const x0=S.xp||0;S.xp=r1(x0+dl);save();xpFly(dl);if(dl>0)petCheck(x0);}
-function xpFly(n){const el=document.createElement("div");el.className="xpfly"+(n<0?" neg":"");el.textContent=`${n<0?"":"+"}${r1(n)} XP`;document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
+function xpFly(n,x,y){const el=document.createElement("div");el.className="xpfly"+(n<0?" neg":"")+(x!=null?" at":"");if(x!=null){el.style.left=x+"px";el.style.top=y+"px";}el.textContent=`${n<0?"":"+"}${r1(n)} XP`;document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
 function petCelebrate(st){const el=document.createElement("div");el.className="petpop";
   el.innerHTML=`<div class="petpopc">${petSVG(st,150,"pjump")}<b>${esc(josaGa(petName()))} ${esc(josaRo(PET_ST[st].n))} 자랐어요!</b><small>${esc(PET_ST[st].d)}</small><button class="btn pri">좋아요</button></div>`;
   document.body.appendChild(el);const x=()=>el.remove();el.querySelector("button").onclick=x;el.onclick=e=>{if(e.target===el)x();};sfx&&sfx("good");}
@@ -3195,7 +3198,7 @@ function petSheet(){
         <div class="petline">${PET_ST.map((s,k)=>`<div class="pl ${k<st?"dn":k===st?"on":""}">${k<=st?petSVG(k,54):`<span class="plq">?</span>`}<b>${k<=st?esc(s.n):"???"}</b><small>Lv.${s.from}</small></div>`).join("")}<div class="pl ${famOf(S.xp||0)?"on":""}">${famOf(S.xp||0)?petSVG(0,54):`<span class="plq">∞</span>`}<b>새끼 키우기</b><small>Lv.${FAM_LV}~</small></div></div>
       </div></div>`;
     el.querySelector("#qclose").onclick=closeQ;
-    const pat=()=>{const b=el.querySelector(".petbig");PET().pets=(PET().pets||0)+1;{const x0=S.xp||0;S.xp=r1(x0+.001);xpFly(.001);petCheck(x0);const L=lvOf(S.xp),sm=el.querySelector(".petinfo small.num");if(sm)sm.textContent=`다음 레벨까지 ${r1(L.need-L.cur)} XP · 모두 ${(S.xp||0).toLocaleString()} XP`;}save();const h=document.createElement("i");h.className="pheart";h.textContent=["💛","🤍","💕","✨"][Math.floor(Math.random()*4)];h.style.left=(30+Math.random()*40)+"%";b.appendChild(h);setTimeout(()=>h.remove(),1000);
+    const pat=e=>{const b=el.querySelector(".petbig");PET().pets=(PET().pets||0)+1;{const x0=S.xp||0;S.xp=r1(x0+.001);const rc=(e&&e.currentTarget||b).getBoundingClientRect(),px=e&&e.clientX?e.clientX:rc.left+rc.width/2,py=e&&e.clientY?e.clientY:rc.top+rc.height/2;xpFly(.001,px,py);petCheck(x0);const L=lvOf(S.xp),sm=el.querySelector(".petinfo small.num");if(sm)sm.textContent=`다음 레벨까지 ${r1(L.need-L.cur)} XP · 모두 ${(S.xp||0).toLocaleString()} XP`;}save();const h=document.createElement("i");h.className="pheart";h.textContent=["💛","🤍","💕","✨"][Math.floor(Math.random()*4)];h.style.left=(30+Math.random()*40)+"%";b.appendChild(h);setTimeout(()=>h.remove(),1000);
       const sv=b.querySelector("svg");sv.classList.remove("pjump");void sv.getBoundingClientRect();sv.classList.add("pjump");};
     el.querySelector("#petpat").onclick=pat;el.querySelector("#petpat2").onclick=pat;
     el.querySelector("#petfeed").onclick=()=>{if(!petFood())return;const p=PET(),t=today();p.fed[t]=(p.fed[t]||0)+1;
