@@ -2109,6 +2109,31 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 /* v72: 소주제 칸으로 내려왔을 때 살짝 반짝 */
 .ktr.ktpulse{animation:ktpulse .9s ease .25s}
 @keyframes ktpulse{0%{box-shadow:var(--sh),0 0 0 0 color-mix(in srgb,var(--pri) 45%,transparent)}60%{box-shadow:var(--sh),0 0 0 8px color-mix(in srgb,var(--pri) 0%,transparent)}100%{box-shadow:var(--sh)}}
+/* v73: 기출·문제풀이 고르기 카드 + 플래시카드 머리 버튼 한 줄 */
+.mkhd9.sub{margin-top:-6px}
+.mksub9 button{padding:7px 14px;font-weight:800}
+.mkg9.tp{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.mkc9 .mkn9{background:var(--dc,var(--grad))}
+.mkc9[style*="--dc"] .mkn9{background:linear-gradient(135deg,var(--dc),var(--ds,var(--dc)))}
+.mkc9.wide9 .mkn9{background:var(--grad)}
+.mkch9{display:flex;flex-wrap:wrap;gap:6px}
+.qch9{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s,background .15s;max-width:100%}
+.qch9 span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qch9:hover{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 6%,var(--surface))}
+.qch9 i{font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:700}
+.qch9 em{font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:#EF4444;border-radius:999px;padding:0 5px}
+.qch9.ok{border-color:color-mix(in srgb,#10B981 50%,transparent)}
+.qch9.off{opacity:.4;cursor:default}
+.mks9.ng{border-color:color-mix(in srgb,#EF4444 40%,transparent);color:#DC2626}
+.mks9.ng small{color:#DC2626}
+.wrl9.yr{color:var(--pri)}
+.fc8h .fchr{display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:8px;margin-left:auto}
+.fchr .pgt9{width:auto!important;margin:0!important;flex-wrap:nowrap}
+@media (max-width:699px){
+  .fc8h{flex-wrap:wrap}
+  .fc8h .fchr{width:100%;justify-content:flex-end}
+  .mkg9.tp{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -2315,7 +2340,7 @@ function nextTopic(){if(SC.sp||SC.k==null)return null;const tps=CH[SC.d][SC.k].t
   if(SC.t!=null&&SC.t<tps.length-1)return ()=>{SC.t++;saveSC();SES=null;renderRoute();};
   if(SC.k<CH[SC.d].length-1)return ()=>{SC.k++;SC.t=SC.t==null?null:0;saveSC();SES=null;renderRoute();};return null;}
 function renderRoute(){
-  loadSC();const pv=route.v;route=parseHash();if(route.v==="fc"&&pv!=="fc"&&!FCKEEP)FCRUN=false;FCKEEP=false;if(PGRUN[route.v]!=null&&pv!==route.v&&!PGKEEP){PGRUN[route.v]=false;QWR[route.v]=null;}PGKEEP=false;if(pv!==route.v&&WZ0[route.v])WZ[route.v]=WZ0[route.v];buildIdx();renderSide();
+  loadSC();const pv=route.v;route=parseHash();if(route.v==="fc"&&pv!=="fc"&&!FCKEEP)FCRUN=false;FCKEEP=false;if(PGRUN[route.v]!=null&&pv!==route.v&&!PGKEEP){PGRUN[route.v]=false;QWR[route.v]=null;if(QWL[route.v]!=null)QWL[route.v]="";}PGKEEP=false;if(pv!==route.v&&WZ0[route.v])WZ[route.v]=WZ0[route.v];buildIdx();renderSide();
   const m=document.getElementById("main");document.body.classList.remove("fclock");document.body.classList.remove("glock","grun");{const tb=document.getElementById("tabbar");document.documentElement.style.setProperty("--tbh",((tb&&tb.offsetHeight)||0)+"px");}if(route.v==="search"&&window._lastV!=="search"){loadSC();SC.sa=true;SC.sp="";}window._lastV=route.v;(VIEW[route.v]||VIEW.fc)(m);window.scrollTo({top:0});
 }
 function setSync(st){cloudState=st;document.querySelectorAll(".sync").forEach(el=>{
@@ -2369,11 +2394,82 @@ function phGrow(m){
   const d=t0-top();if(Math.abs(d)>.5)pg.style.marginTop=(mt+d)+"px";   // 문제 영역 시작 위치를 원래와 똑같이
 }
 window.addEventListener("resize",()=>{const m=document.getElementById("main");if(m&&m.querySelector(".phd9.ph1"))phGrow(m);});
-function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+`<span class="qlx">범위 바꾸기</span>`;b.title="범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;QWR[pg]=null;WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
+function addChg(m,pg){const ph=m.querySelector(".phd9");if(!ph)return;const b=document.createElement("button");b.className="btn sm chg9";b.innerHTML=ico("left",14)+`<span class="qlx">범위 바꾸기</span>`;b.title="범위 바꾸기";b.onclick=()=>{PGRUN[pg]=false;QWR[pg]=null;if(QWL[pg]!=null)QWL[pg]="";WZ[pg]=WZ0[pg];document.body.classList.remove("glock","grun");VIEW[pg](m);window.scrollTo({top:0});};ph.appendChild(b);}
 /* 고르기 화면: 한 단계씩 (고르면 다음 단계, 앞 단계는 '뒤로'로) */
 let WZ={};const WZ0={fc:"ver",table:"ver",gichul:"d",munpul:"src",heisil:"k",mock:"w"};
 const wzBack=(steps,cur)=>{const i=steps.indexOf(cur);return i>0?`<button class="btn sm wzback" data-wzb="${steps[i-1]}">${ico("left",14)}뒤로</button>`:"";};
 const wzNo=(steps,cur)=>`<span class="wzno">${steps.indexOf(cur)+1} / ${steps.length}</span>`;
+/* ---------- 기출 · 문제풀이 고르기: 모의고사처럼 한 화면 카드 ---------- */
+let GV="topic",GSUB="all";try{GV=localStorage.getItem(SBASE+":gv")||"topic";GSUB=localStorage.getItem(SBASE+":gsub")||"all";}catch(e){}
+const QWL={gichul:"",munpul:"",mock:""};
+const qwLab=()=>QWL[route.v]?esc(QWL[route.v]):`❌ 틀린 문제 모아 풀기 <small>채점에서 틀린 물음만 모았어요 · 맞히면 ⭕로 바꿔 두세요</small>`;
+function qStat(items){let a=0,g=0,w=0;for(const [q,n] of items){a++;const r=QR(q+"|"+n);if(r){g++;if(!r.r)w++;}}return{a,g,w};}
+const qStatTxt=t=>`${t.a}물음${t.g?` · 푼 ${t.g}`:""}${t.w?` · <em>틀림 ${t.w}</em>`:""}`;
+function qCard(o){const t=o.st,p=t.a?t.g/t.a*100:0;
+  return `<article class="mkc9 ${o.cls||""} ${t.a&&t.g===t.a?"done":""}" ${o.dc!=null?`style="--dc:${DC[o.dc]};--ds:${DCS[o.dc]}"`:""}>
+    <div class="mkt9"><span class="mkn9 num">${o.no}</span><div><b>${o.title}</b><small>${qStatTxt(t)}</small></div>${o.tag?`<span class="mkl9">${o.tag}</span>`:""}</div>
+    <div class="mkp9"><i style="width:${p}%"></i></div>
+    <div class="mkb9">${o.btns}</div>${o.chips?`<div class="mkch9">${o.chips}</div>`:""}</article>`;}
+const qChip=(go,label,st)=>`<button class="qch9 ${st.a?"":"off"} ${st.a&&st.g===st.a?"ok":""}" data-go="${go}" ${st.a?"":"disabled"}><span>${esc(label)}</span><i class="num">${st.a}</i>${st.w?`<em class="num">${st.w}</em>`:""}</button>`;
+const qSum=t=>`<span class="mksum9"><span><b class="num">${t.a}</b>물음</span><span><b class="num">${t.g}</b>채점</span><span class="ng"><b class="num">${t.w}</b>틀림</span></span>`;
+function gichulChooser(m){
+  const pg="gichul";loadSC();if(SC.sp)SC.sp="";
+  if(!GQ){m.innerHTML=`<div class="page"><div class="empty">기출을 불러오는 중이에요</div></div>`;return;}
+  const ALLI=allItems(GQ),tot=qStat(ALLI);let body="";
+  const gi=(d,k,t)=>gItems({d,k,t,idx:idxOf(d,k,t)});
+  if(GV==="year"){
+    const by={};for(const it of ALLI){const q=GQ[it[0]];(by[q.y]||(by[q.y]={}))[q.s]=(by[q.y][q.s]||[]);by[q.y][q.s].push(it);}
+    const yk=y=>parseInt(y)+(String(y).includes("추")?.5:0),SO={A:0,B:1,"객관식":2,"2차A":3,"2차B":4},SL=s=>s==="A"||s==="B"?"교육과정 "+s:s;
+    body=`<div class="mkg9">${Object.keys(by).sort((a,b)=>yk(b)-yk(a)).map(y=>{const ss=Object.keys(by[y]).sort((a,b)=>(SO[a]??9)-(SO[b]??9)),all=ss.flatMap(s=>by[y][s]);
+      return qCard({no:String(y).slice(2),title:`${esc(y)}학년도`,st:qStat(all),
+        btns:`<button class="mkall9" data-go="y:${esc(y)}">${ico("play",14)} 전체 풀기</button>${ss.map(s=>{const x=qStat(by[y][s]);return `<button class="mks9 ${x.a&&x.g===x.a?"ok":""}" data-go="y:${esc(y)}|${esc(s)}"><b>${esc(SL(s))}</b><small>${by[y][s].length}물음${x.w?` · 틀림 ${x.w}`:""}</small></button>`;}).join("")}`});}).join("")}</div>`;
+  }else{
+    const subs=`<span class="seg2 mksub9"><button data-gs="all" aria-pressed="${GSUB==="all"}">전체</button>${DOCS.map((x,i)=>`<button data-gs="${i}" aria-pressed="${GSUB===String(i)}">${esc(x)}</button>`).join("")}</span>`;
+    let cards="";
+    if(GSUB==="all"){
+      cards=qCard({no:"전",title:"기출 전체",st:tot,cls:"wide9",btns:`<button class="mkall9" data-go="all">${ico("play",14)} 전체 풀기</button>`})+
+        DOCS.map((x,d)=>{const it=gi(d,null,null);return qCard({no:DLET[d],dc:d,title:esc(x),st:qStat(it),btns:`<button class="mkall9" data-go="d:${d}">${ico("play",14)} ${esc(x)} 전체 풀기</button>`,
+          chips:CH[d].map((ch,k)=>qChip(`k:${d}:${k}`,ch.name,qStat(gi(d,k,null)))).join("")});}).join("");
+    }else{const d=+GSUB;
+      cards=CH[d].map((ch,k)=>{const it=gi(d,k,null);if(!it.length)return "";return qCard({no:k+1,dc:d,title:esc(ch.name),st:qStat(it),btns:`<button class="mkall9" data-go="k:${d}:${k}">${ico("play",14)} 대주제 전체 풀기</button>`,
+        chips:ch.topics.map((tp,t)=>qChip(`t:${d}:${k}:${t}`,tp.name,qStat(gi(d,k,t)))).join("")});}).join("");}
+    body=`<div class="mkhd9 sub">${subs}</div><div class="mkg9 tp">${cards}</div>`;
+  }
+  m.innerHTML=`<div class="page fc8 pgc mkp"><header class="fc8h phd9"><div><h1>기출</h1><p>2009~2026학년도 기출 · 카드나 소주제를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
+    <div class="mkhd9"><span class="seg2 mkw9"><button data-gv="topic" aria-pressed="${GV!=="year"}">주제별</button><button data-gv="year" aria-pressed="${GV==="year"}">연도별</button></span>${qSum(tot)}</div>${body}</div>`;
+  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
+  const sv=()=>{try{localStorage.setItem(SBASE+":gv",GV);localStorage.setItem(SBASE+":gsub",GSUB);}catch(e){}};
+  bindPgTools(m,pg,()=>gichulChooser(m));
+  on("[data-gv]",b=>{GV=b.dataset.gv;sv();gichulChooser(m);});
+  on("[data-gs]",b=>{GSUB=b.dataset.gs;sv();gichulChooser(m);});
+  on("[data-go]",b=>{const g=b.dataset.go;QWR.gichul=null;QWL.gichul="";qfSet(pg,"all");
+    if(g==="all")SC.sa=true;
+    else if(g.startsWith("y:")){const [y,s]=g.slice(2).split("|");const it=ALLI.filter(([q])=>GQ[q].y===y&&(!s||GQ[q].s===s));QWR.gichul=it;QWL.gichul=`${y}학년도${s?" "+(s==="A"||s==="B"?"교육과정 "+s:s):" 전체"}`;}
+    else{const [kind,...v]=g.split(":").map((x,i)=>i?+x:x);const [d,k,t]=v.slice(0);SC.sa=false;SC.d=d;SC.k=kind==="d"?null:k;SC.t=kind==="t"?t:null;SC.ts=[];}
+    saveSC();PGRUN.gichul=true;VIEW.gichul(m);window.scrollTo({top:0});});
+}
+function munpulChooser(m){
+  const pg="munpul";
+  const SRCS=MSRCS.length?MSRCS:[{id:"h26",name:"2026 하쌤",sets:MSETS.map(x=>x[0])}];if(!SRCS.some(x=>x.id===MSRC))MSRC=SRCS[0].id;
+  const SRC0=SRCS.find(x=>x.id===MSRC),SETS_=MSETS.filter(x=>SRC0.sets.includes(x[0])&&mpInG(x[1]));
+  if(!MQ){m.innerHTML=`<div class="page"><div class="empty">문제풀이를 불러오는 중이에요</div></div>`;return;}
+  const setItems=k=>{const o=[];for(const qid of Object.keys(MQ).filter(x=>MQ[x].s===k).sort((a,b)=>MQ[a].no-MQ[b].no))for(const [n] of MQ[qid].subs)o.push([qid,n]);return o;};
+  const per=SETS_.map(([k])=>setItems(k)),all=per.flat(),tot=qStat(all);
+  const wrongBtn=(i,st)=>st.w?`<button class="mks9 ng" data-mw="${i}"><b>틀린 것만</b><small>${st.w}물음</small></button>`:"";
+  const cards=[qCard({no:"전",title:`${mpGL()} 전체 단원`,st:tot,cls:"wide9",btns:`<button class="mkall9" data-ms="-1">${ico("play",14)} 전체 풀기</button>${wrongBtn(-1,tot)}`}),
+    ...SETS_.map(([k,t],i)=>{const st=qStat(per[i]);return qCard({no:i+1,title:esc(t),st,tag:i===MPS?"최근":"",cls:i===MPS?"last":"",btns:`<button class="mkall9" data-ms="${i}">${ico("play",14)} 풀기</button>${wrongBtn(i,st)}`});})].join("");
+  m.innerHTML=`<div class="page fc8 pgc mkp"><header class="fc8h phd9"><div><h1>문제풀이</h1><p>단원 카드를 누르면 바로 시작해요</p></div>${pgTools(pg)}</header>
+    <div class="mkhd9"><span class="seg2 mkw9">${SRCS.map(x=>`<button data-src="${esc(x.id)}" aria-pressed="${x.id===MSRC}">${esc(x.name)}</button>`).join("")}</span>
+      <span class="seg2 mkw9"><button data-mg="g" aria-pressed="${MPG!=="k"}">개론</button><button data-mg="k" aria-pressed="${MPG==="k"}">각론</button></span>${qSum(tot)}</div>
+    <div class="mkg9">${cards}</div></div>`;
+  const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
+  const sv=()=>{try{localStorage.setItem(SBASE+":mps",MPS);localStorage.setItem(SBASE+":msrc",MSRC);localStorage.setItem(SBASE+":mpg",MPG);}catch(e){}};
+  bindPgTools(m,pg,()=>munpulChooser(m));
+  on("[data-src]",b=>{MSRC=b.dataset.src;MPS=-1;sv();munpulChooser(m);});
+  on("[data-mg]",b=>{MPG=b.dataset.mg;MPS=-1;sv();munpulChooser(m);});
+  const start=(i,wrong)=>{MPS=i;sv();QWR.munpul=null;QWL.munpul="";qfSet(pg,wrong?"wrong":"all");MPV="set";PGRUN.munpul=true;VIEW.munpul(m);window.scrollTo({top:0});};
+  on("[data-ms]",b=>start(+b.dataset.ms,false));on("[data-mw]",b=>start(+b.dataset.mw,true));
+}
 /* 부드럽게 내려가기 (모바일 대주제 → 소주제). 화면이 안 그려지는 상황이면 바로 이동 */
 function scrollToEl(el,off=10,ms=520){
   const y0=window.scrollY,max=document.documentElement.scrollHeight-window.innerHeight,y1=Math.max(0,Math.min(max,el.getBoundingClientRect().top+y0-off)),dy=y1-y0;
@@ -2394,7 +2490,7 @@ function pgChooser(m,pg){
   const src=pg==="gichul"?GQ:MQS;
   const cf=pg==="table"?(d,k,t)=>tablesOf(d,k,t).length:(d,k,t)=>!src?0:d==="all"?allItems(src).length:gItems({d,k,t,idx:idxOf(d,k,t)},src).length;
   const sa=pg!=="table"&&!!SC.sa,d=SC.d;
-  const tH=pg==="table"&&TB.some(x=>x.deck==="h26"),NOGO=pg!=="table",steps=pg==="munpul"?["src","grp","set",...(NOGO?[]:["go"])]:[...(tH?["ver"]:[]),"d",...(sa?[]:["k"]),...(NOGO?[]:["go"])];
+  const tH=pg==="table"&&TB.some(x=>x.deck==="h26"),NOGO=true,steps=pg==="munpul"?["src","grp","set",...(NOGO?[]:["go"])]:[...(tH?["ver"]:[]),"d",...(sa?[]:["k"]),...(NOGO?[]:["go"])];
   let cur=WZ[pg]||WZ0[pg];if(!steps.includes(cur))cur=steps[0];
   const TT={ver:"버전",src:"연도 · 강사",grp:"개론 · 각론",set:"단원",d:"과목",k:"대주제 · 소주제",t:"소주제",go:"시작"};
   let selTitle="",selN=0,body="";
@@ -2411,7 +2507,7 @@ function pgChooser(m,pg){
     body=`<div class="subjpick">${[["g","개","개론",t=>!mpIsK(t)],["k","각","각론",mpIsK]].map(([v,l,n,f])=>`<button class="sp8 ${MPG===v?"on":""}" data-mg="${v}"><span class="dl">${l}</span><b>${n}</b><small>${MSETS.filter(x=>SRC0.sets.includes(x[0])&&f(x[1])).length}단원 · ${sq(f)}문항</small></button>`).join("")}</div>`;}
   else if(cur==="set")body=`<div class="bigpick"><button class="bp ${MPS<0?"on":""}" data-ms="-1"><b>${mpGL()} 전체</b><small>${MQS?allItems(MQS).length:0}물음</small></button>${SETS_.map(([k,t],i)=>`<button class="bp ${i===MPS?"on":""}" data-ms="${i}"><b><span class="no8">${i+1}</span>${esc(t)}</b><small>${setCnt(k)}물음</small></button>`).join("")}</div>`;
   else if(cur==="d")body=`<div class="subjpick ${pg!=="table"?"n4":""}">${pg!=="table"?`<button class="sp8 ${sa?"on":""}" data-sd="all"><span class="dl">전</span><b>전체</b><small>${cf("all").toLocaleString()}${unit}</small></button>`:""}${DOCS.map((x,i)=>`<button class="sp8 ${!sa&&d===i?"on":""}" data-sd="${i}" style="--dc:${DC[i]};--ds:${DCS[i]}"><span class="dl">${DLET[i]}</span><b>${esc(x)}</b><small>${cf(i,null,null).toLocaleString()}${unit}</small></button>`).join("")}</div>`;
-  else if(cur==="k")body=`<div class="ktwrap"><div class="bigpick"><button class="bp ${SC.k==null?"on":""}" data-k=""><b>${esc(DOCS[d])} 전체</b><small>${cf(d,null,null)}${unit}</small></button>${CH[d].map((ch,k)=>`<button class="bp ${SC.k===k?"on":""}" data-k="${k}"><b><span class="no8">${k+1}</span>${esc(ch.name)}</b><small>${cf(d,k,null)}${unit}</small></button>`).join("")}</div><div class="ktr">${SC.k!=null?`<p class="kth">${esc(CH[d][SC.k].name)}</p><p class="wzhint">여러 개를 골라도 돼요</p><div class="chips8"><button class="c8 ${SC.t==null&&!MT()?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>`<button class="c8 ${tOn(t)?"on":""}" data-t="${t}">${esc(tp.name)}<span class="num">${cf(d,SC.k,t)}</span></button>`).join("")}</div><div class="wznext"><button class="btn pri lg" id="wzn">${NOGO?ico("play",15)+" 시작":"다음 "+ico("chev",15)}</button></div>`:`<p class="kth">${esc(DOCS[d])} 전체</p><p class="wzhint">대주제를 고르면 소주제가 여기 나와요</p><div class="wznext"><button class="btn pri lg" id="wzn">${NOGO?ico("play",15)+" 시작":"다음 "+ico("chev",15)}</button></div>`}</div></div>`;
+  else if(cur==="k")body=`<div class="ktwrap"><div class="bigpick"><button class="bp ${SC.k==null?"on":""}" data-k=""><b>${esc(DOCS[d])} 전체</b><small>${cf(d,null,null)}${unit}</small></button>${CH[d].map((ch,k)=>`<button class="bp ${SC.k===k?"on":""}" data-k="${k}"><b><span class="no8">${k+1}</span>${esc(ch.name)}</b><small>${cf(d,k,null)}${unit}</small></button>`).join("")}</div><div class="ktr">${SC.k!=null?`<p class="kth">${esc(CH[d][SC.k].name)}</p><p class="wzhint">${pg==="table"?"소주제를 누르면 바로 시작해요":"여러 개를 골라도 돼요"}</p><div class="chips8"><button class="c8 ${SC.t==null&&!MT()?"on":""}" data-t="">전체</button>${CH[d][SC.k].topics.map((tp,t)=>`<button class="c8 ${tOn(t)?"on":""}" data-t="${t}">${esc(tp.name)}<span class="num">${cf(d,SC.k,t)}</span></button>`).join("")}</div><div class="wznext"><button class="btn pri lg" id="wzn">${NOGO?ico("play",15)+" 시작":"다음 "+ico("chev",15)}</button></div>`:`<p class="kth">${esc(DOCS[d])} 전체</p><p class="wzhint">대주제를 고르면 소주제가 여기 나와요</p><div class="wznext"><button class="btn pri lg" id="wzn">${NOGO?ico("play",15)+" 시작":"다음 "+ico("chev",15)}</button></div>`}</div></div>`;
   else body=`<div class="go8 wzgo"><div class="go8t"><small>선택한 범위</small><b>${esc(pg==="munpul"?SRC0.name+" · "+selTitle:selTitle)}</b><span class="muted small num">${selN.toLocaleString()}${unit}</span></div><button class="btn pri lg gobtn" id="pgo" ${selN?"":"disabled"}>${ico("play",17)}${T[1]}</button></div>`;
   const dd=sa?0:SC.d;
   m.innerHTML=`<div class="page fc8 pgc wzp" style="--dc:${DC[dd]};--ds:${DCS[dd]}"><header class="fc8h phd9"><div><h1>${T[0]}</h1></div>${pgTools(pg)}</header>
@@ -2426,7 +2522,7 @@ function pgChooser(m,pg){
   on("[data-sd]",b=>{if(b.dataset.sd==="all"){SC.sa=true;go("go");}else{SC.sa=false;SC.d=+b.dataset.sd;SC.k=null;SC.t=null;SC.ts=[];go("k");}});
   const keep=()=>{const y=window.scrollY;saveSC();pgChooser(m,pg);window.scrollTo({top:y});};
   on("[data-k]",b=>{SC.k=b.dataset.k===""?null:+b.dataset.k;SC.t=null;SC.ts=[];keep();if(SC.k!=null&&matchMedia("(max-width:699px)").matches){const r=m.querySelector(".ktr");if(r)scrollToEl(r);}});
-  on("[data-t]",b=>{tsToggle(b.dataset.t);keep();});
+  on("[data-t]",b=>{if(pg==="table"){SC.t=b.dataset.t===""?null:+b.dataset.t;SC.ts=[];return begin();}tsToggle(b.dataset.t);keep();});
   {const n=m.querySelector("#wzn");if(n)n.onclick=()=>go("go");}
   const g=m.querySelector("#pgo");if(g)g.onclick=()=>{saveSC();MPV="set";PGRUN[pg]=true;VIEW[pg](m);window.scrollTo({top:0});};
 }
@@ -2470,7 +2566,7 @@ function pgReset(pg){
   if(pg==="heisil"){if(!confirm("해이실에서 타이핑·빈칸 채운 진행을 모두 지울까요?"))return false;HYT={key:"",v:{},open:{}};toast("해이실 진행을 초기화했어요");return true;}
   return false;}
 function bindPgTools(m,pg,rerender){
-  const w=m.querySelector("#pgwr");if(w)w.onclick=()=>{const it=wrongAll(pg);if(!it.length)return;QWR[pg]=it;qfSet(pg,"all");PGRUN[pg]=true;VIEW[pg](m);window.scrollTo({top:0});};
+  const w=m.querySelector("#pgwr");if(w)w.onclick=()=>{const it=wrongAll(pg);if(!it.length)return;QWR[pg]=it;QWL[pg]="";qfSet(pg,"all");PGRUN[pg]=true;VIEW[pg](m);window.scrollTo({top:0});};
   const r=m.querySelector("#pgrs");if(r)r.onclick=()=>{if(pgReset(pg))rerender();};
 }
 const qfGet=pg=>{try{return localStorage.getItem(SBASE+":qf:"+pg)||"all";}catch(e){return "all";}};
@@ -2510,9 +2606,9 @@ function qAnalysis(src,pg){
 }
 VIEW.gichul=function(m){
   {const r=!!PGRUN.gichul,mob=matchMedia("(max-width:699px)").matches;document.body.classList.toggle("glock",r&&!mob);document.body.classList.toggle("grun",r);}
-  if(!PGRUN.gichul)return pgChooser(m,"gichul");
+  if(!PGRUN.gichul)return gichulChooser(m);
   const WR=QWR.gichul,sc0=curScope(false),items0=!GQ?[]:WR?WR:SC.sa?allItems(GQ):gItems(sc0),qf=qfGet("gichul"),items=qfApply(items0,qf),sc=Object.assign({},sc0,{key:(WR?"wr":SC.sa?"all":sc0.key)+":"+qf});
-  m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${WR?`<header class="phd9"><div><h1>기출</h1><p>틀린 문제 모아 풀기</p></div></header>${`<div class="scope9"><span class="wrl9">❌ 틀린 문제 모아 풀기 <small>채점에서 틀린 물음만 모았어요 · 맞히면 ⭕로 바꿔 두세요</small></span><span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`}`:pageHead("기출",false,`2009~2026학년도 평가원 공개 기출${GQ?` ${Object.keys(GQ).length}문항(하위 물음 ${Object.values(GQ).reduce((a,q)=>a+q.subs.length,0)}개)`:""}을 모두 소주제로 나눴어요. 두 소주제에 걸친 물음은 양쪽에 다 나와요`,`<b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개`,true,(d,k,t)=>!GQ?0:d==="all"?allItems(GQ).length:gItems({d,k,t,idx:idxOf(d,k,t)}).length)}
+  m.innerHTML=`<div class="page wide3" style="--dc:${DC[sc.d]};--ds:${DCS[sc.d]}">${WR?`<header class="phd9"><div><h1>기출</h1><p>${QWL[route.v]?esc(QWL[route.v]):"틀린 문제 모아 풀기"}</p></div></header>${`<div class="scope9"><span class="wrl9 ${QWL[route.v]?"yr":""}">${qwLab()}</span><span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`}`:pageHead("기출",false,`2009~2026학년도 평가원 공개 기출${GQ?` ${Object.keys(GQ).length}문항(하위 물음 ${Object.values(GQ).reduce((a,q)=>a+q.subs.length,0)}개)`:""}을 모두 소주제로 나눴어요. 두 소주제에 걸친 물음은 양쪽에 다 나와요`,`<b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개`,true,(d,k,t)=>!GQ?0:d==="all"?allItems(GQ).length:gItems({d,k,t,idx:idxOf(d,k,t)}).length)}
     ${GQ?qfBar("gichul",items0):""}<section id="gbody"></section></div>`;
   if(!WR)bindPicker(m);bindQf(m,"gichul",GQ||{},items0);addChg(m,"gichul");compactHead(m);
   const b=m.querySelector("#gbody");
@@ -2526,7 +2622,7 @@ const mpIsK=t=>/건강|신체|동작|안전|의사소통|사회관계|미술|음
 let MPV="set",MPS=-1;try{const v=localStorage.getItem(SBASE+":mps");if(v!=null)MPS=+v||0;}catch(e){}
 VIEW.munpul=function(m){
   {const r=!!PGRUN.munpul,mob=matchMedia("(max-width:699px)").matches;document.body.classList.toggle("glock",r&&!mob);document.body.classList.toggle("grun",r);}
-  if(!PGRUN.munpul)return pgChooser(m,"munpul");
+  if(!PGRUN.munpul)return munpulChooser(m);
   const SRCS=MSRCS.length?MSRCS:[{id:"h26",name:"2026 하쌤",sets:MSETS.map(x=>x[0])}];
   if(!SRCS.some(x=>x.id===MSRC))MSRC=SRCS[0].id;
   const SRC0=SRCS.find(x=>x.id===MSRC),SETS_=MSETS.filter(x=>SRC0.sets.includes(x[0])&&mpInG(x[1]));
@@ -2551,7 +2647,7 @@ VIEW.munpul=function(m){
   const WR=QWR.munpul;if(WR){items=WR;sc={key:"mpwr"};}
   const qf=qfGet("munpul"),items0=items;items=qfApply(items0,qf);sc=Object.assign({},sc,{key:sc.key+":"+qf});
   bar=bar.replace(/<span class="scnt">[\s\S]*?<\/span><\/div>$/,`<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`);
-  if(WR)bar=`<div class="scope9"><span class="wrl9">❌ 틀린 문제 모아 풀기 <small>채점에서 틀린 물음만 모았어요 · 맞히면 ⭕로 바꿔 두세요</small></span><span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
+  if(WR)bar=`<div class="scope9"><span class="wrl9 ${QWL[route.v]?"yr":""}">${qwLab()}</span><span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
   m.innerHTML=`<div class="page wide3" style="--dc:${dc};--ds:${ds}">${head}${bar}${MQS?qfBar("munpul",items0):""}<section id="gbody"></section></div>`;
   bindQf(m,"munpul",WR?MQ:MQS||{},items0);addChg(m,"munpul");compactHead(m);
   if(MPV==="topic"&&!WR)bindPicker(m);
@@ -2618,8 +2714,8 @@ VIEW.mock=function(m){
   const qf=qfGet("mock"),items0=items;items=qfApply(items0,qf);
   const sc={key:WR?"mkwr:"+qf:`mk:${KW}:${KR}:${KS}:${qf}`};
   bar=bar.replace('<span class="scnt"></span>',`<span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span>`);
-  if(WR)bar=`<div class="scope9"><span class="wrl9">❌ 틀린 문제 모아 풀기 <small>채점에서 틀린 물음만 모았어요 · 맞히면 ⭕로 바꿔 두세요</small></span><span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
-  m.innerHTML=`<div class="page wide3">${WR?`<header class="phd9"><div><h1>모의고사</h1><p>틀린 문제 모아 풀기</p></div></header>`:head}${bar}${qfBar("mock",items0)}<section id="gbody"></section></div>`;
+  if(WR)bar=`<div class="scope9"><span class="wrl9 ${QWL[route.v]?"yr":""}">${qwLab()}</span><span class="scnt"><b class="num">${new Set(items.map(x=>x[0])).size}</b>문항 · 하위 물음 <b class="num">${items.length}</b>개</span></div>`;
+  m.innerHTML=`<div class="page wide3">${WR?`<header class="phd9"><div><h1>모의고사</h1><p>${QWL[route.v]?esc(QWL[route.v]):"틀린 문제 모아 풀기"}</p></div></header>`:head}${bar}${qfBar("mock",items0)}<section id="gbody"></section></div>`;
   bindQf(m,"mock",WR?KQ:KQS,items0);addChg(m,"mock");compactHead(m);
   const s=m.querySelector("#kss");if(s)s.onchange=()=>{KS=s.value;kSave();VIEW.mock(m);};
   const b=m.querySelector("#gbody");
