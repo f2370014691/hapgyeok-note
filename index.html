@@ -2076,6 +2076,33 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
   .petstage{justify-content:center}
   .h9c.pet9{grid-column:1/-1}
 }
+/* v70: 캐릭터 칸 다듬기 (오늘 목표 칸 삭제) */
+.h9c.pet9{min-width:260px;padding:10px 16px 10px 10px;gap:12px;background:linear-gradient(135deg,color-mix(in srgb,#FFE066 22%,var(--surface)),var(--surface) 60%)}
+.pet9c{width:72px;height:72px}
+.pet9t{gap:3px}
+.pet9n{display:flex;align-items:center;gap:6px;min-width:0}
+.pet9n .pnm{font-size:15px!important;font-weight:800;color:var(--ink)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.pstg{flex:none;font-size:11px;font-weight:800;color:#B45309;background:#FFF3BF;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.pet9l{display:flex;align-items:baseline;gap:8px}
+.pet9l b{font-size:20px!important;color:var(--pri)}
+.pet9l em{font-style:normal;font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h9c.pet9 .xpb{height:7px;margin-top:2px;background:color-mix(in srgb,#FCC419 18%,var(--sunk))}
+.h9c.pet9 .xpb i{background:linear-gradient(90deg,#FCC419,#FF922B)}
+.h9c.pet9 .pxp{margin-top:0}
+@media (max-width:699px){
+  .h9chips{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;gap:8px!important;align-items:stretch}
+  .h9c.dd9{min-width:0;padding:10px 14px;justify-content:center}
+  .h9c.dd9 b{font-size:22px}
+  .h9c.pet9{grid-column:auto!important;min-width:0;padding:8px 12px 8px 6px;gap:8px}
+  .pet9c{width:60px;height:60px}
+  .pet9c .pet{width:60px;height:60px}
+  .pet9l b{font-size:18px!important}
+}
+@media (max-width:359px){.h9chips{grid-template-columns:1fr!important}}
+.h9c.pet9 .xpb,.pet9t>*{flex:none!important}
+.h9c.pet9 .xpb{height:7px!important}
+.pet9c .pfood{right:auto;left:50%;top:auto;bottom:-4px;transform:translateX(-50%);animation:none}
+.pet9c .pfood{left:-6px;top:-6px;bottom:auto;transform:none;white-space:nowrap;line-height:1.5;font-size:10.5px;padding:0 5px}
 </style>
 </head>
 <body>
@@ -2785,8 +2812,10 @@ function petCelebrate(st){const el=document.createElement("div");el.className="p
   document.body.appendChild(el);const x=()=>el.remove();el.querySelector("button").onclick=x;el.onclick=e=>{if(e.target===el)x();};sfx&&sfx("good");}
 /* 홈의 캐릭터 칸 */
 function petChip(){const L=lvOf(S.xp||0),st=petStage(L.lv),f=petFood(),[mt,me]=petMood();
-  return `<button class="h9c pet9" id="petopen" aria-label="${esc(petName())} 키우기"><span class="pet9c">${petSVG(st,64,"pidle")}${f?`<i class="pfood">🌾${f}</i>`:""}</span>
-    <span class="pet9t"><small>${esc(petName())} · ${esc(PET_ST[st].n)} ${me}</small><b class="num">Lv.${L.lv}</b><span class="xpb"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num">${L.cur}/${L.need} XP</em></span></button>`;}
+  return `<button class="h9c pet9" id="petopen" aria-label="${esc(petName())} 키우기"><span class="pet9c">${petSVG(st,72,"pidle")}${f?`<i class="pfood">🌾${f}</i>`:""}</span>
+    <span class="pet9t"><span class="pet9n"><b class="pnm">${esc(petName())}</b><span class="pstg">${esc(PET_ST[st].n)}</span></span>
+      <span class="pet9l"><b class="num">Lv.${L.lv}</b><em>${me} ${esc(mt)}</em></span>
+      <span class="xpb"><i style="width:${L.cur/L.need*100}%"></i></span><em class="num pxp">${L.cur}/${L.need} XP</em></span></button>`;}
 /* 키우기 창 */
 function petSheet(){
   closeQ();const el=document.createElement("div");el.className="sheetbg";el.id="qsheet";
@@ -3143,7 +3172,6 @@ VIEW.home=function(m){
       <div class="h9hi"><p class="h9date">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</p><h1>${esc(ME.id)}님, 반가워요</h1><p class="h9sub">오늘도 한 장씩 쌓아 볼까요?</p></div>
       <div class="h9chips">
         ${dd!=null?`<div class="h9c dd9"><small>시험까지</small><b class="num">${dlabel(dd)}</b></div>`:`<button class="h9c dd9 ghost" id="hdd"><small>시험일</small><b>정하기</b></button>`}
-        <div class="h9c goal9"><span class="gring" style="--p:${Math.min(100,todayN()/goalN()*100)}"><b class="num">${Math.min(999,todayN())}</b></span><span class="gtx"><small>오늘 목표 ${goalN()}장</small><b>${todayN()>=goalN()?"달성! 🎉":`${goalN()-todayN()}장 남음`}</b><em>${streak()?`🔥 ${streak()}일 연속`:"오늘 시작해 볼까요?"}</em></span></div>
         ${petChip()}
       </div>
     </header>
