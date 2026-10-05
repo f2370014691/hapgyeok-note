@@ -2283,6 +2283,39 @@ main{padding-left:clamp(14px,2.2vw,36px);padding-right:clamp(14px,2.2vw,36px)}
 .qnext9{display:flex;width:100%;justify-content:center;align-items:center;gap:6px;margin:10px 0 4px;padding:13px 16px;font-size:16px;font-weight:800;border-radius:14px}
 /* v90: 방식 고르기 창 — 큰 화면에서는 가운데 */
 @media (min-width:700px){.mpick{align-items:center}.mpc{border-radius:24px;padding:18px 18px 20px;max-width:440px}}
+
+/* v91: 빈칸 채우기 문제 속 가림 + 모바일 제스처 안내 */
+.q .cz.qz{vertical-align:baseline}
+.gest{position:fixed;inset:0;z-index:460;background:rgba(18,20,40,.62);display:grid;place-items:center;padding:16px;animation:fadein .2s}
+.gstc{background:var(--surface);color:var(--ink);border-radius:26px;padding:20px 18px 16px;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.gstt{font-size:18px;font-weight:900}
+.gstage{position:relative;width:220px;height:170px;display:grid;place-items:center}
+.gcard{width:120px;height:150px;border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--pri) 14%,var(--surface)),var(--surface));box-shadow:var(--sh);border:1.5px solid color-mix(in srgb,var(--pri) 30%,transparent);display:grid;place-items:center;font-weight:800;color:var(--ink-3)}
+.gfin{position:absolute;left:50%;top:50%;font-size:40px;transform:translate(-50%,-10%);filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+.glab{position:absolute;top:-2px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:900;padding:3px 12px;border-radius:999px;white-space:nowrap;color:#fff}
+.glab.ok{background:#10B981}.glab.mid{background:#F59E0B}.glab.ng{background:#EF4444}.glab.bk{background:#6B7280}
+.gstage.go.g-l .gcard{animation:gcl 1.5s ease-in-out}.gstage.go.g-l .gfin{animation:gfl 1.5s ease-in-out}
+.gstage.go.g-r .gcard{animation:gcr 1.5s ease-in-out}.gstage.go.g-r .gfin{animation:gfr 1.5s ease-in-out}
+.gstage.go.g-u .gcard{animation:gcu 1.5s ease-in-out}.gstage.go.g-u .gfin{animation:gfu 1.5s ease-in-out}
+.gstage.go.g-d .gcard{animation:gcd 1.5s ease-in-out}.gstage.go.g-d .gfin{animation:gfd 1.5s ease-in-out}
+@keyframes gcl{0%,15%{transform:none}55%{transform:translateX(-70px) rotate(-10deg);opacity:.5}100%{transform:none;opacity:1}}
+@keyframes gcr{0%,15%{transform:none}55%{transform:translateX(70px) rotate(10deg);opacity:.5}100%{transform:none;opacity:1}}
+@keyframes gcu{0%,15%{transform:none}55%{transform:translateY(-45px);opacity:.5}100%{transform:none;opacity:1}}
+@keyframes gcd{0%,15%{transform:none}55%{transform:translateY(45px);opacity:.5}100%{transform:none;opacity:1}}
+@keyframes gfl{0%{transform:translate(-10%,-10%);opacity:0}15%{opacity:1}55%{transform:translate(-160%,-10%);opacity:1}80%,100%{opacity:0;transform:translate(-160%,-10%)}}
+@keyframes gfr{0%{transform:translate(-90%,-10%);opacity:0}15%{opacity:1}55%{transform:translate(60%,-10%);opacity:1}80%,100%{opacity:0;transform:translate(60%,-10%)}}
+@keyframes gfu{0%{transform:translate(-50%,40%);opacity:0}15%{opacity:1}55%{transform:translate(-50%,-90%);opacity:1}80%,100%{opacity:0;transform:translate(-50%,-90%)}}
+@keyframes gfd{0%{transform:translate(-50%,-60%);opacity:0}15%{opacity:1}55%{transform:translate(-50%,60%);opacity:1}80%,100%{opacity:0;transform:translate(-50%,60%)}}
+.glist{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+.gli{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;background:var(--sunk);font-size:12px;color:var(--ink-3);transition:background .2s,transform .2s}
+.gli b{margin-left:auto;font-size:13px;color:var(--ink)}
+.gli .gar{font-size:16px;font-weight:900}
+.gli.on{transform:scale(1.03)}
+.gli.on.ok{background:color-mix(in srgb,#10B981 16%,var(--surface))}.gli.on.mid{background:color-mix(in srgb,#F59E0B 18%,var(--surface))}
+.gli.on.ng{background:color-mix(in srgb,#EF4444 14%,var(--surface))}.gli.on.bk{background:color-mix(in srgb,#6B7280 16%,var(--surface))}
+.gsm{margin:0;font-size:11.5px;color:var(--ink-3);text-align:center}
+.gstc .btn.lg{width:100%}
+.gli b,.gli span{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -3236,6 +3269,33 @@ const cho=ch=>{const c=(ch||"").charCodeAt(0)-0xAC00;return c>=0&&c<11172?CHO[Ma
 const czCount=a=>(String(a||"").match(/\*\*(.+?)\*\*/g)||[]).length;
 function czHTML(t,st){return esc(t).replace(/\*\*(.+?)\*\*/g,(m,k)=>{const j=st.k++;if(j<st.n)return `<strong class="czo ${j===st.n-1&&st.fresh?"new":""}">${k}</strong>`;
   const raw=k.replace(/&[a-z]+;|&#\d+;/g,"_");return `<span class="cz" style="--w:${Math.min(14,Math.max(2,[...raw].length))}"><i>${esc(cho(raw[0]))}</i></span>`;});}
+/* 모바일 플래시카드를 처음 열면 손가락으로 넘기는 방법을 움직이는 그림으로 알려 줌 (한 번만) */
+function gestGuide(){
+  if(!isMob()||!FCRUN||document.getElementById("gest"))return;
+  try{if(localStorage.getItem(SBASE+":gest"))return;}catch(e){return;}
+  const G=[["l","←","왼쪽으로","알아요","ok"],["u","↑","위로","헷갈려요","mid"],["d","↓","아래로","몰랐어요","ng"],["r","→","오른쪽으로","이전 카드","bk"]];
+  const el=document.createElement("div");el.id="gest";el.className="gest";
+  el.innerHTML=`<div class="gstc"><b class="gstt">손가락으로 넘겨 보세요</b>
+    <div class="gstage"><div class="gcard"><span>카드</span></div><span class="gfin">👆</span><span class="glab"></span></div>
+    <div class="glist">${G.map(([d,ar,a,b,c])=>`<div class="gli ${c}" data-g="${d}"><span class="gar">${ar}</span><span>${a}</span><b>${b}</b></div>`).join("")}</div>
+    <p class="gsm">알아요·헷갈려요·몰랐어요는 답을 다 본 뒤에 밀면 채점돼요</p>
+    <button class="btn pri lg" id="gok">알겠어요</button></div>`;
+  document.body.appendChild(el);
+  const st=el.querySelector(".gstage"),lab=el.querySelector(".glab");let i=0;
+  const play=()=>{const [d,ar,a,b,c]=G[i%G.length];st.className="gstage g-"+d;void st.offsetWidth;st.classList.add("go");lab.className="glab "+c;lab.textContent=`${ar} ${b}`;
+    el.querySelectorAll(".gli").forEach(x=>x.classList.toggle("on",x.dataset.g===d));i++;};
+  play();const tm=setInterval(()=>{if(!el.isConnected)return clearInterval(tm);play();},1700);
+  const close=()=>{clearInterval(tm);el.remove();try{localStorage.setItem(SBASE+":gest","1");}catch(e){}};
+  el.querySelector("#gok").onclick=close;el.onclick=e=>{if(e.target===el)close();};
+}
+/* 빈칸 채우기: 답의 핵심어(**…**)가 문제 글에도 들어 있으면 문제에서도 가림 (답을 다 열면 다시 보임) */
+function czQ(q,a){
+  const ks=[...new Set((String(a||"").match(/\*\*(.+?)\*\*/g)||[]).map(x=>x.slice(2,-2).trim()).filter(k=>[...k].length>=2))].sort((x,y)=>y.length-x.length);
+  let t=String(q||"");const used=[];
+  ks.forEach((k,i)=>{if(t.includes(k)){t=t.split(k).join("\u0001"+i+"\u0002");used.push(i);}});
+  if(!used.length)return qMask(q,a);
+  return qMask(t,a).replace(/\u0001(\d+)\u0002/g,(m,i)=>{const k=ks[+i];return `<span class="cz qz" style="--w:${Math.min(14,Math.max(2,[...k].length))}"><i>${esc(cho(k[0]))}</i></span>`;});
+}
 /* 헷갈리는 짝: 같은 소주제(없으면 대주제)의 다른 카드 하나를 골라 두 질문 중 고르기 */
 function makePair(i){
   const p=TPOS[i];if(!p)return null;const [d,k,t]=p;
@@ -3398,7 +3458,7 @@ function drawCard(){
       <div class="cmeta"><span class="cpath">${esc(c[4])}</span>${!x?`<span class="tag new">NEW</span>`:x[2]?`<span class="tag lapse">틀림 ${x[2]}</span>`:x[0]>=4?`<span class="tag ok">외움</span>`:""}
         ${gq.length?`<button class="tag gtag" id="gq" title="이 카드가 나온 기출">기출 ${gq.length}</button>`:""}<span class="pg">${c[2]}쪽</span></div>
       ${pr?`<div class="pq">이 설명에 맞는 질문은?</div><div class="cscroll" id="cscr"><div class="a pa">${its.map(t=>`<div class="ait on">${fmt(t)}</div>`).join("")}</div>`
-        :`<div class="q">${sh?fmt(c[5]):qMask(c[5],c[6])}</div><div class="cscroll" id="cscr"><div class="a">${aBody}</div>`}
+        :`<div class="q">${cz&&!full?czQ(c[5],c[6]):sh?fmt(c[5]):qMask(c[5],c[6])}</div><div class="cscroll" id="cscr"><div class="a">${aBody}</div>`}
       ${tr?(()=>{const L=tr.length,p=L?Math.round(tok/L*100):0,cl=tok>=L*.8?"good":tok>=L*.5?"mid":"bad";
         return `<div class="ty9res ${cl}"><div class="ty9rh"><span class="ty9ring" style="--p:${p}"><b class="num">${tok}<small>/${L}</small></b></span>
           <div><b>${tok===L&&L?"완벽해요!":cl==="good"?"거의 다 맞았어요":cl==="mid"?"절반쯤 맞았어요":"다시 확인해 봐요"}</b><small>핵심어 ${tok}개 맞음${s.hintUsed?" · 💡 힌트 사용":""}</small></div></div>
@@ -3602,6 +3662,7 @@ VIEW.fc=function(m){
   {const tb=document.getElementById("tabbar");document.documentElement.style.setProperty("--tbh",((tb&&tb.offsetHeight)||0)+"px");}
   if(FCRUN)FCRST=false;
   if(!FCRUN)return fcChooser(m);
+  setTimeout(gestGuide,500);
   const sc=curScope();
   const crumbs=SC.sp?[esc(sc.title)]:[DOCS[SC.d],SC.k!=null?CH[SC.d][SC.k].name:null,SC.t!=null?CH[SC.d][SC.k].topics[SC.t].name:MT()?sc.title:null].filter(Boolean).map(esc);
   m.innerHTML=`<div class="page fcplay" style="${sc.d!=null?`--dc:${DC[sc.d]};--ds:${DCS[sc.d]}`:""}">
