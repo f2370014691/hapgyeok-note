@@ -2401,6 +2401,31 @@ html[data-theme="dark"] .mykw9 .mkc,html[data-theme="dark"] mark.mkm{background:
 .qfq i{font-style:normal;color:color-mix(in srgb,#F59E0B 25%,var(--line))}
 .qfq.s5{background:color-mix(in srgb,#EF4444 12%,var(--surface));color:#EF4444}.qfq.s5 small{color:#DC2626}
 .qfq.s1{color:var(--ink-3);background:var(--sunk)}.qfq.s1 small{color:var(--ink-3)}
+
+/* v96: 빈출도 재분석 (세부 개념·학자·형태) */
+.fqkpi{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fqkpi h3{font-size:14px;font-weight:900;margin:0 0 8px}
+.fqkpi small{display:block;margin-top:8px;font-size:12px;color:var(--ink-3);line-height:1.5}
+.fqmix{display:flex;height:34px;border-radius:12px;overflow:hidden;background:var(--sunk)}
+.fqmix span{position:relative;flex:0 0 var(--w);min-width:0;background:color-mix(in srgb,var(--c) 28%,var(--surface));display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;white-space:nowrap;overflow:hidden;border-right:2px solid var(--surface)}
+.fqmix span b{font-weight:800;color:var(--ink)}.fqmix span em{font-style:normal;font-weight:900;color:var(--c)}
+.fqsch{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 14px}
+.fqs{display:grid;grid-template-columns:72px minmax(40px,1fr) 28px auto;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.fqs:hover{background:var(--hover,var(--sunk))}
+.fqs b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fqs .fqbar i{background:linear-gradient(90deg,var(--pri),#A78BFA)}
+.fqs em{font-style:normal;font-weight:900;font-size:12.5px;color:var(--pri);text-align:right}
+.fqs .fqdots i{width:5px;height:11px}
+@media (max-width:699px){
+  .fqkpi{grid-template-columns:1fr}
+  .fqmix span{font-size:11px}
+  .fqsch{grid-template-columns:1fr}
+  .fqs{grid-template-columns:72px minmax(40px,1fr) 28px}.fqs .fqdots{display:none}
+}
+.fqcn{display:inline-block;font-size:10.5px;font-weight:800;color:#BE185D;background:color-mix(in srgb,#EC4899 12%,var(--surface));border-radius:6px;padding:0 5px;vertical-align:1px}
+.fqleg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:12px;color:var(--ink-3)}
+.fqleg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.fqleg em{font-style:normal;font-weight:800;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -2785,38 +2810,71 @@ function fqStars(q,n){const I=fqInfo();if(!I)return "";const cl=(q.cls&&q.cls[n]
   if(!cl.length)return "";const t=best&&best.t,nm=best?String(best.c).split("|")[1]:"";
   const tip=t?`기출 빈출도 ★${bs} · '${nm}' ${I.ny}개년 중 ${Object.keys(t.ys).length}개년, ${t.n}물음 출제`:`기출 빈출도 ★1 · '${nm}' 기출에 나온 적 없음`;
   return `<span class="qfq s${bs}" title="${esc(tip)}" aria-label="${esc(tip)}"><small>빈출</small>${"★".repeat(bs)}<i>${"★".repeat(5-bs)}</i></span>`;}
+/* 세부 개념·학자·형태 집계 (q.tags[n]={c:[개념],s:[학자],f:형태,b:근거}) — 과목 d로 거를 수 있음 */
+/* 개념 이름 표시: '누리과정|의사소통|듣기와 말하기' → '누리과정 · 의사소통 › 듣기와 말하기' */
+const cName=n=>{const p=String(n).split("|");return p.length>1?`<span class="fqcn">${esc(p[0])}</span> ${p.slice(1).map(esc).join(" › ")}`:esc(n);};
+function gTagData(d){
+  const Y=[...new Set(Object.values(GQ).map(q=>q.y))].sort((a,b)=>yKey(a)-yKey(b));
+  const C={},S={},F={},B={};let n=0,tagged=0;
+  const add=(M,k,q,sub,big)=>{const x=M[k]||(M[k]={name:k,n:0,ys:{},subs:[],big:{}});x.n++;x.ys[q.y]=(x.ys[q.y]||0)+1;x.subs.push([sub[0],sub[1]]);if(big)x.big[big]=(x.big[big]||0)+1;};
+  for(const qid in GQ){const q=GQ[qid];for(const [sn] of q.subs){
+    const cl=(q.cls&&q.cls[sn])||[];if(d!=null&&d!=="all"&&!cl.some(c=>{const p=tpos(c);return p&&p[0]===d;}))continue;
+    n++;const t=q.tags&&q.tags[sn];if(!t)continue;tagged++;
+    const big=cl[0]||"";
+    (t.c||[]).forEach(c=>add(C,c,q,[qid,sn],big));(t.s||[]).forEach(s=>add(S,s,q,[qid,sn],big));
+    if(t.f)F[t.f]=(F[t.f]||0)+1;if(t.b)B[t.b]=(B[t.b]||0)+1;}}
+  return{Y,C:Object.values(C),S:Object.values(S),F,B,n,tagged};
+}
 function gichulFreq(m){
   if(!GQ){m.innerHTML=`<div class="page"><div class="empty">기출을 불러오는 중이에요</div></div>`;return;}
   const F=gFreqData(),Y=F.Y,last3=Y.slice(-3),inD=x=>GFD==="all"||String(x)===String(GFD);
+  const TG=gTagData(GFD),hasTag=TG.tagged>0;
   const Ts=F.T.filter(t=>inD(t.p[0])).sort((a,b)=>b.n-a.n||Object.keys(b.ys).length-Object.keys(a.ys).length);
   const Bs=F.B.filter(b=>inD(b.d)).sort((a,b)=>a.d-b.d||b.n-a.n);
-  const top=Ts.slice(0,15),mx=top[0]?top[0].n:1;
   const dots=ys=>`<span class="fqdots">${Y.map(y=>`<i class="${ys[y]?"on":""}" title="${esc(y)}학년도${ys[y]?` · ${ys[y]}물음`:""}"></i>`).join("")}</span>`;
-  const sleep=Ts.filter(t=>Object.keys(t.ys).length>=3&&!last3.some(y=>t.ys[y])).sort((a,b)=>Object.keys(b.ys).length-Object.keys(a.ys).length||b.n-a.n).slice(0,12);
-  const hot=Ts.filter(t=>last3.reduce((s,y)=>s+(t.ys[y]||0),0)>=2).sort((a,b)=>last3.reduce((s,y)=>s+(b.ys[y]||0),0)-last3.reduce((s,y)=>s+(a.ys[y]||0),0)).slice(0,10);
+  const nyr=x=>Object.keys(x.ys).length,lastY=x=>Object.keys(x.ys).sort((a,b)=>yKey(b)-yKey(a))[0],rec3=x=>last3.reduce((s,y)=>s+(x.ys[y]||0),0);
+  const bigOf=x=>{const e=Object.entries(x.big).sort((a,b)=>b[1]-a[1])[0];return e?e[0].split("|"):["",""];};
+  const dcOf=x=>{const p=tpos(bigOf(x).join("|"));return p?DC[p[0]]:"var(--pri)";};
   const totD=Object.values(F.D).reduce((a,b)=>a+b,0)||1;
   const bmx=Math.max(1,...Bs.flatMap(b=>Y.map(y=>b.ys[y]||0)));
-  const go=t=>`data-fq="${t.p.join(",")}"`;
-  m.innerHTML=`<div class="page fc8 pgc mkp fqp"><header class="fc8h phd9"><div><h1>📊 기출 빈출도</h1><p>${Y.length}개년 · ${F.nq}문항 · 하위 물음 ${F.subs}개를 소주제별로 모았어요</p></div><span class="pgt9"><button class="btn sm" id="gfqx">${ico("left",14)} 기출로</button></span></header>
+  /* 세부 개념 */
+  const Cs=TG.C.sort((a,b)=>b.n-a.n||nyr(b)-nyr(a)),ctop=Cs.slice(0,30),cmx=ctop[0]?ctop[0].n:1;
+  const Ss=TG.S.sort((a,b)=>b.n-a.n||nyr(b)-nyr(a)).slice(0,24),smx=Ss[0]?Ss[0].n:1;
+  const chot=Cs.filter(c=>rec3(c)>=2).sort((a,b)=>rec3(b)-rec3(a)||b.n-a.n).slice(0,14);
+  const csleep=Cs.filter(c=>nyr(c)>=3&&!last3.some(y=>c.ys[y])).sort((a,b)=>nyr(b)-nyr(a)||b.n-a.n).slice(0,14);
+  const pct=(o,k)=>{const t=Object.values(o).reduce((a,b)=>a+b,0)||1;return Math.round((o[k]||0)/t*100);};
+  const bar=(o,keys,cls)=>`<div class="fqmix ${cls}">${keys.map(([k,l,c])=>`<span style="--w:${pct(o,k)}%;--c:${c}" title="${l} ${o[k]||0}물음">${pct(o,k)>=16?`<b>${l}</b><em class="num">${pct(o,k)}%</em>`:""}</span>`).join("")}</div><div class="fqleg">${keys.map(([k,l,c])=>`<span><i style="background:${c}"></i>${l} <em class="num">${pct(o,k)}%</em></span>`).join("")}</div>`;
+  const cRow=(c,i,mx)=>`<button class="fqr" data-fqc="${esc(c.name)}" style="--dc:${dcOf(c)}"><span class="fqn num">${i+1}</span><span class="fqt"><b>${cName(c.name)}</b><small>${esc(bigOf(c).join(" › "))}</small></span>
+      <span class="fqbar"><i style="width:${c.n/mx*100}%"></i></span><span class="fqc num">${c.n}물음 · ${nyr(c)}개년</span>${dots(c.ys)}</button>`;
+  m.innerHTML=`<div class="page fc8 pgc mkp fqp"><header class="fc8h phd9"><div><h1>📊 기출 빈출도</h1><p>${Y.length}개년 · ${F.nq}문항 · 하위 물음 ${F.subs}개${hasTag?` · 세부 개념 ${TG.C.length}개로 다시 분석`:""}</p></div><span class="pgt9"><button class="btn sm" id="gfqx">${ico("left",14)} 기출로</button></span></header>
     <div class="mkhd9"><span class="seg2 mkw9">${[["all","전체"],...DOCS.map((x,i)=>[i,esc(x)])].map(([v,l])=>`<button data-fd="${v}" aria-pressed="${String(GFD)===String(v)}">${l}</button>`).join("")}</span>
       <span class="fqshare">${DOCS.map((x,i)=>`<span style="--dc:${DC[i]}"><i style="width:${Math.round((F.D[i]||0)/totD*100)}%"></i><b>${esc(x)}</b><em class="num">${Math.round((F.D[i]||0)/totD*100)}%</em></span>`).join("")}</span></div>
-    <section class="fqsec"><h2>🔥 가장 많이 나온 소주제 <small>물음 수 · 나온 해 · 연도별 출제(왼쪽이 ${esc(Y[0])}, 오른쪽이 ${esc(Y[Y.length-1])})</small></h2>
-      <div class="fqtop">${top.map((t,i)=>`<button class="fqr" ${go(t)} style="--dc:${DC[t.p[0]]}"><span class="fqn num">${i+1}</span><span class="fqt"><b>${esc(t.name)}</b><small>${esc(DOCS[t.p[0]])} › ${esc(t.big)}</small></span>
-        <span class="fqbar"><i style="width:${t.n/mx*100}%"></i></span><span class="fqc num">${t.n}물음 · ${Object.keys(t.ys).length}개년</span>${dots(t.ys)}</button>`).join("")||`<div class="empty">자료가 없어요</div>`}</div></section>
+    ${hasTag?`<section class="fqsec fqkpi"><div><h3>물음 형태</h3>${bar(TG.F,[["용어","용어 쓰기","#6366F1"],["찾기","지문에서 찾기","#10B981"],["서술","서술","#F59E0B"],["객관식","객관식","#94A3B8"]],"")}<small>용어 쓰기가 많으면 정확한 명칭 암기가, 찾기·서술이 많으면 개념을 사례에 적용하는 연습이 중요해요</small></div>
+      <div><h3>정답의 근거</h3>${bar(TG.B,[["누리과정","누리과정 문서","#EC4899"],["이론","학자·이론","#6366F1"],["법·제도","법·제도","#0EA5E9"],["실제","교수 실제","#10B981"]],"")}<small>누리과정 문서 비중이 크면 고시문·해설서 문장을 그대로 외워 두는 게 득점으로 이어져요</small></div></section>
+    <section class="fqsec"><h2>🔑 가장 많이 나온 세부 개념 TOP 30 <small>물음 수 · 나온 해 · 연도별 출제(왼쪽 ${esc(Y[0])} → 오른쪽 ${esc(Y[Y.length-1])}) · 누르면 그 개념 기출만 풀어요</small></h2>
+      <div class="fqtop">${ctop.map((c,i)=>cRow(c,i,cmx)).join("")}</div></section>
     <div class="fq2">
-      <section class="fqsec"><h2>📈 최근 3년(${last3.map(yShort).join("·")}) 집중 출제</h2><div class="fqlist">${hot.map(t=>`<button class="fqi" ${go(t)}><b>${esc(t.name)}</b><small>${esc(t.big)}</small><em class="num">${last3.reduce((s,y)=>s+(t.ys[y]||0),0)}물음</em></button>`).join("")||`<p class="muted small">해당 없음</p>`}</div></section>
-      <section class="fqsec"><h2>⏰ 자주 나왔지만 최근 3년간 안 나온 곳 <small>나올 차례일 수 있어요</small></h2><div class="fqlist">${sleep.map(t=>`<button class="fqi warn" ${go(t)}><b>${esc(t.name)}</b><small>${esc(t.big)} · 마지막 출제 ${esc(yFull(Object.keys(t.ys).sort((a,b)=>yKey(b)-yKey(a))[0]))}</small><em class="num">${Object.keys(t.ys).length}개년</em></button>`).join("")||`<p class="muted small">해당 없음</p>`}</div></section>
+      <section class="fqsec"><h2>📈 최근 3년(${last3.map(yShort).join("·")}) 집중 개념</h2><div class="fqlist">${chot.map(c=>`<button class="fqi" data-fqc="${esc(c.name)}"><b>${cName(c.name)}</b><small>${esc(bigOf(c)[1])} · 모두 ${c.n}물음</small><em class="num">${rec3(c)}물음</em></button>`).join("")||`<p class="muted small">해당 없음</p>`}</div></section>
+      <section class="fqsec"><h2>⏰ 자주 나왔지만 최근 3년간 안 나온 개념 <small>나올 차례일 수 있어요</small></h2><div class="fqlist">${csleep.map(c=>`<button class="fqi warn" data-fqc="${esc(c.name)}"><b>${cName(c.name)}</b><small>${esc(bigOf(c)[1])} · 마지막 출제 ${esc(yFull(lastY(c)))}</small><em class="num">${nyr(c)}개년</em></button>`).join("")||`<p class="muted small">해당 없음</p>`}</div></section>
     </div>
+    <section class="fqsec"><h2>👤 학자별 출제 <small>정답이 그 학자의 이론에 근거한 물음 수 · 누르면 그 학자 기출만</small></h2>
+      <div class="fqsch">${Ss.map(s=>`<button class="fqs" data-fqs="${esc(s.name)}"><b>${esc(s.name)}</b><span class="fqbar"><i style="width:${s.n/smx*100}%"></i></span><em class="num">${s.n}</em>${dots(s.ys)}</button>`).join("")||`<p class="muted small">해당 없음</p>`}</div></section>`:""}
+    <section class="fqsec"><h2>📚 소주제 순위 TOP 15 <small>소주제 단위 집계 · 누르면 그 소주제 기출로</small></h2>
+      <div class="fqtop">${Ts.slice(0,15).map((t,i)=>`<button class="fqr" data-fq="${t.p.join(",")}" style="--dc:${DC[t.p[0]]}"><span class="fqn num">${i+1}</span><span class="fqt"><b>${esc(t.name)}</b><small>${esc(DOCS[t.p[0]])} › ${esc(t.big)}</small></span>
+        <span class="fqbar"><i style="width:${t.n/(Ts[0]?Ts[0].n:1)*100}%"></i></span><span class="fqc num">${t.n}물음 · ${nyr(t)}개년</span>${dots(t.ys)}</button>`).join("")}</div></section>
     <section class="fqsec"><h2>🗺 대주제 × 연도 <small>칸 숫자 = 그해 하위 물음 수 · 진할수록 많이 나왔어요</small></h2>
       <div class="fqhw"><table class="fqh"><thead><tr><th>대주제</th>${Y.map(y=>`<th>${esc(yShort(y))}</th>`).join("")}<th>합</th></tr></thead><tbody>
       ${Bs.map(b=>`<tr data-fb="${b.d},${b.k}" style="--dc:${DC[b.d]}"><th><span class="fqd" style="background:${DC[b.d]}"></span>${esc(b.name)}</th>${Y.map(y=>{const v=b.ys[y]||0;return `<td style="--a:${v?Math.round(18+v/bmx*72):0}%">${v||""}</td>`;}).join("")}<td class="fqsum num">${b.n}</td></tr>`).join("")}</tbody></table></div></section>
   </div>`;
   const on=(q,f)=>m.querySelectorAll(q).forEach(b=>b.onclick=()=>f(b));
-  const start=(d,k,t)=>{QWR.gichul=null;QWL.gichul="";qfSet("gichul","all");SC.sa=false;SC.sp="";SC.d=d;SC.k=k;SC.t=t;SC.ts=[];saveSC();GFQ=false;PGRUN.gichul=true;VIEW.gichul(m);window.scrollTo({top:0});};
+  const startScope=(d,k,t)=>{QWR.gichul=null;QWL.gichul="";qfSet("gichul","all");SC.sa=false;SC.sp="";SC.d=d;SC.k=k;SC.t=t;SC.ts=[];saveSC();GFQ=false;PGRUN.gichul=true;VIEW.gichul(m);window.scrollTo({top:0});};
+  const startList=(subs,label)=>{const it=[...new Map(subs.map(x=>[x.join("|"),x])).values()].sort((a,b)=>qSort(a[0],b[0])||a[1].localeCompare(b[1]));if(!it.length)return;QWR.gichul=it;QWL.gichul=label;qfSet("gichul","all");GFQ=false;PGRUN.gichul=true;VIEW.gichul(m);window.scrollTo({top:0});};
   m.querySelector("#gfqx").onclick=()=>{GFQ=false;VIEW.gichul(m);window.scrollTo({top:0});};
   on("[data-fd]",b=>{GFD=b.dataset.fd==="all"?"all":+b.dataset.fd;gichulFreq(m);});
-  on("[data-fq]",b=>{const [d,k,t]=b.dataset.fq.split(",").map(Number);start(d,k,t);});
-  on("[data-fb]",b=>{const [d,k]=b.dataset.fb.split(",").map(Number);start(d,k,null);});
+  on("[data-fq]",b=>{const [d,k,t]=b.dataset.fq.split(",").map(Number);startScope(d,k,t);});
+  on("[data-fb]",b=>{const [d,k]=b.dataset.fb.split(",").map(Number);startScope(d,k,null);});
+  on("[data-fqc]",b=>{const c=TG.C.find(x=>x.name===b.dataset.fqc);if(c)startList(c.subs,`개념 · ${c.name.replace(/\|/g," › ")}`);});
+  on("[data-fqs]",b=>{const s=TG.S.find(x=>x.name===b.dataset.fqs);if(s)startList(s.subs,`학자 · ${s.name}`);});
 }
 /* ---------- 기출 · 문제풀이 고르기: 모의고사처럼 한 화면 카드 ---------- */
 let GV="topic",GSUB="all";try{GV=localStorage.getItem(SBASE+":gv")||"topic";GSUB=localStorage.getItem(SBASE+":gsub")||"all";}catch(e){}
