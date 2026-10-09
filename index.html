@@ -2394,6 +2394,13 @@ html[data-theme="dark"] .mykw9 .mkc,html[data-theme="dark"] mark.mkm{background:
   .fqshare{margin-left:0}
   .fqsec{padding:14px 12px}
 }
+
+/* v95: 문제풀이·모의고사 물음 빈출도 별 */
+.qfq{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:999px;font-size:13px;letter-spacing:-1px;color:#F59E0B;background:color-mix(in srgb,#F59E0B 12%,var(--surface));white-space:nowrap}
+.qfq small{font-size:11px;font-weight:800;letter-spacing:0;color:#B45309;margin-right:3px}
+.qfq i{font-style:normal;color:color-mix(in srgb,#F59E0B 25%,var(--line))}
+.qfq.s5{background:color-mix(in srgb,#EF4444 12%,var(--surface));color:#EF4444}.qfq.s5 small{color:#DC2626}
+.qfq.s1{color:var(--ink-3);background:var(--sunk)}.qfq.s1 small{color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -2767,6 +2774,17 @@ function gFreqData(){
       if(!sD.has(p[0])){sD.add(p[0]);D[p[0]]=(D[p[0]]||0)+1;}}}}
   return{Y,T:Object.values(T),B:Object.values(B),D,subs,nq:Object.keys(GQ).length};
 }
+/* 문제풀이·모의고사 물음의 빈출도(★1~5): 그 물음 소주제가 19개년 기출에서 몇 물음 나왔는지를 소주제 전체 순위로 나눔
+   상위 10% ★5 · 25% ★4 · 50% ★3 · 그 밖에 나온 적 있음 ★2 · 안 나옴 ★1 */
+let FQC=null;
+function fqInfo(){if(!GQ)return null;if(FQC&&FQC.src===GQ&&FQC.ch===CH)return FQC;const F=gFreqData(),m={};F.T.forEach(t=>m[t.p.join(",")]=t);
+  const ns=F.T.map(t=>t.n).sort((a,b)=>b-a),at=p=>ns[Math.max(0,Math.ceil(ns.length*p)-1)]||1;
+  return FQC={src:GQ,ch:CH,m,c5:at(.1),c4:at(.25),c3:at(.5),ny:F.Y.length};}
+function fqStars(q,n){const I=fqInfo();if(!I)return "";const cl=(q.cls&&q.cls[n])||[];let best=null,bs=1;
+  for(const c of cl){const p=tpos(c),t=p&&I.m[p.join(",")],st=!t?1:t.n>=I.c5?5:t.n>=I.c4?4:t.n>=I.c3?3:2;if(!best||st>bs){best={t,c,st};bs=st;}}
+  if(!cl.length)return "";const t=best&&best.t,nm=best?String(best.c).split("|")[1]:"";
+  const tip=t?`기출 빈출도 ★${bs} · '${nm}' ${I.ny}개년 중 ${Object.keys(t.ys).length}개년, ${t.n}물음 출제`:`기출 빈출도 ★1 · '${nm}' 기출에 나온 적 없음`;
+  return `<span class="qfq s${bs}" title="${esc(tip)}" aria-label="${esc(tip)}"><small>빈출</small>${"★".repeat(bs)}<i>${"★".repeat(5-bs)}</i></span>`;}
 function gichulFreq(m){
   if(!GQ){m.innerHTML=`<div class="page"><div class="empty">기출을 불러오는 중이에요</div></div>`;return;}
   const F=gFreqData(),Y=F.Y,last3=Y.slice(-3),inD=x=>GFD==="all"||String(x)===String(GFD);
@@ -3871,7 +3889,7 @@ function gichulIn(box,sc,items){
       <div class="qip"><div class="qis" id="qpi"><div class="qph"></div></div>
         <button class="qarr l" id="qal" aria-label="이전 문제" ${s.pos?"":"disabled"}>${ico("left",20)}</button><button class="qarr r" id="qar" aria-label="다음 문제" ${s.pos<items.length-1?"":"disabled"}>${ico("chev",20)}</button></div>
       <div class="qrp">
-        <div class="qhd9"><div class="qh9t"><span class="qy9">${esc(qHead(q))}</span><b>${q.no}번${n?` <i>${esc(n)}</i>`:""}</b>${q.pts?`<span class="qp9">${q.pts}점</span>`:""}${QR(tk)?`<span class="qst ${QR(tk).r?"ok":"ng"}">${QR(tk).r?"⭕ 맞춤":"❌ 틀림"}</span>`:""}</div>
+        <div class="qhd9"><div class="qh9t"><span class="qy9">${esc(qHead(q))}</span><b>${q.no}번${n?` <i>${esc(n)}</i>`:""}</b>${q.pts?`<span class="qp9">${q.pts}점</span>`:""}${String(qid)[0]==="M"?fqStars(q,n):""}${QR(tk)?`<span class="qst ${QR(tk).r?"ok":"ng"}">${QR(tk).r?"⭕ 맞춤":"❌ 틀림"}</span>`:""}</div>
           ${q.cls&&q.cls[n]?`<div class="qc9">${q.cls[n].slice(0,3).map(t=>`<span>${esc(t.split("|")[1])}</span>`).join("")}</div>`:""}</div>
         ${(()=>{const inS=new Set(items.filter(x=>x[0]===qid).map(x=>x[1])),out=q.subs.filter(x=>!inS.has(x[0]));return out.length?`<p class="qoth">이 문항의 다른 물음 ${out.length}개(${out.slice(0,4).map(x=>esc(x[0])).join(" ")}${out.length>4?" …":""})는 다른 소주제에 있어요 <button class="linkbtn" id="qothb">문항 전체 보기</button></p>`:"";})()}
         <div class="qask">${esc(sub[1])}</div>
